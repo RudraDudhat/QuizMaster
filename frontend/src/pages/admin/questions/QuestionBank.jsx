@@ -293,13 +293,14 @@ export default function QuestionBank() {
 function QuestionFormModal({ modalState, closeModal, createMut, updateMut, tags }) {
     const isOpen = modalState.mode === 'create' || modalState.mode === 'edit';
     const isEdit = modalState.mode === 'edit';
+    const selectedQuestionUuid = modalState.question?.questionUuid || modalState.question?.uuid;
 
     const { data: detailResp, isLoading: detailLoading } = useQuery({
-        queryKey: ['question', modalState.question?.questionUuid],
-        queryFn: () => getQuestionByUuid(modalState.question.questionUuid),
-        enabled: isEdit && !!modalState.question?.questionUuid,
+        queryKey: ['question', selectedQuestionUuid],
+        queryFn: () => getQuestionByUuid(selectedQuestionUuid),
+        enabled: isEdit && !!selectedQuestionUuid,
     });
-    const detail = detailResp?.data;
+    const detail = detailResp?.data ?? detailResp;
 
     const {
         register, handleSubmit, control, watch, reset, setValue,
@@ -323,12 +324,20 @@ function QuestionFormModal({ modalState, closeModal, createMut, updateMut, tags 
     useEffect(() => {
         if (isEdit && detail) {
             const qType = detail.questionType;
+            const detailTagUuids = Array.isArray(detail.tags)
+                ? detail.tags
+                    .map((t) => (typeof t === 'string' ? tags.find((tag) => tag.name === t)?.uuid : t?.uuid))
+                    .filter(Boolean)
+                : [];
+            const modalTagUuids = Array.isArray(modalState.question?.tags)
+                ? modalState.question.tags.map((t) => t?.uuid).filter(Boolean)
+                : [];
             const base = {
                 questionText: detail.questionText || '', questionType: qType,
-                difficulty: detail.difficulty || 'EASY', marks: detail.marks || '',
+                difficulty: detail.difficulty || 'EASY', marks: detail.defaultMarks ?? detail.marks ?? '',
                 negativeMarks: detail.negativeMarks || '', explanation: detail.explanation || '',
                 hintText: detail.hintText || '', mediaUrl: detail.mediaUrl || '',
-                tagUuids: detail.tags?.map(t => t.uuid) || [],
+                tagUuids: detailTagUuids.length ? detailTagUuids : modalTagUuids,
             };
             if (qType === 'TRUE_FALSE') {
                 const correct = detail.options?.find(o => o.isCorrect);
@@ -371,7 +380,7 @@ function QuestionFormModal({ modalState, closeModal, createMut, updateMut, tags 
                 ],
             });
         }
-    }, [isEdit, detail, modalState.mode, reset]);
+    }, [isEdit, detail, modalState.mode, modalState.question?.tags, reset, tags]);
 
     /* Handle type change — reset options */
     const prevType = useRef(questionType);
@@ -469,7 +478,7 @@ function QuestionFormModal({ modalState, closeModal, createMut, updateMut, tags 
         }
 
         if (isEdit) {
-            updateMut.mutate({ uuid: modalState.question.questionUuid, payload });
+            updateMut.mutate({ uuid: selectedQuestionUuid, payload });
         } else {
             createMut.mutate(payload);
         }
