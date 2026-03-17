@@ -1,14 +1,14 @@
 package com.quizmaster.enums;
 
 public enum QuestionType {
-    SINGLE_CHOICE,
-    MULTIPLE_CHOICE,
+    MCQ_SINGLE,
+    MCQ_MULTI,
     TRUE_FALSE,
     SHORT_ANSWER,
-    LONG_ANSWER,
+    ESSAY,
     FILL_IN_THE_BLANK,
-    MATCHING,
     ORDERING,
-    CODE,
-    NUMERICAL
+    MATCH_THE_FOLLOWING,
+    CODE_SNIPPET,
+    IMAGE_BASED
 }

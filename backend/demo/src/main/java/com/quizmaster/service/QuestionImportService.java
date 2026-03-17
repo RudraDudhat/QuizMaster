@@ -29,8 +29,8 @@ import java.util.stream.Collectors;
  * option1_text, option1_correct, option2_text, option2_correct,
  * option3_text, option3_correct, option4_text, option4_correct
  *
- * Supported question_type values: SINGLE_CHOICE, MULTIPLE_CHOICE, TRUE_FALSE,
- * SHORT_ANSWER, LONG_ANSWER, FILL_IN_THE_BLANK, NUMERICAL, CODE, MATCHING,
+ * Supported question_type values: MCQ_SINGLE, MCQ_MULTI, TRUE_FALSE,
+ * SHORT_ANSWER, ESSAY, FILL_IN_THE_BLANK, CODE_SNIPPET, MATCH_THE_FOLLOWING,
  * ORDERING
  */
 @Service

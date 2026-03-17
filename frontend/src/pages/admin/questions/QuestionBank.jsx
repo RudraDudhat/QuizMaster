@@ -399,7 +399,7 @@ function QuestionFormModal({ modalState, closeModal, createMut, updateMut, tags 
     const onSubmit = (data) => {
         const payload = {
             questionText: data.questionText, questionType: data.questionType,
-            difficulty: data.difficulty, marks: Number(data.marks),
+            difficulty: data.difficulty, defaultMarks: Number(data.marks),
             negativeMarks: Number(data.negativeMarks) || 0,
             explanation: data.explanation || undefined,
             hintText: data.hintText || undefined,

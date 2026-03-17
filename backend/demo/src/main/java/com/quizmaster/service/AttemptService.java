@@ -404,14 +404,13 @@ public class AttemptService {
     private boolean evaluateAnswer(AttemptAnswer answer, Question question) {
         QuestionType type = question.getQuestionType();
         return switch (type) {
-            case SINGLE_CHOICE -> evaluateSingleChoice(answer, question);
-            case MULTIPLE_CHOICE -> evaluateMultipleChoice(answer, question);
+            case MCQ_SINGLE -> evaluateSingleChoice(answer, question);
+            case MCQ_MULTI -> evaluateMultipleChoice(answer, question);
             case TRUE_FALSE -> evaluateTrueFalse(answer, question);
             case SHORT_ANSWER, FILL_IN_THE_BLANK -> evaluateTextAnswer(answer, question);
-            case NUMERICAL -> evaluateNumerical(answer, question);
             case ORDERING -> evaluateOrdering(answer, question);
-            case MATCHING -> evaluateMatching(answer, question);
-            case LONG_ANSWER, CODE -> false;
+            case MATCH_THE_FOLLOWING -> evaluateMatching(answer, question);
+            case ESSAY, CODE_SNIPPET, IMAGE_BASED -> false;
         };
     }
 
