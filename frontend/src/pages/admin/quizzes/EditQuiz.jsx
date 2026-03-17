@@ -111,6 +111,10 @@ function FormSkeleton() {
 const difficultyVariant = { EASY: 'success', MEDIUM: 'warning', HARD: 'danger' };
 const typeVariant = { PRACTICE: 'info', EXAM: 'default', SURVEY: 'warning' };
 
+function normalizeCategoryName(name) {
+    return name.trim().toLowerCase().replace(/\s+/g, ' ');
+}
+
 function toLocalDatetime(isoStr) {
     if (!isoStr) return '';
     try {
@@ -226,7 +230,13 @@ export default function EditQuiz() {
             setShowNewCategory(false);
             setNewCategoryName('');
         },
-        onError: (err) => toast.error(err.response?.data?.message || 'Failed to create category'),
+        onError: (err) => {
+            if (err?.response?.status === 500) {
+                toast.error('Category already exists. Please use a different name.');
+                return;
+            }
+            toast.error(err.response?.data?.message || 'Failed to create category');
+        },
     });
 
     const createTagMut = useMutation({
@@ -272,6 +282,11 @@ export default function EditQuiz() {
         : null;
 
     const selectedCategory = categories.find((c) => String(c.id) === watchAll.categoryUuid);
+
+    function hasCategoryNameConflict(name) {
+        const normalizedName = normalizeCategoryName(name);
+        return categories.some((category) => normalizeCategoryName(category.name) === normalizedName);
+    }
 
     function toggleTag(id) {
         setSelectedTagIds((prev) =>
@@ -477,6 +492,10 @@ export default function EditQuiz() {
                                                 onClick={() => {
                                                     if (newCategoryName.trim()) {
                                                         const trimmed = newCategoryName.trim();
+                                                        if (hasCategoryNameConflict(trimmed)) {
+                                                            toast.error('Category already exists. Please use a different name.');
+                                                            return;
+                                                        }
                                                         const slug = trimmed.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
                                                         createCatMut.mutate({ name: trimmed, slug, description: '' });
                                                     }
