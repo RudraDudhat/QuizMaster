@@ -9,10 +9,13 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "question_options")
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(exclude = "question")
+@EqualsAndHashCode(exclude = "question")
 public class QuestionOption {
 
     @Id

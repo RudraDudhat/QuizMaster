@@ -332,10 +332,10 @@ function QuestionFormModal({ modalState, closeModal, createMut, updateMut, tags 
             };
             if (qType === 'TRUE_FALSE') {
                 const correct = detail.options?.find(o => o.isCorrect);
-                base.trueFalseAnswer = correct?.optionText || 'True';
+                base.trueFalseAnswer = detail.correctAnswer || correct?.optionText || 'True';
                 base.options = []; base.shortAnswer = '';
             } else if (SINGLE_ANSWER_TYPES.includes(qType)) {
-                base.shortAnswer = detail.options?.[0]?.optionText || '';
+                base.shortAnswer = detail.correctAnswer || detail.options?.[0]?.optionText || '';
                 base.options = [];
             } else if (qType === 'ESSAY') {
                 base.options = []; base.shortAnswer = '';
@@ -397,6 +397,8 @@ function QuestionFormModal({ modalState, closeModal, createMut, updateMut, tags 
 
     /* Build payload and submit */
     const onSubmit = (data) => {
+        const normalizedTagUuids = [...new Set((data.tagUuids || []).filter(Boolean))];
+
         const payload = {
             questionText: data.questionText, questionType: data.questionType,
             difficulty: data.difficulty, defaultMarks: Number(data.marks),
@@ -404,7 +406,8 @@ function QuestionFormModal({ modalState, closeModal, createMut, updateMut, tags 
             explanation: data.explanation || undefined,
             hintText: data.hintText || undefined,
             mediaUrl: data.mediaUrl || undefined,
-            tagUuids: data.tagUuids || [],
+            // Keep UUID list unique so backend Set<UUID> maps cleanly.
+            tagUuids: normalizedTagUuids,
         };
 
         const qType = data.questionType;
@@ -414,8 +417,10 @@ function QuestionFormModal({ modalState, closeModal, createMut, updateMut, tags 
                 { optionText: 'True', isCorrect: data.trueFalseAnswer === 'True', optionOrder: 1 },
                 { optionText: 'False', isCorrect: data.trueFalseAnswer === 'False', optionOrder: 2 },
             ];
+            payload.correctAnswer = data.trueFalseAnswer;
         } else if (SINGLE_ANSWER_TYPES.includes(qType)) {
-            payload.options = [{ optionText: data.shortAnswer, isCorrect: true, optionOrder: 1 }];
+            payload.options = [];
+            payload.correctAnswer = data.shortAnswer?.trim() || undefined;
         } else if (qType === 'ESSAY') {
             payload.options = [];
         } else if (qType === 'CODE_SNIPPET') {
@@ -437,6 +442,30 @@ function QuestionFormModal({ modalState, closeModal, createMut, updateMut, tags 
             payload.options = data.options.map((o, i) => ({
                 optionText: o.optionText, isCorrect: o.isCorrect, optionOrder: i + 1,
             }));
+        }
+
+        if ((qType === 'MCQ_SINGLE' || qType === 'IMAGE_BASED' || qType === 'CODE_SNIPPET')
+            && !payload.options.some(o => o.isCorrect)) {
+            toast.error('Please select one correct answer');
+            return;
+        }
+
+        if (qType === 'MCQ_MULTI' && !payload.options.some(o => o.isCorrect)) {
+            toast.error('Please select at least one correct answer');
+            return;
+        }
+
+        if (qType === 'MCQ_SINGLE' || qType === 'IMAGE_BASED' || qType === 'CODE_SNIPPET') {
+            const correct = payload.options.find(o => o.isCorrect);
+            payload.correctAnswer = correct?.optionText?.trim() || undefined;
+        }
+
+        if (qType === 'MCQ_MULTI') {
+            payload.correctAnswer = payload.options
+                .filter(o => o.isCorrect)
+                .map(o => o.optionText?.trim())
+                .filter(Boolean)
+                .join(' | ') || undefined;
         }
 
         if (isEdit) {
@@ -760,7 +789,7 @@ function ViewQuestionModal({ modalState, closeModal, setModalState }) {
 
                     {SINGLE_ANSWER_TYPES.includes(q.questionType) && (
                         <div className="px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-sm text-emerald-800 font-medium">
-                            {q.options?.[0]?.optionText || '—'}
+                            {q.correctAnswer || q.options?.[0]?.optionText || '—'}
                         </div>
                     )}
 

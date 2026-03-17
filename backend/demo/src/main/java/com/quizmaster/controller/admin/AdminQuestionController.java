@@ -7,6 +7,7 @@ import com.quizmaster.dto.response.BulkImportResponse;
 import com.quizmaster.dto.response.QuestionResponse;
 import com.quizmaster.enums.DifficultyLevel;
 import com.quizmaster.enums.QuestionType;
+import com.quizmaster.exception.BadRequestException;
 import com.quizmaster.service.QuestionImportService;
 import com.quizmaster.service.QuestionService;
 import jakarta.validation.Valid;
@@ -19,7 +20,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -144,7 +144,13 @@ public class AdminQuestionController {
     }
 
     private String extractEmail(Authentication authentication) {
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        return userDetails.getUsername();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new BadRequestException("Unauthenticated request");
+        }
+        String email = authentication.getName();
+        if (email == null || email.isBlank()) {
+            throw new BadRequestException("Authenticated user email is unavailable");
+        }
+        return email;
     }
 }

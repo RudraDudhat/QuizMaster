@@ -17,10 +17,13 @@ import java.util.UUID;
 @Entity
 @Table(name = "questions")
 @SQLRestriction("deleted_at IS NULL")
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(exclude = { "createdBy", "tags", "options" })
+@EqualsAndHashCode(exclude = { "createdBy", "tags", "options" })
 public class Question {
 
     @Id
