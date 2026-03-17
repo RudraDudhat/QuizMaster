@@ -786,6 +786,18 @@ function ViewQuestionModal({ modalState, closeModal, setModalState }) {
                     </div>
                 )}
 
+                {/* Code block */}
+                {q.questionType === 'CODE_SNIPPET' && (q.codeSnippet || q.mediaUrl) && (
+                    <div className="border border-gray-200 rounded-xl overflow-hidden">
+                        <div className="px-3 py-2 bg-gray-50 border-b border-gray-200">
+                            <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Code Snippet</h4>
+                        </div>
+                        <pre className="p-4 bg-gray-900 text-gray-100 text-sm overflow-x-auto">
+                            <code>{q.codeSnippet || q.mediaUrl}</code>
+                        </pre>
+                    </div>
+                )}
+
                 {/* Options */}
                 <div className="border-t border-gray-100 pt-4">
                     <h4 className="text-sm font-semibold text-gray-700 mb-3">
