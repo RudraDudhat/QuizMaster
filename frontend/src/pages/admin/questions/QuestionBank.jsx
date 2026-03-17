@@ -40,6 +40,11 @@ const OPEN_ENDED_TYPES = ['ESSAY', 'SHORT_ANSWER'];
 const MCQ_TYPES = ['MCQ_SINGLE', 'MCQ_MULTI'];
 const SINGLE_ANSWER_TYPES = ['SHORT_ANSWER', 'FILL_IN_THE_BLANK'];
 
+const getQuestionId = (q) => q?.questionUuid || q?.uuid;
+const getQuestionMarks = (q) => q?.marks ?? q?.defaultMarks;
+const getTagName = (tag) => (typeof tag === 'string' ? tag : tag?.name);
+const getTagKey = (tag, idx) => (typeof tag === 'string' ? `${tag}-${idx}` : tag?.uuid || tag?.name || `tag-${idx}`);
+
 /* ═══════════════════════════════════════ */
 export default function QuestionBank() {
     /* ─── State ─── */
@@ -133,7 +138,7 @@ export default function QuestionBank() {
             key: 'marks', label: 'Marks', align: 'center',
             render: (q) => (
                 <div className="text-center">
-                    <span className="font-bold text-gray-900">{q.marks}</span>
+                    <span className="font-bold text-gray-900">{getQuestionMarks(q)}</span>
                     {q.negativeMarks > 0 && (
                         <span className="block text-xs text-red-500 mt-0.5">-{q.negativeMarks}</span>
                     )}
@@ -146,8 +151,8 @@ export default function QuestionBank() {
                 if (!q.tags?.length) return <span className="text-gray-300">—</span>;
                 return (
                     <div className="flex flex-wrap gap-1 justify-center">
-                        {q.tags.slice(0, 2).map(t => (
-                            <span key={t.uuid} className="text-[11px] px-2 py-0.5 rounded-full bg-primary-light text-primary font-medium">{t.name}</span>
+                        {q.tags.slice(0, 2).map((t, idx) => (
+                            <span key={getTagKey(t, idx)} className="text-[11px] px-2 py-0.5 rounded-full bg-primary-light text-primary font-medium">{getTagName(t)}</span>
                         ))}
                         {q.tags.length > 2 && (
                             <span className="text-[11px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 font-medium">+{q.tags.length - 2} more</span>
@@ -177,7 +182,7 @@ export default function QuestionBank() {
                         { label: 'View', icon: <Eye size={14} />, onClick: () => setModalState({ mode: 'view', question: q }) },
                         { label: 'Edit', icon: <Edit3 size={14} />, onClick: () => setModalState({ mode: 'edit', question: q }) },
                         { divider: true },
-                        { label: 'Delete', icon: <Trash2 size={14} />, danger: true, onClick: () => setDeleteModal({ open: true, questionUuid: q.questionUuid }) },
+                        { label: 'Delete', icon: <Trash2 size={14} />, danger: true, onClick: () => setDeleteModal({ open: true, questionUuid: getQuestionId(q) }) },
                     ]}
                 />
             ),
@@ -330,7 +335,9 @@ function QuestionFormModal({ modalState, closeModal, createMut, updateMut, tags 
                     .filter(Boolean)
                 : [];
             const modalTagUuids = Array.isArray(modalState.question?.tags)
-                ? modalState.question.tags.map((t) => t?.uuid).filter(Boolean)
+                ? modalState.question.tags
+                    .map((t) => (typeof t === 'string' ? tags.find((tag) => tag.name === t)?.uuid : t?.uuid))
+                    .filter(Boolean)
                 : [];
             const base = {
                 questionText: detail.questionText || '', questionType: qType,
@@ -767,14 +774,14 @@ function ViewQuestionModal({ modalState, closeModal, setModalState }) {
                 <div className="flex flex-wrap gap-2">
                     <Badge variant={TYPE_BADGE_VARIANT[q.questionType] || 'default'}>{typeLabel}</Badge>
                     <Badge variant={DIFF_VARIANT[q.difficulty] || 'default'} dot>{q.difficulty}</Badge>
-                    <Badge variant="default">{q.marks} marks</Badge>
+                    <Badge variant="default">{getQuestionMarks(q)} marks</Badge>
                 </div>
 
                 {/* Tags */}
                 {q.tags?.length > 0 && (
                     <div className="flex flex-wrap gap-1.5">
-                        {q.tags.map(t => (
-                            <span key={t.uuid} className="text-xs px-2.5 py-1 rounded-full bg-primary-light text-primary font-medium">{t.name}</span>
+                        {q.tags.map((t, idx) => (
+                            <span key={getTagKey(t, idx)} className="text-xs px-2.5 py-1 rounded-full bg-primary-light text-primary font-medium">{getTagName(t)}</span>
                         ))}
                     </div>
                 )}
