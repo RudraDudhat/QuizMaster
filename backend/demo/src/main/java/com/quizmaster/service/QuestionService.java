@@ -18,6 +18,7 @@ import com.quizmaster.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -69,6 +70,36 @@ public class QuestionService {
     @Transactional(readOnly = true)
     public Page<QuestionResponse> getAllQuestions(Pageable pageable) {
         return questionRepository.findByDeletedAtIsNull(pageable).map(questionMapper::toResponse);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<QuestionResponse> getFilteredQuestions(
+            QuestionType type,
+            DifficultyLevel difficulty,
+            UUID tagUuid,
+            String search,
+            Pageable pageable
+    ) {
+        Specification<Question> spec = (root, query, cb) -> cb.isNull(root.get("deletedAt"));
+
+        if (type != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("questionType"), type));
+        }
+
+        if (difficulty != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("difficulty"), difficulty));
+        }
+
+        if (tagUuid != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.join("tags").get("uuid"), tagUuid));
+        }
+
+        if (search != null && !search.isBlank()) {
+            String pattern = "%" + search.trim().toLowerCase() + "%";
+            spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("questionText")), pattern));
+        }
+
+        return questionRepository.findAll(spec, pageable).map(questionMapper::toResponse);
     }
 
     @Transactional(readOnly = true)

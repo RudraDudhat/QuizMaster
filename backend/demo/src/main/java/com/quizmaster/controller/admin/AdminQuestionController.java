@@ -48,8 +48,12 @@ public class AdminQuestionController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<Page<QuestionResponse>>> getAllQuestions(
+            @RequestParam(required = false) QuestionType type,
+            @RequestParam(required = false) DifficultyLevel difficulty,
+            @RequestParam(required = false) UUID tagUuid,
+            @RequestParam(required = false) String search,
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        Page<QuestionResponse> page = questionService.getAllQuestions(pageable);
+        Page<QuestionResponse> page = questionService.getFilteredQuestions(type, difficulty, tagUuid, search, pageable);
         return ResponseEntity.ok(ApiResponse.success("Questions retrieved", page));
     }
 
