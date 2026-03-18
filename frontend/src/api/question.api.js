@@ -31,7 +31,7 @@ export const deleteQuestion = async (questionUuid) => {
 };
 
 export const bulkImportQuestions = async (formData) => {
-    const { data } = await api.post('/admin/questions/bulk-import', formData, {
+    const { data } = await api.post('/admin/questions/import', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
     });
     return data;

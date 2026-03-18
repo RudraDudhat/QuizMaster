@@ -16,18 +16,16 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 /**
  * CSV Bulk Import Service for Questions.
  *
  * Expected CSV format (header row required):
- * question_text, question_type, difficulty, default_marks, negative_marks,
- * explanation,
- * option1_text, option1_correct, option2_text, option2_correct,
- * option3_text, option3_correct, option4_text, option4_correct
+ * questionText, questionType, difficulty, marks, negativeMarks,
+ * explanation, option1, option2, option3, option4, correctOption
  *
  * Supported question_type values: MCQ_SINGLE, MCQ_MULTI, TRUE_FALSE,
  * SHORT_ANSWER, ESSAY, FILL_IN_THE_BLANK, CODE_SNIPPET, MATCH_THE_FOLLOWING,
@@ -122,25 +120,8 @@ public class QuestionImportService {
 
         String explanation = row.length > 5 ? row[5].trim() : null;
 
-        // Parse options (columns 6+, pairs of option_text, is_correct)
-        List<OptionRequest> options = new ArrayList<>();
-        for (int i = 6; i + 1 < row.length; i += 2) {
-            String optionText = row[i].trim();
-            if (optionText.isEmpty())
-                continue;
-
-            boolean isCorrect = false;
-            if (i + 1 < row.length) {
-                String correctStr = row[i + 1].trim().toLowerCase();
-                isCorrect = "true".equals(correctStr) || "1".equals(correctStr) || "yes".equals(correctStr);
-            }
-
-            options.add(OptionRequest.builder()
-                    .optionText(optionText)
-                    .optionOrder(options.size() + 1)
-                    .isCorrect(isCorrect)
-                    .build());
-        }
+        // Parse template options: option1..option4 + correctOption
+        List<OptionRequest> options = parseTemplateOptions(row, rowNum, questionType);
 
         return CreateQuestionRequest.builder()
                 .questionText(questionText)
@@ -151,6 +132,115 @@ public class QuestionImportService {
                 .explanation(explanation)
                 .options(options.isEmpty() ? null : options)
                 .build();
+    }
+
+    private List<OptionRequest> parseTemplateOptions(String[] row, int rowNum, QuestionType questionType) {
+        List<String> optionTexts = new ArrayList<>();
+
+        // Columns: 6=option1, 7=option2, 8=option3, 9=option4
+        for (int i = 6; i <= 9; i++) {
+            if (row.length <= i)
+                break;
+            String optionText = row[i] != null ? row[i].trim() : "";
+            if (!optionText.isEmpty()) {
+                optionTexts.add(optionText);
+            }
+        }
+
+        if (optionTexts.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        String correctOptionRaw = row.length > 10 && row[10] != null ? row[10].trim() : "";
+        Set<Integer> correctIndexes = resolveCorrectIndexes(correctOptionRaw, optionTexts, questionType, rowNum);
+
+        if (isChoiceBasedQuestion(questionType) && !optionTexts.isEmpty() && correctIndexes.isEmpty()) {
+            throw new IllegalArgumentException(
+                "Row " + rowNum + ": correctOption is required for " + questionType);
+        }
+
+        if ((questionType == QuestionType.TRUE_FALSE || questionType == QuestionType.MCQ_SINGLE)
+            && correctIndexes.size() > 1) {
+            throw new IllegalArgumentException(
+                "Row " + rowNum + ": " + questionType + " supports only one correct option");
+        }
+
+        List<OptionRequest> options = new ArrayList<>();
+        for (int i = 0; i < optionTexts.size(); i++) {
+            options.add(OptionRequest.builder()
+                    .optionText(optionTexts.get(i))
+                    .optionOrder(i + 1)
+                    .isCorrect(correctIndexes.contains(i + 1))
+                    .build());
+        }
+
+        return options;
+    }
+
+    private boolean isChoiceBasedQuestion(QuestionType questionType) {
+        return questionType == QuestionType.MCQ_SINGLE
+                || questionType == QuestionType.MCQ_MULTI
+                || questionType == QuestionType.TRUE_FALSE
+                || questionType == QuestionType.IMAGE_BASED
+                || questionType == QuestionType.CODE_SNIPPET
+                || questionType == QuestionType.ORDERING
+                || questionType == QuestionType.MATCH_THE_FOLLOWING;
+    }
+
+    private Set<Integer> resolveCorrectIndexes(String correctOptionRaw, List<String> optionTexts,
+            QuestionType questionType, int rowNum) {
+        Set<Integer> indexes = new HashSet<>();
+        if (correctOptionRaw == null || correctOptionRaw.isBlank()) {
+            return indexes;
+        }
+
+        String[] tokens = correctOptionRaw.split("[|,;/]");
+        for (String token : tokens) {
+            String value = token.trim();
+            if (value.isEmpty()) {
+                continue;
+            }
+
+            try {
+                int idx = Integer.parseInt(value);
+                if (idx >= 1 && idx <= optionTexts.size()) {
+                    indexes.add(idx);
+                    continue;
+                }
+                throw new IllegalArgumentException(
+                        "Row " + rowNum + ": correctOption index out of range: " + idx);
+            } catch (NumberFormatException ignored) {
+                // Non-numeric values are supported (e.g. TRUE/FALSE or exact option text)
+            }
+
+            boolean matched = false;
+            for (int i = 0; i < optionTexts.size(); i++) {
+                if (optionTexts.get(i).equalsIgnoreCase(value)) {
+                    indexes.add(i + 1);
+                    matched = true;
+                    break;
+                }
+            }
+
+            if (!matched && questionType == QuestionType.TRUE_FALSE) {
+                for (int i = 0; i < optionTexts.size(); i++) {
+                    String normalized = optionTexts.get(i).trim().toLowerCase();
+                    if (("true".equals(value.toLowerCase()) && "true".equals(normalized))
+                            || ("false".equals(value.toLowerCase()) && "false".equals(normalized))) {
+                        indexes.add(i + 1);
+                        matched = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!matched) {
+                throw new IllegalArgumentException(
+                        "Row " + rowNum + ": invalid correctOption value '" + value + "'");
+            }
+        }
+
+        return indexes;
     }
 
     private BulkImportResponse buildResponse(int total, int success, List<BulkImportResponse.RowError> errors) {
