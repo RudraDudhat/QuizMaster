@@ -15,9 +15,9 @@ export const removeQuestionFromQuiz = async (quizUuid, questionUuid) => {
     return data;
 };
 
-export const reorderQuestions = async (quizUuid, orderedQuestionIds) => {
+export const reorderQuestions = async (quizUuid, orderedQuizQuestionUuids) => {
     const { data } = await api.patch(`/admin/quizzes/${quizUuid}/questions/reorder`, {
-        orderedQuestionIds,
+        orderedQuizQuestionUuids,
     });
     return data;
 };

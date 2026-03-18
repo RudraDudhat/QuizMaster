@@ -139,7 +139,7 @@ export default function QuizQuestionManager() {
             const [removed] = items.splice(dragIdx.current, 1);
             items.splice(dragOverIdx.current, 0, removed);
             setLinkedQuestions(items);
-            reorderMut.mutate(items.map(q => q.id));
+            reorderMut.mutate(items.map(q => q.uuid));
         }
         dragIdx.current = null;
         dragOverIdx.current = null;
