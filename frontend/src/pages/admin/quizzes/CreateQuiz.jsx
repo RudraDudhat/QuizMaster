@@ -175,7 +175,7 @@ export default function CreateQuiz() {
         onSuccess: (result) => {
             toast.success('Tag created');
             queryClient.invalidateQueries({ queryKey: ['tags'] });
-            setSelectedTagIds((prev) => [...prev, result.data.id]);
+            setSelectedTagIds((prev) => [...prev, result.data.uuid]);
             setNewTagName('');
         },
         onError: (err) => toast.error(err.response?.data?.message || 'Failed to create tag'),
@@ -191,7 +191,7 @@ export default function CreateQuiz() {
             passMarks: data.passMarks !== '' ? Number(data.passMarks) : undefined,
             timeLimitSeconds: data.timeLimitSeconds !== '' ? Number(data.timeLimitSeconds) : undefined,
             categoryId: data.categoryUuid ? Number(data.categoryUuid) : undefined,
-            tagIds: selectedTagIds.length ? selectedTagIds : undefined,
+            tagUuids: selectedTagIds.length ? selectedTagIds : undefined,
             maxAttempts: data.maxAttempts !== '' ? Number(data.maxAttempts) : undefined,
             cooldownHours: data.cooldownHours !== '' ? Number(data.cooldownHours) : undefined,
             shuffleQuestions: data.shuffleQuestions,
@@ -405,12 +405,12 @@ export default function CreateQuiz() {
                                 </label>
                                 <div className="flex flex-wrap gap-2 mb-2">
                                     {tags.map((tag) => {
-                                        const isSelected = selectedTagIds.includes(tag.id);
+                                        const isSelected = selectedTagIds.includes(tag.uuid);
                                         return (
                                             <button
-                                                key={tag.id}
+                                                key={tag.uuid}
                                                 type="button"
-                                                onClick={() => toggleTag(tag.id)}
+                                                onClick={() => toggleTag(tag.uuid)}
                                                 className={`
                                                     inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium
                                                     border transition-all duration-150 cursor-pointer select-none
@@ -628,7 +628,7 @@ export default function CreateQuiz() {
                                     <p className="text-xs text-gray-400 mb-2">Tags</p>
                                     <div className="flex flex-wrap gap-1.5">
                                         {selectedTagIds.map((id) => {
-                                            const tag = tags.find((t) => t.id === id);
+                                            const tag = tags.find((t) => t.uuid === id);
                                             return tag ? (
                                                 <Badge key={id} variant="default" size="sm">
                                                     {tag.name}

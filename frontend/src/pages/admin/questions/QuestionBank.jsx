@@ -888,7 +888,7 @@ function ImportModal({ modalState, closeModal, importMut }) {
     }, [isOpen]);
 
     const downloadTemplate = () => {
-        const csv = 'questionText,questionType,difficulty,marks,negativeMarks,explanation,option1,option2,option3,option4,correctOption\n';
+        const csv = 'questionText,questionType,difficulty,marks,negativeMarks,explanation,option1,option2,option3,option4,correctOption,codeSnippet,codeLanguage,tags\n';
         const blob = new Blob([csv], { type: 'text/csv' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a'); a.href = url; a.download = 'question_import_template.csv'; a.click();

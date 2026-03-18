@@ -5,8 +5,10 @@ import com.opencsv.exceptions.CsvValidationException;
 import com.quizmaster.dto.request.CreateQuestionRequest;
 import com.quizmaster.dto.request.OptionRequest;
 import com.quizmaster.dto.response.BulkImportResponse;
+import com.quizmaster.entity.Tag;
 import com.quizmaster.enums.DifficultyLevel;
 import com.quizmaster.enums.QuestionType;
+import com.quizmaster.repository.TagRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,13 +21,15 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * CSV Bulk Import Service for Questions.
  *
  * Expected CSV format (header row required):
  * questionText, questionType, difficulty, marks, negativeMarks,
- * explanation, option1, option2, option3, option4, correctOption
+ * explanation, option1, option2, option3, option4, correctOption,
+ * codeSnippet(optional), codeLanguage(optional), tags(optional)
  *
  * Supported question_type values: MCQ_SINGLE, MCQ_MULTI, TRUE_FALSE,
  * SHORT_ANSWER, ESSAY, FILL_IN_THE_BLANK, CODE_SNIPPET, MATCH_THE_FOLLOWING,
@@ -37,6 +41,7 @@ import java.util.Set;
 public class QuestionImportService {
 
     private final QuestionService questionService;
+    private final TagRepository tagRepository;
 
     public BulkImportResponse importFromCsv(MultipartFile file, String adminEmail) {
         List<BulkImportResponse.RowError> errors = new ArrayList<>();
@@ -119,6 +124,9 @@ public class QuestionImportService {
         }
 
         String explanation = row.length > 5 ? row[5].trim() : null;
+        String codeSnippet = safeCell(row, 11);
+        String codeLanguage = safeCell(row, 12);
+        Set<UUID> tagUuids = resolveTagUuidsByName(safeCell(row, 13), rowNum);
 
         // Parse template options: option1..option4 + correctOption
         List<OptionRequest> options = parseTemplateOptions(row, rowNum, questionType);
@@ -130,8 +138,57 @@ public class QuestionImportService {
                 .defaultMarks(defaultMarks)
                 .negativeMarks(negativeMarks)
                 .explanation(explanation)
+                .mediaUrl(questionType == QuestionType.CODE_SNIPPET ? codeSnippet : null)
+                .codeLanguage(questionType == QuestionType.CODE_SNIPPET ? codeLanguage : null)
+                .tagUuids(tagUuids.isEmpty() ? null : tagUuids)
                 .options(options.isEmpty() ? null : options)
                 .build();
+    }
+
+    private String safeCell(String[] row, int index) {
+        if (row.length <= index || row[index] == null)
+            return null;
+        String value = row[index].trim();
+        return value.isEmpty() ? null : value;
+    }
+
+    private Set<UUID> resolveTagUuidsByName(String raw, int rowNum) {
+        Set<UUID> uuids = new HashSet<>();
+        if (raw == null || raw.isBlank()) {
+            return uuids;
+        }
+
+        String[] tokens = raw.split("[|,;]");
+        for (String token : tokens) {
+            String tagName = token.trim();
+            if (tagName.isEmpty()) {
+                continue;
+            }
+            if (tagName.length() > 80) {
+                throw new IllegalArgumentException("Row " + rowNum + ": tag name exceeds 80 characters: '" + tagName + "'");
+            }
+
+            Tag tag = tagRepository.findByNameIgnoreCase(tagName)
+                    .orElseGet(() -> createTag(tagName));
+            uuids.add(tag.getUuid());
+        }
+
+        return uuids;
+    }
+
+    private Tag createTag(String tagName) {
+        Tag tag = Tag.builder()
+                .name(tagName)
+                .slug(generateSlug(tagName))
+                .build();
+        return tagRepository.save(tag);
+    }
+
+    private String generateSlug(String name) {
+        return name.trim()
+                .toLowerCase()
+                .replaceAll("[^a-z0-9\\s-]", "")
+                .replaceAll("\\s+", "-");
     }
 
     private List<OptionRequest> parseTemplateOptions(String[] row, int rowNum, QuestionType questionType) {
