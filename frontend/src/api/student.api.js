@@ -21,3 +21,7 @@ export const resetStudentAttempts = async (userUuid, { quizUuid }) => {
     const { data } = await api.post(`/admin/students/${userUuid}/reset-attempts`, { quizUuid });
     return data;
 };
+
+// Admin Student Management API (preferred names used by pages)
+export const suspendStudent = async (userUuid, payload) => updateStudentStatus(userUuid, payload);
+export const resetAttempts = async (userUuid, payload) => resetStudentAttempts(userUuid, payload);
