@@ -41,3 +41,7 @@ export const removeGroupMember = async (groupUuid, userUuid) => {
     const { data } = await api.delete(`/admin/groups/${groupUuid}/members/${userUuid}`);
     return data;
 };
+
+// Aliases (page spec uses these names)
+export const addMembers = addGroupMembers;
+export const removeMember = removeGroupMember;
