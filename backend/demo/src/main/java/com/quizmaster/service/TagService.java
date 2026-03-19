@@ -26,7 +26,16 @@ public class TagService {
     @Transactional
     public TagResponse createTag(TagRequest request) {
         Tag tag = tagMapper.toEntity(request);
-        tag.setSlug(generateSlug(request.getName()));
+        String baseSlug = generateSlug(request.getName());
+        String finalSlug = baseSlug;
+        int counter = 1;
+
+        while (tagRepository.existsBySlug(finalSlug)) {
+            finalSlug = baseSlug + "-" + counter;
+            counter++;
+        }
+
+        tag.setSlug(finalSlug);
         tag = tagRepository.save(tag);
         return tagMapper.toResponse(tag);
     }
@@ -63,7 +72,13 @@ public class TagService {
     private String generateSlug(String name) {
         return name.trim()
                 .toLowerCase()
-                .replaceAll("[^a-z0-9\\s-]", "")
-                .replaceAll("\\s+", "-");
+                .replaceAll("\\+\\+", "-plus-plus")   // c++ → c-plus-plus
+                .replaceAll("\\+", "-plus")           // c+  → c-plus
+                .replaceAll("#", "-sharp")            // c#  → c-sharp
+                .replaceAll("\\.", "-dot-")           // node.js → node-dot-js
+                .replaceAll("[^a-z0-9\\s-]", "")      // remove remaining specials
+                .replaceAll("\\s+", "-")              // spaces → hyphens
+                .replaceAll("-{2,}", "-")             // collapse multiple hyphens
+                .replaceAll("^-|-$", "");             // trim leading/trailing hyphens
     }
 }

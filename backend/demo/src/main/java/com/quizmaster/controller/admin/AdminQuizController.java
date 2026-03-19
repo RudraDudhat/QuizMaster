@@ -70,8 +70,10 @@ public class AdminQuizController {
     @PutMapping("/{uuid}")
     public ResponseEntity<ApiResponse<QuizResponse>> updateQuiz(
             @PathVariable String uuid,
-            @Valid @RequestBody UpdateQuizRequest request) {
-        QuizResponse response = quizService.updateQuiz(UUID.fromString(uuid), request);
+            @Valid @RequestBody UpdateQuizRequest request,
+            Authentication authentication) {
+        String email = extractEmail(authentication);
+        QuizResponse response = quizService.updateQuiz(UUID.fromString(uuid), request, email);
         return ResponseEntity.ok(ApiResponse.success("Quiz updated", response));
     }
 

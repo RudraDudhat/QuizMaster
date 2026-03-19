@@ -74,7 +74,19 @@ public class QuizResponse {
     // Tags
     private Set<String> tags;
 
+    // Assigned student groups
+    private Set<AssignedGroupSummary> assignedGroups;
+
     // Timestamps
     private Instant createdAt;
     private Instant updatedAt;
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class AssignedGroupSummary {
+        private String uuid;
+        private String name;
+    }
 }

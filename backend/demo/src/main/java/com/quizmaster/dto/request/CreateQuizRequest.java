@@ -105,4 +105,7 @@ public class CreateQuizRequest {
 
     // Tags (tag UUIDs to attach)
     private Set<UUID> tagUuids;
+
+    // Student groups (group UUIDs to restrict access)
+    private Set<UUID> groupUuids;
 }

@@ -21,4 +21,6 @@ public interface TagRepository extends JpaRepository<Tag, Long> {
     Optional<Tag> findByNameIgnoreCase(String name);
 
     List<Tag> findByNameContainingIgnoreCase(String keyword);
+
+    boolean existsBySlug(String slug);
 }

@@ -124,6 +124,29 @@ export default function QuizList() {
                     {q.categoryName && (
                         <span className="block text-xs text-gray-400 mt-0.5">{q.categoryName}</span>
                     )}
+                    <div className="mt-1 flex flex-wrap gap-1.5">
+                        {q.assignedGroups?.length > 0 ? (
+                            <>
+                                {q.assignedGroups.slice(0, 2).map((g) => (
+                                    <span
+                                        key={g.uuid}
+                                        className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-100"
+                                    >
+                                        🔒 {g.name}
+                                    </span>
+                                ))}
+                                {q.assignedGroups.length > 2 && (
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-100">
+                                        +{q.assignedGroups.length - 2} more
+                                    </span>
+                                )}
+                            </>
+                        ) : (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-100">
+                                🌐 Open access
+                            </span>
+                        )}
+                    </div>
                 </button>
             ),
         },

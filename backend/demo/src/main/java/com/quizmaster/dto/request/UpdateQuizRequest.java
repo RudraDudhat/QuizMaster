@@ -102,4 +102,7 @@ public class UpdateQuizRequest {
 
     // Tags
     private Set<UUID> tagUuids;
+
+    // Student groups (group UUIDs to restrict access)
+    private Set<UUID> groupUuids;
 }

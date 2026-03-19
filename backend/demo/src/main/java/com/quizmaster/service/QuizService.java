@@ -4,15 +4,20 @@ import com.quizmaster.dto.request.CreateQuizRequest;
 import com.quizmaster.dto.request.UpdateQuizRequest;
 import com.quizmaster.dto.response.QuizResponse;
 import com.quizmaster.dto.response.SelectableQuizDto;
+import com.quizmaster.dto.response.QuizResponse.AssignedGroupSummary;
 import com.quizmaster.entity.Category;
 import com.quizmaster.entity.Quiz;
+import com.quizmaster.entity.QuizGroupAssignment;
+import com.quizmaster.entity.StudentGroup;
 import com.quizmaster.entity.Tag;
 import com.quizmaster.entity.User;
 import com.quizmaster.enums.QuizStatus;
 import com.quizmaster.exception.BadRequestException;
 import com.quizmaster.mapper.QuizMapper;
 import com.quizmaster.repository.CategoryRepository;
+import com.quizmaster.repository.QuizGroupAssignmentRepository;
 import com.quizmaster.repository.QuizRepository;
+import com.quizmaster.repository.StudentGroupRepository;
 import com.quizmaster.repository.TagRepository;
 import com.quizmaster.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +29,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 @Service
 @RequiredArgsConstructor
@@ -33,7 +40,12 @@ public class QuizService {
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
     private final TagRepository tagRepository;
+    private final StudentGroupRepository studentGroupRepository;
+    private final QuizGroupAssignmentRepository quizGroupAssignmentRepository;
     private final QuizMapper quizMapper;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     // ─── CREATE ─────────────────────────────────────────
 
@@ -57,7 +69,11 @@ public class QuizService {
         quiz.setTags(tags);
 
         quiz = quizRepository.save(quiz);
-        return quizMapper.toResponse(quiz);
+
+        // Handle group assignments (optional)
+        updateGroupAssignments(quiz, request.getGroupUuids(), admin);
+
+        return toResponseWithGroups(quiz);
     }
 
     // ─── READ ───────────────────────────────────────────
@@ -66,17 +82,19 @@ public class QuizService {
     public QuizResponse getQuizById(UUID uuid) {
         Quiz quiz = quizRepository.findByUuidWithTagsAndCategory(uuid)
                 .orElseThrow(() -> new BadRequestException("Quiz not found"));
-        return quizMapper.toResponse(quiz);
+        return toResponseWithGroups(quiz);
     }
 
     @Transactional(readOnly = true)
     public Page<QuizResponse> getAllQuizzes(Pageable pageable) {
-        return quizRepository.findByDeletedAtIsNull(pageable).map(quizMapper::toResponse);
+        Page<Quiz> page = quizRepository.findByDeletedAtIsNull(pageable);
+        return page.map(this::toResponseWithGroups);
     }
 
     @Transactional(readOnly = true)
     public Page<QuizResponse> getQuizzesByStatus(QuizStatus status, Pageable pageable) {
-        return quizRepository.findByStatusAndDeletedAtIsNull(status, pageable).map(quizMapper::toResponse);
+        Page<Quiz> page = quizRepository.findByStatusAndDeletedAtIsNull(status, pageable);
+        return page.map(this::toResponseWithGroups);
     }
 
     @Transactional(readOnly = true)
@@ -90,13 +108,13 @@ public class QuizService {
     // ─── UPDATE ─────────────────────────────────────────
 
     @Transactional
-    public QuizResponse updateQuiz(UUID uuid, UpdateQuizRequest request) {
+    public QuizResponse updateQuiz(UUID uuid, UpdateQuizRequest request, String adminEmail) {
         Quiz quiz = quizRepository.findByUuidAndDeletedAtIsNull(uuid)
                 .orElseThrow(() -> new BadRequestException("Quiz not found"));
-        return doUpdateQuiz(quiz, request);
+        return doUpdateQuiz(quiz, request, adminEmail);
     }
 
-    private QuizResponse doUpdateQuiz(Quiz quiz, UpdateQuizRequest request) {
+    private QuizResponse doUpdateQuiz(Quiz quiz, UpdateQuizRequest request, String adminEmail) {
         // MapStruct handles null-skipping for all scalar fields
         quizMapper.updateEntityFromRequest(request, quiz);
 
@@ -112,11 +130,18 @@ public class QuizService {
             quiz.setTags(resolveTags(request.getTagUuids()));
         }
 
+        User admin = userRepository.findByEmail(adminEmail)
+                .orElseThrow(() -> new BadRequestException("User not found"));
+
         // Bump version
         quiz.setVersion(quiz.getVersion() + 1);
 
         quiz = quizRepository.save(quiz);
-        return quizMapper.toResponse(quiz);
+
+        // Handle group assignments (optional)
+        updateGroupAssignments(quiz, request.getGroupUuids(), admin);
+
+        return toResponseWithGroups(quiz);
     }
 
     // ─── STATUS MANAGEMENT ──────────────────────────────
@@ -132,7 +157,7 @@ public class QuizService {
         validateStatusTransition(quiz.getStatus(), newStatus);
         quiz.setStatus(newStatus);
         quiz = quizRepository.save(quiz);
-        return quizMapper.toResponse(quiz);
+        return toResponseWithGroups(quiz);
     }
 
     // ─── SOFT DELETE ────────────────────────────────────
@@ -195,7 +220,7 @@ public class QuizService {
                 .build();
 
         copy = quizRepository.save(copy);
-        return quizMapper.toResponse(copy);
+        return toResponseWithGroups(copy);
     }
 
     // ─── HELPERS ────────────────────────────────────────
@@ -217,5 +242,47 @@ public class QuizService {
         if (tagUuids == null || tagUuids.isEmpty())
             return Collections.emptySet();
         return tagRepository.findByUuidIn(tagUuids);
+    }
+
+    private void updateGroupAssignments(Quiz quiz, Set<UUID> groupUuids, User admin) {
+        // Remove existing assignments for this quiz
+        entityManager.createQuery("DELETE FROM QuizGroupAssignment qga WHERE qga.quiz = :quiz")
+                .setParameter("quiz", quiz)
+                .executeUpdate();
+
+        if (groupUuids == null || groupUuids.isEmpty()) {
+            return;
+        }
+
+        for (UUID groupUuid : groupUuids) {
+            StudentGroup group = studentGroupRepository.findByUuidAndDeletedAtIsNull(groupUuid.toString())
+                    .orElseThrow(() -> new BadRequestException("Group not found"));
+            QuizGroupAssignment assignment = QuizGroupAssignment.builder()
+                    .quiz(quiz)
+                    .group(group)
+                    .assignedBy(admin)
+                    .build();
+            quizGroupAssignmentRepository.save(assignment);
+        }
+    }
+
+    private QuizResponse toResponseWithGroups(Quiz quiz) {
+        QuizResponse response = quizMapper.toResponse(quiz);
+
+        List<StudentGroup> groups = entityManager.createQuery(
+                        "SELECT qga.group FROM QuizGroupAssignment qga " +
+                                "WHERE qga.quiz = :quiz", StudentGroup.class)
+                .setParameter("quiz", quiz)
+                .getResultList();
+
+        Set<AssignedGroupSummary> assignedGroups = groups.stream()
+                .map(g -> AssignedGroupSummary.builder()
+                        .uuid(g.getUuid())
+                        .name(g.getName())
+                        .build())
+                .collect(Collectors.toSet());
+
+        response.setAssignedGroups(assignedGroups);
+        return response;
     }
 }
