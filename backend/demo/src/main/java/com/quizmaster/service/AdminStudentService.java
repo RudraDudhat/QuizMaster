@@ -16,6 +16,7 @@ import com.quizmaster.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -51,7 +53,26 @@ public class AdminStudentService {
     @Transactional(readOnly = true)
     public Page<AdminStudentListResponse> getAllStudents(Pageable pageable, String keyword) {
         String kw = (keyword != null && !keyword.isBlank()) ? keyword : null;
-        return userRepository.findStudentsByKeyword(kw, pageable)
+
+        if (kw == null) {
+            return userRepository.findByRoleAndDeletedAtIsNull(UserRole.STUDENT, pageable)
+                    .map(this::enrichWithStats);
+        }
+
+        String normalizedKeyword = kw.toLowerCase(Locale.ROOT);
+        List<User> matchedStudents = userRepository.findByRoleAndDeletedAtIsNull(UserRole.STUDENT)
+                .stream()
+                .filter(user -> containsIgnoreCase(user.getFullName(), normalizedKeyword)
+                        || containsIgnoreCase(user.getEmail(), normalizedKeyword))
+                .collect(Collectors.toList());
+
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), matchedStudents.size());
+        List<User> pageContent = start >= matchedStudents.size()
+                ? List.of()
+                : matchedStudents.subList(start, end);
+
+        return new PageImpl<>(pageContent, pageable, matchedStudents.size())
                 .map(this::enrichWithStats);
     }
 
@@ -226,4 +247,8 @@ public class AdminStudentService {
         }
         return user;
     }
+
+        private boolean containsIgnoreCase(String source, String normalizedNeedle) {
+                return source != null && source.toLowerCase(Locale.ROOT).contains(normalizedNeedle);
+        }
 }
