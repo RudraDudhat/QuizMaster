@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
@@ -60,12 +60,16 @@ export default function QuestionBank() {
     const [modalState, setModalState] = useState({ mode: null, question: null });
     const [deleteModal, setDeleteModal] = useState({ open: false, questionUuid: null });
     const [selectedQuestions, setSelectedQuestions] = useState([]);
+    const [selectedQuestionQuizMap, setSelectedQuestionQuizMap] = useState({});
     const [cartQuizDropdownOpen, setCartQuizDropdownOpen] = useState(false);
 
     const closeModal = useCallback(() => setModalState({ mode: null, question: null }), []);
 
     /* Cleanup selection on unmount */
-    useEffect(() => () => setSelectedQuestions([]), []);
+    useEffect(() => () => {
+        setSelectedQuestions([]);
+        setSelectedQuestionQuizMap({});
+    }, []);
 
     /* ─── Data fetching ─── */
     const { data: response, isLoading, refetch } = useQuery({
@@ -123,6 +127,17 @@ export default function QuestionBank() {
         staleTime: 60_000,
     });
     const selectableQuizzes = quizzesResponse?.data ?? [];
+    const filteredSelectableQuizzes = useMemo(() => {
+        if (!selectedQuestions.length) return selectableQuizzes;
+
+        return selectableQuizzes.filter((quiz) => {
+            const allSelectedAlreadyInQuiz = selectedQuestions.every((questionUuid) => {
+                const linkedQuizUuids = selectedQuestionQuizMap[questionUuid] || [];
+                return linkedQuizUuids.includes(quiz.quizUuid);
+            });
+            return !allSelectedAlreadyInQuiz;
+        });
+    }, [selectableQuizzes, selectedQuestions, selectedQuestionQuizMap]);
 
     const bulkAddMut = useMutation({
         mutationFn: ({ quizUuid, questionUuids }) => bulkAddQuestionsToQuiz(quizUuid, { questionUuids }),
@@ -130,6 +145,7 @@ export default function QuestionBank() {
             const d = result.data;
             toast.success(`${d.addedCount} question(s) added to quiz!${d.skippedCount > 0 ? ` (${d.skippedCount} already existed, skipped)` : ''}`);
             setSelectedQuestions([]);
+            setSelectedQuestionQuizMap({});
             setCartQuizDropdownOpen(false);
             refetch();
         },
@@ -252,8 +268,27 @@ export default function QuestionBank() {
             render: (q) => {
                 const qId = getQuestionId(q);
                 const isSelected = selectedQuestions.includes(qId);
+                const usedInQuizUuids = (q.usedInQuizzes || [])
+                    .map((quiz) => quiz.quizUuid)
+                    .filter(Boolean);
                 return (
-                    <button onClick={() => setSelectedQuestions(prev => isSelected ? prev.filter(id => id !== qId) : [...prev, qId])}
+                    <button onClick={() => {
+                        if (isSelected) {
+                            setSelectedQuestions((prev) => prev.filter((id) => id !== qId));
+                            setSelectedQuestionQuizMap((prev) => {
+                                const next = { ...prev };
+                                delete next[qId];
+                                return next;
+                            });
+                            return;
+                        }
+
+                        setSelectedQuestions((prev) => [...prev, qId]);
+                        setSelectedQuestionQuizMap((prev) => ({
+                            ...prev,
+                            [qId]: usedInQuizUuids,
+                        }));
+                    }}
                         className={`text-xs font-medium px-3 py-1.5 rounded-lg transition-all duration-200 ${
                             isSelected
                                 ? 'bg-primary text-white shadow-sm'
@@ -398,10 +433,10 @@ export default function QuestionBank() {
                         {cartQuizDropdownOpen && (
                             <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-white rounded-xl shadow-2xl border border-gray-200 w-72 max-h-64 overflow-y-auto p-2 space-y-1">
                                 <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide px-2 py-1">Select a Quiz</p>
-                                {selectableQuizzes.length === 0 && (
-                                    <p className="text-xs text-gray-400 px-2 py-3 text-center">No quizzes available</p>
+                                {filteredSelectableQuizzes.length === 0 && (
+                                    <p className="text-xs text-gray-400 px-2 py-3 text-center">All selected questions already exist in available quizzes</p>
                                 )}
-                                {selectableQuizzes.map(qz => (
+                                {filteredSelectableQuizzes.map(qz => (
                                     <button key={qz.quizUuid}
                                         onClick={() => bulkAddMut.mutate({ quizUuid: qz.quizUuid, questionUuids: selectedQuestions })}
                                         disabled={bulkAddMut.isPending}
@@ -419,7 +454,11 @@ export default function QuestionBank() {
                                 className="text-sm font-semibold px-4 py-1.5 rounded-lg bg-primary hover:bg-primary-hover transition-colors">
                                 {bulkAddMut.isPending ? 'Adding...' : 'Add to Quiz'}
                             </button>
-                            <button onClick={() => { setSelectedQuestions([]); setCartQuizDropdownOpen(false); }}
+                            <button onClick={() => {
+                                setSelectedQuestions([]);
+                                setSelectedQuestionQuizMap({});
+                                setCartQuizDropdownOpen(false);
+                            }}
                                 className="text-sm text-gray-400 hover:text-white transition-colors">
                                 Clear
                             </button>
