@@ -40,6 +40,8 @@ public class QuestionResponse {
     private List<OptionResponse> options;
     private Set<String> tags;
 
+    private List<UsedInQuizDto> usedInQuizzes;
+
     private Instant createdAt;
     private Instant updatedAt;
 

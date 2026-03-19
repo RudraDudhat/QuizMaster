@@ -1,7 +1,9 @@
 package com.quizmaster.service;
 
 import com.quizmaster.dto.request.AddQuestionToQuizRequest;
+import com.quizmaster.dto.request.BulkAddQuestionsRequest;
 import com.quizmaster.dto.request.ReorderQuestionsRequest;
+import com.quizmaster.dto.response.BulkAddResponse;
 import com.quizmaster.dto.response.QuizQuestionResponse;
 import com.quizmaster.entity.Question;
 import com.quizmaster.entity.Quiz;
@@ -15,7 +17,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -60,6 +64,58 @@ public class QuizQuestionService {
         recalculateTotalMarks(quiz);
 
         return quizQuestionMapper.toResponse(quizQuestion);
+    }
+
+    // ─── BULK ADD QUESTIONS TO QUIZ ─────────────────────
+
+    @Transactional
+    public BulkAddResponse bulkAddQuestionsToQuiz(UUID quizUuid, BulkAddQuestionsRequest request) {
+        Quiz quiz = quizRepository.findByUuidAndDeletedAtIsNull(quizUuid)
+                .orElseThrow(() -> new BadRequestException("Quiz not found"));
+
+        int currentMaxOrder = quizQuestionRepository.findMaxDisplayOrderByQuizId(quiz.getId());
+        int addedCount = 0;
+        int skippedCount = 0;
+
+        for (UUID questionUuid : request.getQuestionUuids()) {
+            Question question = questionRepository.findByUuidAndDeletedAtIsNull(questionUuid)
+                    .orElse(null);
+            if (question == null) {
+                skippedCount++;
+                continue;
+            }
+
+            // Skip if already linked
+            Optional<QuizQuestion> existing = quizQuestionRepository
+                    .findByQuizIdAndQuestionId(quiz.getId(), question.getId());
+            if (existing.isPresent()) {
+                skippedCount++;
+                continue;
+            }
+
+            currentMaxOrder++;
+            QuizQuestion quizQuestion = QuizQuestion.builder()
+                    .quiz(quiz)
+                    .question(question)
+                    .marks(question.getDefaultMarks())
+                    .negativeMarks(BigDecimal.ZERO)
+                    .displayOrder(currentMaxOrder)
+                    .isInPool(true)
+                    .build();
+
+            quizQuestionRepository.save(quizQuestion);
+            addedCount++;
+        }
+
+        // Recalculate quiz totalMarks if anything was added
+        if (addedCount > 0) {
+            recalculateTotalMarks(quiz);
+        }
+
+        return BulkAddResponse.builder()
+                .addedCount(addedCount)
+                .skippedCount(skippedCount)
+                .build();
     }
 
     // ─── REMOVE QUESTION FROM QUIZ ─────────────────────

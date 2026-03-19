@@ -13,6 +13,7 @@ import com.quizmaster.enums.QuestionType;
 import com.quizmaster.exception.BadRequestException;
 import com.quizmaster.mapper.QuestionMapper;
 import com.quizmaster.repository.QuestionRepository;
+import com.quizmaster.repository.QuizQuestionRepository;
 import com.quizmaster.repository.TagRepository;
 import com.quizmaster.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,7 @@ import java.util.*;
 public class QuestionService {
 
     private final QuestionRepository questionRepository;
+    private final QuizQuestionRepository quizQuestionRepository;
     private final TagRepository tagRepository;
     private final UserRepository userRepository;
     private final QuestionMapper questionMapper;
@@ -55,7 +57,7 @@ public class QuestionService {
             question = questionRepository.save(question);
         }
 
-        return questionMapper.toResponse(question);
+        return enrichWithUsedInQuizzes(question, questionMapper.toResponse(question));
     }
 
     // ─── READ ───────────────────────────────────────────
@@ -64,12 +66,12 @@ public class QuestionService {
     public QuestionResponse getQuestionById(UUID uuid) {
         Question question = questionRepository.findByUuidWithOptionsAndTags(uuid)
                 .orElseThrow(() -> new BadRequestException("Question not found"));
-        return questionMapper.toResponse(question);
+        return enrichWithUsedInQuizzes(question, questionMapper.toResponse(question));
     }
 
     @Transactional(readOnly = true)
     public Page<QuestionResponse> getAllQuestions(Pageable pageable) {
-        return questionRepository.findByDeletedAtIsNull(pageable).map(questionMapper::toResponse);
+        return questionRepository.findByDeletedAtIsNull(pageable).map(q -> enrichWithUsedInQuizzes(q, questionMapper.toResponse(q)));
     }
 
     @Transactional(readOnly = true)
@@ -99,28 +101,28 @@ public class QuestionService {
             spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("questionText")), pattern));
         }
 
-        return questionRepository.findAll(spec, pageable).map(questionMapper::toResponse);
+        return questionRepository.findAll(spec, pageable).map(q -> enrichWithUsedInQuizzes(q, questionMapper.toResponse(q)));
     }
 
     @Transactional(readOnly = true)
     public Page<QuestionResponse> getQuestionsByType(QuestionType type, Pageable pageable) {
-        return questionRepository.findByQuestionTypeAndDeletedAtIsNull(type, pageable).map(questionMapper::toResponse);
+        return questionRepository.findByQuestionTypeAndDeletedAtIsNull(type, pageable).map(q -> enrichWithUsedInQuizzes(q, questionMapper.toResponse(q)));
     }
 
     @Transactional(readOnly = true)
     public Page<QuestionResponse> getQuestionsByDifficulty(DifficultyLevel difficulty, Pageable pageable) {
         return questionRepository.findByDifficultyAndDeletedAtIsNull(difficulty, pageable)
-                .map(questionMapper::toResponse);
+                .map(q -> enrichWithUsedInQuizzes(q, questionMapper.toResponse(q)));
     }
 
     @Transactional(readOnly = true)
     public Page<QuestionResponse> getQuestionsByTag(UUID tagUuid, Pageable pageable) {
-        return questionRepository.findByTagUuidAndDeletedAtIsNull(tagUuid, pageable).map(questionMapper::toResponse);
+        return questionRepository.findByTagUuidAndDeletedAtIsNull(tagUuid, pageable).map(q -> enrichWithUsedInQuizzes(q, questionMapper.toResponse(q)));
     }
 
     @Transactional(readOnly = true)
     public Page<QuestionResponse> searchQuestions(String keyword, Pageable pageable) {
-        return questionRepository.searchByKeyword(keyword, pageable).map(questionMapper::toResponse);
+        return questionRepository.searchByKeyword(keyword, pageable).map(q -> enrichWithUsedInQuizzes(q, questionMapper.toResponse(q)));
     }
 
     // ─── UPDATE ─────────────────────────────────────────
@@ -148,7 +150,7 @@ public class QuestionService {
         }
 
         question = questionRepository.save(question);
-        return questionMapper.toResponse(question);
+        return enrichWithUsedInQuizzes(question, questionMapper.toResponse(question));
     }
 
     // ─── SOFT DELETE ────────────────────────────────────
@@ -205,5 +207,10 @@ public class QuestionService {
         if (tagUuids == null || tagUuids.isEmpty())
             return new HashSet<>();
         return tagRepository.findByUuidIn(tagUuids);
+    }
+
+    private QuestionResponse enrichWithUsedInQuizzes(Question question, QuestionResponse response) {
+        response.setUsedInQuizzes(quizQuestionRepository.findQuizzesUsingQuestion(question.getId()));
+        return response;
     }
 }

@@ -21,3 +21,8 @@ export const reorderQuestions = async (quizUuid, orderedQuizQuestionUuids) => {
     });
     return data;
 };
+
+export const bulkAddQuestionsToQuiz = async (quizUuid, payload) => {
+    const { data } = await api.post(`/admin/quizzes/${quizUuid}/questions/bulk`, payload);
+    return data;
+};

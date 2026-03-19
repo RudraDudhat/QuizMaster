@@ -3,6 +3,7 @@ package com.quizmaster.service;
 import com.quizmaster.dto.request.CreateQuizRequest;
 import com.quizmaster.dto.request.UpdateQuizRequest;
 import com.quizmaster.dto.response.QuizResponse;
+import com.quizmaster.dto.response.SelectableQuizDto;
 import com.quizmaster.entity.Category;
 import com.quizmaster.entity.Quiz;
 import com.quizmaster.entity.Tag;
@@ -21,10 +22,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -78,6 +77,14 @@ public class QuizService {
     @Transactional(readOnly = true)
     public Page<QuizResponse> getQuizzesByStatus(QuizStatus status, Pageable pageable) {
         return quizRepository.findByStatusAndDeletedAtIsNull(status, pageable).map(quizMapper::toResponse);
+    }
+
+    @Transactional(readOnly = true)
+    public List<SelectableQuizDto> getSelectableQuizzes() {
+        List<QuizStatus> statuses = List.of(QuizStatus.DRAFT, QuizStatus.PUBLISHED);
+        return quizRepository.findByStatusInAndDeletedAtIsNull(statuses).stream()
+                .map(q -> new SelectableQuizDto(q.getUuid(), q.getTitle(), q.getStatus()))
+                .collect(Collectors.toList());
     }
 
     // ─── UPDATE ─────────────────────────────────────────

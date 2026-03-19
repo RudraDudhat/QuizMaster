@@ -5,6 +5,7 @@ import com.quizmaster.dto.request.QuizStatusUpdateRequest;
 import com.quizmaster.dto.request.UpdateQuizRequest;
 import com.quizmaster.dto.response.ApiResponse;
 import com.quizmaster.dto.response.QuizResponse;
+import com.quizmaster.dto.response.SelectableQuizDto;
 import com.quizmaster.enums.QuizStatus;
 import com.quizmaster.service.QuizService;
 import jakarta.validation.Valid;
@@ -19,6 +20,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -43,6 +45,12 @@ public class AdminQuizController {
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         Page<QuizResponse> page = quizService.getAllQuizzes(pageable);
         return ResponseEntity.ok(ApiResponse.success("Quizzes retrieved", page));
+    }
+
+    @GetMapping("/selectable")
+    public ResponseEntity<ApiResponse<List<SelectableQuizDto>>> getSelectableQuizzes() {
+        List<SelectableQuizDto> quizzes = quizService.getSelectableQuizzes();
+        return ResponseEntity.ok(ApiResponse.success("Selectable quizzes retrieved", quizzes));
     }
 
     @GetMapping("/status/{status}")

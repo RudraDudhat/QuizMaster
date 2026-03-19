@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { z } from 'zod';
@@ -6,13 +7,15 @@ import toast from 'react-hot-toast';
 import {
     Search, Plus, MoreVertical, Edit3, Trash2, Eye, Upload,
     HelpCircle, AlertTriangle, X, GripVertical, Download,
-    FileText, CheckCircle2, XCircle, Info,
+    FileText, CheckCircle2, XCircle, Info, Copy, ClipboardList,
 } from 'lucide-react';
 import {
     getAllQuestions, getQuestionByUuid, createQuestion,
     updateQuestion, deleteQuestion, bulkImportQuestions,
 } from '../../../api/question.api';
 import { getAllTags } from '../../../api/tag.api';
+import { getSelectableQuizzes } from '../../../api/quiz.api';
+import { bulkAddQuestionsToQuiz } from '../../../api/quizQuestion.api';
 import { QUESTION_TYPES, DIFFICULTY_LEVELS } from '../../../utils/constants';
 import { formatDate, truncateText } from '../../../utils/formatters';
 import Button from '../../../components/common/Button';
@@ -47,6 +50,7 @@ const getTagKey = (tag, idx) => (typeof tag === 'string' ? `${tag}-${idx}` : tag
 
 /* ═══════════════════════════════════════ */
 export default function QuestionBank() {
+    const navigate = useNavigate();
     /* ─── State ─── */
     const [page, setPage] = useState(0);
     const [search, setSearch] = useState('');
@@ -55,8 +59,13 @@ export default function QuestionBank() {
     const [tagFilter, setTagFilter] = useState('');
     const [modalState, setModalState] = useState({ mode: null, question: null });
     const [deleteModal, setDeleteModal] = useState({ open: false, questionUuid: null });
+    const [selectedQuestions, setSelectedQuestions] = useState([]);
+    const [cartQuizDropdownOpen, setCartQuizDropdownOpen] = useState(false);
 
     const closeModal = useCallback(() => setModalState({ mode: null, question: null }), []);
+
+    /* Cleanup selection on unmount */
+    useEffect(() => () => setSelectedQuestions([]), []);
 
     /* ─── Data fetching ─── */
     const { data: response, isLoading, refetch } = useQuery({
@@ -106,6 +115,38 @@ export default function QuestionBank() {
         },
         onError: () => toast.error('Bulk import failed'),
     });
+
+    /* ─── Cart: selectable quizzes ─── */
+    const { data: quizzesResponse } = useQuery({
+        queryKey: ['selectable-quizzes'],
+        queryFn: getSelectableQuizzes,
+        staleTime: 60_000,
+    });
+    const selectableQuizzes = quizzesResponse?.data ?? [];
+
+    const bulkAddMut = useMutation({
+        mutationFn: ({ quizUuid, questionUuids }) => bulkAddQuestionsToQuiz(quizUuid, { questionUuids }),
+        onSuccess: (result) => {
+            const d = result.data;
+            toast.success(`${d.addedCount} question(s) added to quiz!${d.skippedCount > 0 ? ` (${d.skippedCount} already existed, skipped)` : ''}`);
+            setSelectedQuestions([]);
+            setCartQuizDropdownOpen(false);
+            refetch();
+        },
+        onError: (err) => toast.error(err.response?.data?.message || 'Failed to add questions to quiz'),
+    });
+
+    /* ─── Duplicate helper ─── */
+    const openDuplicate = (q) => {
+        setModalState({
+            mode: 'create',
+            question: {
+                ...q,
+                questionText: (q.questionText || '') + ' (Copy)',
+                _isDuplicate: true,
+            },
+        });
+    };
 
     /* ─── Filter helpers ─── */
     const hasActiveFilter = search || typeFilter || diffFilter || tagFilter;
@@ -170,8 +211,58 @@ export default function QuestionBank() {
             ),
         },
         {
+            key: 'usedIn', label: 'Used In', align: 'center',
+            render: (q) => {
+                const quizzes = q.usedInQuizzes || [];
+                if (!quizzes.length) return <span className="text-gray-300">—</span>;
+                if (quizzes.length === 1) {
+                    return (
+                        <button onClick={() => navigate(`/admin/quizzes/${quizzes[0].quizUuid}/questions`)}
+                            className="text-xs px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-600 font-medium hover:bg-indigo-100 transition-colors truncate max-w-[140px] block">
+                            {quizzes[0].quizTitle}
+                        </button>
+                    );
+                }
+                return (
+                    <div className="relative group">
+                        <span className="text-xs px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-600 font-medium cursor-default">
+                            {quizzes.length} quizzes
+                        </span>
+                        <div className="absolute z-20 bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block">
+                            <div className="bg-white rounded-xl shadow-xl border border-gray-200 p-2 min-w-[180px] space-y-1">
+                                {quizzes.map((qz) => (
+                                    <button key={qz.quizUuid}
+                                        onClick={() => navigate(`/admin/quizzes/${qz.quizUuid}/questions`)}
+                                        className="w-full text-left text-xs px-3 py-2 rounded-lg hover:bg-indigo-50 text-gray-700 hover:text-indigo-600 transition-colors truncate">
+                                        {qz.quizTitle}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                );
+            },
+        },
+        {
             key: 'createdAt', label: 'Created', align: 'center',
             render: (q) => <span className="text-xs text-gray-500 whitespace-nowrap">{formatDate(q.createdAt)}</span>,
+        },
+        {
+            key: 'select', label: '', width: '80px', align: 'center',
+            render: (q) => {
+                const qId = getQuestionId(q);
+                const isSelected = selectedQuestions.includes(qId);
+                return (
+                    <button onClick={() => setSelectedQuestions(prev => isSelected ? prev.filter(id => id !== qId) : [...prev, qId])}
+                        className={`text-xs font-medium px-3 py-1.5 rounded-lg transition-all duration-200 ${
+                            isSelected
+                                ? 'bg-primary text-white shadow-sm'
+                                : 'bg-gray-100 text-gray-600 hover:bg-primary-light hover:text-primary'
+                        }`}>
+                        {isSelected ? '✓ Selected' : '+ Select'}
+                    </button>
+                );
+            },
         },
         {
             key: 'actions', label: '', width: '48px', align: 'center',
@@ -181,6 +272,7 @@ export default function QuestionBank() {
                     items={[
                         { label: 'View', icon: <Eye size={14} />, onClick: () => setModalState({ mode: 'view', question: q }) },
                         { label: 'Edit', icon: <Edit3 size={14} />, onClick: () => setModalState({ mode: 'edit', question: q }) },
+                        { label: 'Duplicate', icon: <Copy size={14} />, onClick: () => openDuplicate(q) },
                         { divider: true },
                         { label: 'Delete', icon: <Trash2 size={14} />, danger: true, onClick: () => setDeleteModal({ open: true, questionUuid: getQuestionId(q) }) },
                     ]}
@@ -197,7 +289,15 @@ export default function QuestionBank() {
             {/* ─── Header ─── */}
             <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Question Bank</h1>
+                    <div className="flex items-center gap-3">
+                        <h1 className="text-2xl font-bold text-gray-900">Question Bank</h1>
+                        {selectedQuestions.length > 0 && (
+                            <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full bg-primary text-white shadow-sm animate-pulse">
+                                <ClipboardList size={13} />
+                                {selectedQuestions.length} selected
+                            </span>
+                        )}
+                    </div>
                     <p className="text-sm text-gray-500 mt-0.5">{totalElements} questions total</p>
                 </div>
                 <div className="flex gap-2">
@@ -262,11 +362,12 @@ export default function QuestionBank() {
             {/* ─── Create / Edit Modal ─── */}
             <QuestionFormModal
                 modalState={modalState} closeModal={closeModal}
-                createMut={createMut} updateMut={updateMut} tags={tags} />
+                createMut={createMut} updateMut={updateMut} tags={tags}
+                openDuplicate={openDuplicate} />
 
             {/* ─── View Modal ─── */}
             <ViewQuestionModal modalState={modalState} closeModal={closeModal}
-                setModalState={setModalState} />
+                setModalState={setModalState} navigate={navigate} />
 
             {/* ─── Import Modal ─── */}
             <ImportModal modalState={modalState} closeModal={closeModal} importMut={importMut} />
@@ -288,6 +389,44 @@ export default function QuestionBank() {
                     <p className="text-xs text-gray-400">This cannot be undone. The question will be removed from all quizzes it is linked to.</p>
                 </div>
             </Modal>
+
+            {/* ─── Floating Cart Bar ─── */}
+            {selectedQuestions.length > 0 && (
+                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50" style={{ animation: 'slideUp 0.3s ease-out' }}>
+                    <style>{`@keyframes slideUp { from { opacity:0; transform: translate(-50%, 20px); } to { opacity:1; transform: translate(-50%, 0); } }`}</style>
+                    <div className="relative">
+                        {cartQuizDropdownOpen && (
+                            <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-white rounded-xl shadow-2xl border border-gray-200 w-72 max-h-64 overflow-y-auto p-2 space-y-1">
+                                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide px-2 py-1">Select a Quiz</p>
+                                {selectableQuizzes.length === 0 && (
+                                    <p className="text-xs text-gray-400 px-2 py-3 text-center">No quizzes available</p>
+                                )}
+                                {selectableQuizzes.map(qz => (
+                                    <button key={qz.quizUuid}
+                                        onClick={() => bulkAddMut.mutate({ quizUuid: qz.quizUuid, questionUuids: selectedQuestions })}
+                                        disabled={bulkAddMut.isPending}
+                                        className="w-full text-left text-sm px-3 py-2.5 rounded-lg hover:bg-primary-light hover:text-primary transition-colors flex items-center justify-between gap-2 disabled:opacity-50">
+                                        <span className="truncate">{qz.title}</span>
+                                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium shrink-0 ${qz.status === 'DRAFT' ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-600'}`}>{qz.status}</span>
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                        <div className="flex items-center gap-3 px-5 py-3 rounded-2xl bg-gray-900 text-white shadow-2xl">
+                            <span className="text-sm font-medium">{selectedQuestions.length} question{selectedQuestions.length !== 1 ? 's' : ''}</span>
+                            <div className="w-px h-5 bg-gray-600" />
+                            <button onClick={() => setCartQuizDropdownOpen(prev => !prev)}
+                                className="text-sm font-semibold px-4 py-1.5 rounded-lg bg-primary hover:bg-primary-hover transition-colors">
+                                {bulkAddMut.isPending ? 'Adding...' : 'Add to Quiz'}
+                            </button>
+                            <button onClick={() => { setSelectedQuestions([]); setCartQuizDropdownOpen(false); }}
+                                className="text-sm text-gray-400 hover:text-white transition-colors">
+                                Clear
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
@@ -295,10 +434,11 @@ export default function QuestionBank() {
 /* ═══════════════════════════════════════════════════════════ */
 /* SUB-COMPONENT: Question Form Modal (Create / Edit)        */
 /* ═══════════════════════════════════════════════════════════ */
-function QuestionFormModal({ modalState, closeModal, createMut, updateMut, tags }) {
+function QuestionFormModal({ modalState, closeModal, createMut, updateMut, tags, openDuplicate }) {
     const isOpen = modalState.mode === 'create' || modalState.mode === 'edit';
     const isEdit = modalState.mode === 'edit';
     const selectedQuestionUuid = modalState.question?.questionUuid || modalState.question?.uuid;
+    const [editConfirmed, setEditConfirmed] = useState(false);
 
     const { data: detailResp, isLoading: detailLoading } = useQuery({
         queryKey: ['question', selectedQuestionUuid],
@@ -306,6 +446,11 @@ function QuestionFormModal({ modalState, closeModal, createMut, updateMut, tags 
         enabled: isEdit && !!selectedQuestionUuid,
     });
     const detail = detailResp?.data ?? detailResp;
+    const usedInQuizzes = isEdit ? (detail?.usedInQuizzes || modalState.question?.usedInQuizzes || []) : [];
+    const isUsedInQuizzes = usedInQuizzes.length > 0;
+
+    /* Reset editConfirmed when modal opens/closes */
+    useEffect(() => { if (!isOpen) setEditConfirmed(false); }, [isOpen]);
 
     const {
         register, handleSubmit, control, watch, reset, setValue,
@@ -377,10 +522,18 @@ function QuestionFormModal({ modalState, closeModal, createMut, updateMut, tags 
             reset(base);
         }
         if (modalState.mode === 'create') {
+            const dupeQ = modalState.question;
+            const isDupe = dupeQ?._isDuplicate;
             reset({
-                questionText: '', questionType: 'MCQ_SINGLE', difficulty: 'EASY',
-                marks: '', negativeMarks: '', explanation: '', hintText: '',
-                mediaUrl: '', tagUuids: [], trueFalseAnswer: 'True', shortAnswer: '', codeSnippet: '',
+                questionText: isDupe ? (dupeQ.questionText || '') : '',
+                questionType: isDupe ? (dupeQ.questionType || 'MCQ_SINGLE') : 'MCQ_SINGLE',
+                difficulty: isDupe ? (dupeQ.difficulty || 'EASY') : 'EASY',
+                marks: isDupe ? (dupeQ.defaultMarks ?? dupeQ.marks ?? '') : '',
+                negativeMarks: isDupe ? (dupeQ.negativeMarks || '') : '',
+                explanation: isDupe ? (dupeQ.explanation || '') : '',
+                hintText: isDupe ? (dupeQ.hintText || '') : '',
+                mediaUrl: isDupe ? (dupeQ.mediaUrl || '') : '',
+                tagUuids: [], trueFalseAnswer: 'True', shortAnswer: '', codeSnippet: '',
                 options: [
                     { optionText: '', isCorrect: false, optionOrder: 1 },
                     { optionText: '', isCorrect: false, optionOrder: 2 },
@@ -510,7 +663,33 @@ function QuestionFormModal({ modalState, closeModal, createMut, updateMut, tags 
                 </div>
             ) : (
                 <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
+                    {/* Warning banner for questions used in quizzes */}
+                    {isEdit && isUsedInQuizzes && !editConfirmed && (
+                        <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-50 border border-amber-200">
+                            <AlertTriangle size={20} className="text-amber-500 mt-0.5 flex-shrink-0" />
+                            <div className="flex-1">
+                                <p className="text-sm font-semibold text-amber-800 mb-1">
+                                    This question is used in {usedInQuizzes.length} quiz{usedInQuizzes.length !== 1 ? 'zes' : ''}
+                                </p>
+                                <p className="text-xs text-amber-700 mb-3">
+                                    Editing it will affect all linked quizzes. Consider duplicating instead.
+                                </p>
+                                <div className="flex gap-2">
+                                    <button type="button" onClick={() => setEditConfirmed(true)}
+                                        className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-amber-100 text-amber-700 hover:bg-amber-200 transition-colors">
+                                        Edit Anyway
+                                    </button>
+                                    <button type="button" onClick={() => { closeModal(); openDuplicate(modalState.question); }}
+                                        className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 transition-colors">
+                                        Duplicate Instead
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Question Text */}
+                    <fieldset disabled={isEdit && isUsedInQuizzes && !editConfirmed} className="space-y-5">
                     <Textarea label="Question Text" name="questionText" required rows={3}
                         placeholder="Enter your question here..."
                         register={register('questionText', { required: 'Question text is required', minLength: { value: 5, message: 'Min 5 characters' } })}
@@ -704,6 +883,7 @@ function QuestionFormModal({ modalState, closeModal, createMut, updateMut, tags 
                         {/* MATCH_THE_FOLLOWING */}
                         {questionType === 'MATCH_THE_FOLLOWING' && <MatchPairsSection control={control} register={register} watch={watch} setValue={setValue} />}
                     </div>
+                    </fieldset>
                 </form>
             )}
         </Modal>
@@ -753,7 +933,7 @@ function MatchPairsSection({ control, register, watch, setValue }) {
 /* ═══════════════════════════════════════════════════════════ */
 /* SUB-COMPONENT: View Question Modal                         */
 /* ═══════════════════════════════════════════════════════════ */
-function ViewQuestionModal({ modalState, closeModal, setModalState }) {
+function ViewQuestionModal({ modalState, closeModal, setModalState, navigate }) {
     const isOpen = modalState.mode === 'view';
     const q = modalState.question;
     if (!isOpen || !q) return null;
@@ -866,6 +1046,22 @@ function ViewQuestionModal({ modalState, closeModal, setModalState }) {
                     <div>
                         <h4 className="text-sm font-semibold text-gray-700 mb-2">Hint</h4>
                         <p className="text-sm text-gray-600">{q.hintText}</p>
+                    </div>
+                )}
+
+                {/* Used In */}
+                {q.usedInQuizzes?.length > 0 && (
+                    <div className="border-t border-gray-100 pt-4">
+                        <h4 className="text-sm font-semibold text-gray-700 mb-2">Used In</h4>
+                        <div className="flex flex-wrap gap-2">
+                            {q.usedInQuizzes.map(qz => (
+                                <button key={qz.quizUuid}
+                                    onClick={() => { closeModal(); navigate(`/admin/quizzes/${qz.quizUuid}/questions`); }}
+                                    className="text-xs px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-600 font-medium hover:bg-indigo-100 transition-colors">
+                                    {qz.quizTitle}
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 )}
             </div>

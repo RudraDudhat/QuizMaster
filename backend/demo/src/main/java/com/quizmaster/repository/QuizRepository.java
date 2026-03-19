@@ -60,4 +60,6 @@ public interface QuizRepository extends JpaRepository<Quiz, Long> {
     int countByDeletedAtIsNull();
 
     int countByStatusAndDeletedAtIsNull(QuizStatus status);
+
+    List<Quiz> findByStatusInAndDeletedAtIsNull(List<QuizStatus> statuses);
 }

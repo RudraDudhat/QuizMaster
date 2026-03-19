@@ -36,3 +36,8 @@ export const deleteQuiz = async (quizUuid) => {
     const { data } = await api.delete(`/admin/quizzes/${quizUuid}`);
     return data;
 };
+
+export const getSelectableQuizzes = async () => {
+    const { data } = await api.get('/admin/quizzes/selectable');
+    return data;
+};

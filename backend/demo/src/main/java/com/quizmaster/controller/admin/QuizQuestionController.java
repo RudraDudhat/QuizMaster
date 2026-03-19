@@ -1,8 +1,10 @@
 package com.quizmaster.controller.admin;
 
 import com.quizmaster.dto.request.AddQuestionToQuizRequest;
+import com.quizmaster.dto.request.BulkAddQuestionsRequest;
 import com.quizmaster.dto.request.ReorderQuestionsRequest;
 import com.quizmaster.dto.response.ApiResponse;
+import com.quizmaster.dto.response.BulkAddResponse;
 import com.quizmaster.dto.response.QuizQuestionResponse;
 import com.quizmaster.service.QuizQuestionService;
 import jakarta.validation.Valid;
@@ -31,6 +33,15 @@ public class QuizQuestionController {
                 UUID.fromString(quizUuid), request);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Question added to quiz", response));
+    }
+
+    @PostMapping("/bulk")
+    public ResponseEntity<ApiResponse<BulkAddResponse>> bulkAddQuestionsToQuiz(
+            @PathVariable String quizUuid,
+            @Valid @RequestBody BulkAddQuestionsRequest request) {
+        BulkAddResponse response = quizQuestionService.bulkAddQuestionsToQuiz(
+                UUID.fromString(quizUuid), request);
+        return ResponseEntity.ok(ApiResponse.success("Bulk add complete", response));
     }
 
     @GetMapping
