@@ -281,11 +281,9 @@ export default function EditQuiz() {
 
     const createTagMut = useMutation({
         mutationFn: (payload) => createTag(payload),
-        onSuccess: (result) => {
+        onSuccess: () => {
             toast.success('Tag created');
             queryClient.invalidateQueries({ queryKey: ['tags'] });
-            setSelectedTagIds((prev) => [...prev, result.data.uuid]);
-            setNewTagName('');
         },
         onError: (err) => toast.error(err.response?.data?.message || 'Failed to create tag'),
     });
@@ -338,11 +336,19 @@ export default function EditQuiz() {
     function handleCreateTag(name) {
         const trimmed = name.trim();
         if (!trimmed) return;
+        if (createTagMut.isPending) return;
+        const exists = tags.some((t) => t.name.toLowerCase() === trimmed.toLowerCase());
+        if (exists) {
+            toast.error('Tag already exists. Please use a different name.');
+            return;
+        }
         createTagMut.mutate(
             { name: trimmed },
             {
                 onSuccess: (result) => {
-                    setSelectedTagUuids((prev) => [...prev, result.data.uuid]);
+                    setSelectedTagUuids((prev) =>
+                        prev.includes(result.data.uuid) ? prev : [...prev, result.data.uuid]
+                    );
                     setTagSearch('');
                 },
             }
@@ -610,16 +616,25 @@ export default function EditQuiz() {
                                                                 className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-secondary/10 text-secondary border border-secondary/30"
                                                             >
                                                                 {tag.name}
-                                                                <button
-                                                                    type="button"
+                                                                <span
+                                                                    role="button"
+                                                                    tabIndex={0}
+                                                                    aria-label={`Remove tag ${tag.name}`}
                                                                     onClick={(e) => {
                                                                         e.stopPropagation();
                                                                         toggleTag(id);
                                                                     }}
-                                                                    className="ml-0.5 text-secondary/70 hover:text-secondary"
+                                                                    onKeyDown={(e) => {
+                                                                        if (e.key === 'Enter' || e.key === ' ') {
+                                                                            e.preventDefault();
+                                                                            e.stopPropagation();
+                                                                            toggleTag(id);
+                                                                        }
+                                                                    }}
+                                                                    className="ml-0.5 text-secondary/70 hover:text-secondary cursor-pointer"
                                                                 >
                                                                     <X size={10} />
-                                                                </button>
+                                                                </span>
                                                             </span>
                                                         );
                                                     })
@@ -695,11 +710,16 @@ export default function EditQuiz() {
                                                         <button
                                                             type="button"
                                                             onClick={() => handleCreateTag(tagSearch)}
-                                                            className="m-2 mt-0 px-3 py-2 flex items-center gap-2 text-xs rounded-md border border-dashed border-secondary/40 text-secondary hover:bg-secondary/5"
+                                                            disabled={createTagMut.isPending}
+                                                            className="m-2 mt-0 px-3 py-2 flex items-center gap-2 text-xs rounded-md border border-dashed border-secondary/40 text-secondary hover:bg-secondary/5 disabled:opacity-60 disabled:cursor-not-allowed"
                                                         >
                                                             <Tag size={14} />
                                                             <span>
-                                                                Create "<span className="font-semibold">{tagSearch.trim()}</span>" as new tag
+                                                                {createTagMut.isPending ? 'Creating tag...' : (
+                                                                    <>
+                                                                        Create "<span className="font-semibold">{tagSearch.trim()}</span>" as new tag
+                                                                    </>
+                                                                )}
                                                             </span>
                                                         </button>
                                                     )}
@@ -887,18 +907,29 @@ export default function EditQuiz() {
                                                                 className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-primary/10 text-primary border border-primary/30"
                                                             >
                                                                 {group.name}
-                                                                <button
-                                                                    type="button"
+                                                                <span
+                                                                    role="button"
+                                                                    tabIndex={0}
+                                                                    aria-label={`Remove group ${group.name}`}
                                                                     onClick={(e) => {
                                                                         e.stopPropagation();
                                                                         setSelectedGroupUuids((prev) =>
                                                                             prev.filter((x) => x !== id)
                                                                         );
                                                                     }}
-                                                                    className="ml-0.5 text-primary/80 hover:text-primary"
+                                                                    onKeyDown={(e) => {
+                                                                        if (e.key === 'Enter' || e.key === ' ') {
+                                                                            e.preventDefault();
+                                                                            e.stopPropagation();
+                                                                            setSelectedGroupUuids((prev) =>
+                                                                                prev.filter((x) => x !== id)
+                                                                            );
+                                                                        }
+                                                                    }}
+                                                                    className="ml-0.5 text-primary/80 hover:text-primary cursor-pointer"
                                                                 >
                                                                     <X size={10} />
-                                                                </button>
+                                                                </span>
                                                             </span>
                                                         );
                                                     })
@@ -1046,17 +1077,27 @@ export default function EditQuiz() {
                                                             className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-primary/10 text-primary border border-primary/30"
                                                         >
                                                             {group.name}
-                                                            <button
-                                                                type="button"
+                                                            <span
+                                                                role="button"
+                                                                tabIndex={0}
+                                                                aria-label={`Remove group ${group.name}`}
                                                                 onClick={() =>
                                                                     setSelectedGroupUuids((prev) =>
                                                                         prev.filter((x) => x !== id)
                                                                     )
                                                                 }
-                                                                className="ml-0.5 text-primary/80 hover:text-primary"
+                                                                onKeyDown={(e) => {
+                                                                    if (e.key === 'Enter' || e.key === ' ') {
+                                                                        e.preventDefault();
+                                                                        setSelectedGroupUuids((prev) =>
+                                                                            prev.filter((x) => x !== id)
+                                                                        );
+                                                                    }
+                                                                }}
+                                                                className="ml-0.5 text-primary/80 hover:text-primary cursor-pointer"
                                                             >
                                                                 <X size={10} />
-                                                            </button>
+                                                            </span>
                                                         </span>
                                                     );
                                                 })}
