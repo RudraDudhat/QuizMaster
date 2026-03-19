@@ -123,9 +123,7 @@ export default function CreateQuiz() {
     const [tagDropdownOpen, setTagDropdownOpen] = useState(false);
     const [tagSummaryExpanded, setTagSummaryExpanded] = useState(false);
 
-    /* ─── inline category create ─── */
-    const [showNewCategory, setShowNewCategory] = useState(false);
-    const [newCategoryName, setNewCategoryName] = useState('');
+    /* ─── inline category create (removed: now managed via Settings) ─── */
 
     /* ─── groups state ─── */
     const [selectedGroupUuids, setSelectedGroupUuids] = useState([]);
@@ -167,12 +165,6 @@ export default function CreateQuiz() {
         t.name.toLowerCase().includes(tagSearch.toLowerCase())
     );
 
-    const showCreateTagOption =
-        tagSearch.trim().length > 0 &&
-        !tags.some(
-            (t) => t.name.toLowerCase() === tagSearch.trim().toLowerCase()
-        );
-
     /* ─── mutations ─── */
     const createMut = useMutation({
         mutationFn: (payload) => createQuiz(payload),
@@ -189,12 +181,9 @@ export default function CreateQuiz() {
 
     const createCatMut = useMutation({
         mutationFn: (payload) => createCategory(payload),
-        onSuccess: (result) => {
+        onSuccess: () => {
             toast.success('Category created');
             queryClient.invalidateQueries({ queryKey: ['categories'] });
-            setValue('categoryUuid', String(result.data.uuid));
-            setShowNewCategory(false);
-            setNewCategoryName('');
         },
         onError: (err) => {
             if (err?.response?.status === 500) {
@@ -203,16 +192,6 @@ export default function CreateQuiz() {
             }
             toast.error(err.response?.data?.message || 'Failed to create category');
         },
-    });
-
-    const createTagMut = useMutation({
-        mutationFn: (payload) => createTag(payload),
-        onSuccess: (result) => {
-            toast.success('Tag created');
-            queryClient.invalidateQueries({ queryKey: ['tags'] });
-            setSelectedTagUuids((prev) => [...prev, result.data.uuid]);
-        },
-        onError: (err) => toast.error(err.response?.data?.message || 'Failed to create tag'),
     });
 
     /* ─── submit handlers ─── */
@@ -265,20 +244,6 @@ export default function CreateQuiz() {
     function toggleTag(id) {
         setSelectedTagUuids((prev) =>
             prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-        );
-    }
-
-    function handleCreateTag(name) {
-        const trimmed = name.trim();
-        if (!trimmed) return;
-        createTagMut.mutate(
-            { name: trimmed },
-            {
-                onSuccess: (result) => {
-                    setSelectedTagUuids((prev) => [...prev, result.data.uuid]);
-                    setTagSearch('');
-                },
-            }
         );
     }
 
@@ -410,49 +375,6 @@ export default function CreateQuiz() {
                                     register={register('categoryUuid')}
                                     error={errors.categoryUuid?.message}
                                 />
-                                {!showNewCategory ? (
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowNewCategory(true)}
-                                        className="mt-2 text-xs font-medium text-primary hover:text-primary-hover transition-colors flex items-center gap-1"
-                                    >
-                                        <Plus size={12} /> Create new category
-                                    </button>
-                                ) : (
-                                    <div className="mt-2 flex items-end gap-2 p-3 bg-gray-50 rounded-lg border border-gray-100">
-                                        <div className="flex-1">
-                                            <Input
-                                                name="newCategory"
-                                                placeholder="Category name"
-                                                value={newCategoryName}
-                                                onChange={(e) => setNewCategoryName(e.target.value)}
-                                            />
-                                        </div>
-                                        <Button
-                                            size="sm"
-                                            loading={createCatMut.isPending}
-                                            onClick={() => {
-                                                if (newCategoryName.trim()) {
-                                                    const trimmed = newCategoryName.trim();
-                                                    if (hasCategoryNameConflict(trimmed)) {
-                                                        toast.error('Category already exists. Please use a different name.');
-                                                        return;
-                                                    }
-                                                    createCatMut.mutate({ name: trimmed });
-                                                }
-                                            }}
-                                        >
-                                            Add
-                                        </Button>
-                                        <Button
-                                            size="sm"
-                                            variant="ghost"
-                                            onClick={() => { setShowNewCategory(false); setNewCategoryName(''); }}
-                                        >
-                                            <X size={14} />
-                                        </Button>
-                                    </div>
-                                )}
                                 <p className="mt-2 text-xs text-gray-400">
                                     Manage categories in{' '}
                                     <button
@@ -575,20 +497,6 @@ export default function CreateQuiz() {
                                                             </button>
                                                         );
                                                     })
-                                                )}
-
-                                                {/* Create new tag option */}
-                                                {showCreateTagOption && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleCreateTag(tagSearch)}
-                                                        className="m-2 mt-0 px-3 py-2 flex items-center gap-2 text-xs rounded-md border border-dashed border-secondary/40 text-secondary hover:bg-secondary/5"
-                                                    >
-                                                        <Tag size={14} />
-                                                        <span>
-                                                            Create "<span className="font-semibold">{tagSearch.trim()}</span>" as new tag
-                                                        </span>
-                                                    </button>
                                                 )}
                                             </div>
 
