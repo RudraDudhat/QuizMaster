@@ -25,6 +25,11 @@ public class TagService {
 
     @Transactional
     public TagResponse createTag(TagRequest request) {
+        tagRepository.findByNameIgnoreCase(request.getName())
+                .ifPresent(existing -> {
+                    throw new BadRequestException("Tag already exists. Please use a different name.");
+                });
+
         Tag tag = tagMapper.toEntity(request);
         String baseSlug = generateSlug(request.getName());
         String finalSlug = baseSlug;
