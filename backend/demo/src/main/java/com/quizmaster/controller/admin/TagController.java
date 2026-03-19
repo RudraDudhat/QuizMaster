@@ -46,6 +46,6 @@ public class TagController {
     @DeleteMapping("/{uuid}")
     public ResponseEntity<ApiResponse<Void>> deleteTag(@PathVariable String uuid) {
         tagService.deleteTag(UUID.fromString(uuid));
-        return ResponseEntity.ok(ApiResponse.success("Tag deleted"));
+        return ResponseEntity.ok(ApiResponse.success("Tag deleted successfully"));
     }
 }

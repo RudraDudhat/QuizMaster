@@ -36,6 +36,9 @@ public interface QuizRepository extends JpaRepository<Quiz, Long> {
     @Query("SELECT q FROM Quiz q WHERE q.category.id = :categoryId AND q.deletedAt IS NULL")
     Page<Quiz> findByCategoryIdAndDeletedAtIsNull(Long categoryId, Pageable pageable);
 
+    @Query("SELECT COUNT(q) FROM Quiz q WHERE q.category.id = :categoryId AND q.deletedAt IS NULL")
+    long countByCategoryIdAndDeletedAtIsNull(@Param("categoryId") Long categoryId);
+
     // ─── Student Dashboard queries ───────────────────────
 
     @Query("""

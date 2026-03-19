@@ -57,7 +57,7 @@ public class CategoryController {
     @DeleteMapping("/{uuid}")
     public ResponseEntity<ApiResponse<Void>> deleteCategory(@PathVariable String uuid) {
         categoryService.softDeleteCategory(UUID.fromString(uuid));
-        return ResponseEntity.ok(ApiResponse.success("Category deleted"));
+        return ResponseEntity.ok(ApiResponse.success("Category deleted successfully"));
     }
 
     private String extractEmail(Authentication authentication) {

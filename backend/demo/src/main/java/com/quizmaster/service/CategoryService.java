@@ -7,6 +7,7 @@ import com.quizmaster.entity.User;
 import com.quizmaster.exception.BadRequestException;
 import com.quizmaster.mapper.CategoryMapper;
 import com.quizmaster.repository.CategoryRepository;
+import com.quizmaster.repository.QuizRepository;
 import com.quizmaster.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,7 @@ public class CategoryService {
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
     private final CategoryMapper categoryMapper;
+    private final QuizRepository quizRepository;
 
     // ─── CREATE ─────────────────────────────────────────
 
@@ -48,7 +50,12 @@ public class CategoryService {
     public List<CategoryResponse> getAllCategories() {
         return categoryRepository.findByDeletedAtIsNull()
                 .stream()
-                .map(categoryMapper::toResponse)
+                .map(category -> {
+                    CategoryResponse response = categoryMapper.toResponse(category);
+                    long quizCount = quizRepository.countByCategoryIdAndDeletedAtIsNull(category.getId());
+                    response.setQuizCount(quizCount);
+                    return response;
+                })
                 .collect(Collectors.toList());
     }
 
@@ -56,7 +63,10 @@ public class CategoryService {
     public CategoryResponse getCategoryById(UUID uuid) {
         Category category = categoryRepository.findByUuidAndDeletedAtIsNull(uuid)
                 .orElseThrow(() -> new BadRequestException("Category not found"));
-        return categoryMapper.toResponse(category);
+        CategoryResponse response = categoryMapper.toResponse(category);
+        long quizCount = quizRepository.countByCategoryIdAndDeletedAtIsNull(category.getId());
+        response.setQuizCount(quizCount);
+        return response;
     }
 
     // ─── UPDATE ─────────────────────────────────────────
@@ -86,6 +96,12 @@ public class CategoryService {
     public void softDeleteCategory(UUID uuid) {
         Category category = categoryRepository.findByUuidAndDeletedAtIsNull(uuid)
                 .orElseThrow(() -> new BadRequestException("Category not found"));
+        long quizCount = quizRepository.countByCategoryIdAndDeletedAtIsNull(category.getId());
+        if (quizCount > 0) {
+            throw new BadRequestException(
+                    "Cannot delete. This category is used in " + quizCount + " quizzes. Reassign those quizzes first."
+            );
+        }
         category.setDeletedAt(Instant.now());
         categoryRepository.save(category);
     }

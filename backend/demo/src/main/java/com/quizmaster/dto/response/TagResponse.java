@@ -16,4 +16,6 @@ public class TagResponse {
     private UUID uuid;
     private String name;
     private String slug;
+    private Long quizCount;
+    private Long questionCount;
 }

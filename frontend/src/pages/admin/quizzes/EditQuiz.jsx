@@ -566,8 +566,7 @@ export default function EditQuiz() {
                                                             toast.error('Category already exists. Please use a different name.');
                                                             return;
                                                         }
-                                                        const slug = trimmed.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-                                                        createCatMut.mutate({ name: trimmed, slug, description: '' });
+                                                        createCatMut.mutate({ name: trimmed });
                                                     }
                                                 }}
                                             >
@@ -582,6 +581,16 @@ export default function EditQuiz() {
                                             </Button>
                                         </div>
                                     )}
+                                    <p className="mt-2 text-xs text-gray-400">
+                                        Manage categories in{' '}
+                                        <button
+                                            type="button"
+                                            onClick={() => navigate('/admin/settings')}
+                                            className="underline underline-offset-2 text-primary hover:text-primary-hover font-medium"
+                                        >
+                                            Settings → Categories
+                                        </button>
+                                    </p>
                                 </div>
 
                                 {/* Tags */}
@@ -793,6 +802,16 @@ export default function EditQuiz() {
                                         )}
                                     </div>
                                 </div>
+                                <p className="mt-2 text-xs text-gray-400">
+                                    Manage tags in{' '}
+                                    <button
+                                        type="button"
+                                        onClick={() => navigate('/admin/settings')}
+                                        className="underline underline-offset-2 text-primary hover:text-primary-hover font-medium"
+                                    >
+                                        Settings → Tags
+                                    </button>
+                                </p>
                             </div>
                         </Card>
 

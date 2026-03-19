@@ -210,8 +210,7 @@ export default function CreateQuiz() {
         onSuccess: (result) => {
             toast.success('Tag created');
             queryClient.invalidateQueries({ queryKey: ['tags'] });
-            setSelectedTagIds((prev) => [...prev, result.data.uuid]);
-            setNewTagName('');
+            setSelectedTagUuids((prev) => [...prev, result.data.uuid]);
         },
         onError: (err) => toast.error(err.response?.data?.message || 'Failed to create tag'),
     });
@@ -439,8 +438,7 @@ export default function CreateQuiz() {
                                                         toast.error('Category already exists. Please use a different name.');
                                                         return;
                                                     }
-                                                    const slug = trimmed.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-                                                    createCatMut.mutate({ name: trimmed, slug, description: '' });
+                                                    createCatMut.mutate({ name: trimmed });
                                                 }
                                             }}
                                         >
@@ -455,6 +453,16 @@ export default function CreateQuiz() {
                                         </Button>
                                     </div>
                                 )}
+                                <p className="mt-2 text-xs text-gray-400">
+                                    Manage categories in{' '}
+                                    <button
+                                        type="button"
+                                        onClick={() => navigate('/admin/settings')}
+                                        className="underline underline-offset-2 text-primary hover:text-primary-hover font-medium"
+                                    >
+                                        Settings → Categories
+                                    </button>
+                                </p>
                             </div>
 
                             {/* Tags */}
@@ -652,6 +660,16 @@ export default function CreateQuiz() {
                                     )}
                                 </div>
                             </div>
+                            <p className="mt-2 text-xs text-gray-400">
+                                Manage tags in{' '}
+                                <button
+                                    type="button"
+                                    onClick={() => navigate('/admin/settings')}
+                                    className="underline underline-offset-2 text-primary hover:text-primary-hover font-medium"
+                                >
+                                    Settings → Tags
+                                </button>
+                            </p>
                         </div>
                     </Card>
 
@@ -1047,11 +1065,11 @@ export default function CreateQuiz() {
                             </div>
 
                             {/* Selected Tags */}
-                            {selectedTagIds.length > 0 && (
+                            {selectedTagUuids.length > 0 && (
                                 <div className="border-t border-gray-100 pt-3">
                                     <p className="text-xs text-gray-400 mb-2">Tags</p>
                                     <div className="flex flex-wrap gap-1.5">
-                                        {selectedTagIds.map((id) => {
+                                        {selectedTagUuids.map((id) => {
                                             const tag = tags.find((t) => t.uuid === id);
                                             return tag ? (
                                                 <Badge key={id} variant="default" size="sm">

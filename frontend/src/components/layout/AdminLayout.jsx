@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     Menu, X, LayoutDashboard, FileText, HelpCircle,
     Users, GraduationCap, BarChart3, Bell,
-    ChevronLeft, ChevronRight, LogOut, User,
+    ChevronLeft, ChevronRight, LogOut, User, Settings as SettingsIcon,
 } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import useNotifications from '../../hooks/useNotifications';
@@ -133,7 +133,20 @@ export default function AdminLayout({ children }) {
                     }`}
             >
                 <SidebarContent collapsed={collapsed} user={user} location={location} />
-                <div className="p-3 border-t border-gray-100">
+                <div className="px-3 pt-2 pb-3 border-t border-gray-100 flex flex-col gap-2">
+                    <NavLink
+                        to="/admin/settings"
+                        className={({ isActive }) =>
+                            `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${isActive
+                                ? 'bg-primary-light text-primary'
+                                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                            } ${collapsed ? 'justify-center' : ''}`
+                        }
+                        title={collapsed ? 'Settings' : undefined}
+                    >
+                        <SettingsIcon size={20} className="flex-shrink-0" />
+                        {!collapsed && <span>Settings</span>}
+                    </NavLink>
                     <button
                         onClick={() => setCollapsed((c) => !c)}
                         className="w-full flex items-center justify-center p-2 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"

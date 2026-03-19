@@ -25,6 +25,7 @@ import GroupManagement from '../pages/admin/groups/GroupManagement';
 import StudentList from '../pages/admin/students/StudentList';
 import StudentDetail from '../pages/admin/students/StudentDetail';
 import Analytics from '../pages/admin/analytics/Analytics';
+import Settings from '../pages/admin/settings/Settings';
 
 // Pages — Student
 import StudentDashboard from '../pages/student/Dashboard';
@@ -119,6 +120,7 @@ export default function AppRouter() {
                 <Route path="/admin/students" element={<StudentList />} />
                 <Route path="/admin/students/:userUuid" element={<StudentDetail />} />
                 <Route path="/admin/analytics" element={<Analytics />} />
+                <Route path="/admin/settings" element={<Settings />} />
             </Route>
 
             {/* ── Student ── */}

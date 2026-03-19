@@ -18,6 +18,7 @@ public class CategoryResponse {
     private String name;
     private String slug;
     private String description;
+    private Long quizCount;
     private UUID parentUuid;
     private String parentName;
     private String iconUrl;

@@ -46,7 +46,14 @@ public class TagService {
     public List<TagResponse> getAllTags() {
         return tagRepository.findAll()
                 .stream()
-                .map(tagMapper::toResponse)
+                .map(tag -> {
+                    TagResponse response = tagMapper.toResponse(tag);
+                    long quizCount = tagRepository.countQuizzesByTagId(tag.getId());
+                    long questionCount = tagRepository.countQuestionsByTagId(tag.getId());
+                    response.setQuizCount(quizCount);
+                    response.setQuestionCount(questionCount);
+                    return response;
+                })
                 .collect(Collectors.toList());
     }
 
@@ -64,6 +71,13 @@ public class TagService {
     public void deleteTag(UUID uuid) {
         Tag tag = tagRepository.findByUuid(uuid)
                 .orElseThrow(() -> new BadRequestException("Tag not found"));
+        long quizCount = tagRepository.countQuizzesByTagId(tag.getId());
+        long questionCount = tagRepository.countQuestionsByTagId(tag.getId());
+        if (quizCount > 0 || questionCount > 0) {
+            throw new BadRequestException(
+                    "Cannot delete. This tag is used in " + quizCount + " quizzes and " + questionCount + " questions."
+            );
+        }
         tagRepository.delete(tag);
     }
 
