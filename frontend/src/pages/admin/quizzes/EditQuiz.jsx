@@ -224,7 +224,7 @@ export default function EditQuiz() {
             quizType: quiz.quizType || '',
             passMarks: quiz.passMarks ?? '',
             timeLimitSeconds: quiz.timeLimitSeconds ?? '',
-            categoryUuid: quiz.categoryId ? String(quiz.categoryId) : '',
+            categoryUuid: quiz.categoryUuid ? String(quiz.categoryUuid) : '',
             maxAttempts: quiz.maxAttempts ?? '',
             cooldownHours: quiz.cooldownHours ?? '',
             shuffleQuestions: quiz.shuffleQuestions ?? false,
@@ -266,7 +266,7 @@ export default function EditQuiz() {
         onSuccess: (result) => {
             toast.success('Category created');
             queryClient.invalidateQueries({ queryKey: ['categories'] });
-            setValue('categoryUuid', String(result.data.id));
+            setValue('categoryUuid', String(result.data.uuid));
             setShowNewCategory(false);
             setNewCategoryName('');
         },
@@ -297,7 +297,7 @@ export default function EditQuiz() {
             quizType: data.quizType,
             passMarks: data.passMarks !== '' ? Number(data.passMarks) : undefined,
             timeLimitSeconds: data.timeLimitSeconds !== '' ? Number(data.timeLimitSeconds) : undefined,
-            categoryId: data.categoryUuid ? Number(data.categoryUuid) : undefined,
+            categoryUuid: data.categoryUuid || undefined,
             tagUuids: selectedTagUuids.length ? selectedTagUuids : undefined,
             maxAttempts: data.maxAttempts !== '' ? Number(data.maxAttempts) : undefined,
             cooldownHours: data.cooldownHours !== '' ? Number(data.cooldownHours) : undefined,
@@ -320,7 +320,7 @@ export default function EditQuiz() {
         ? formatDuration(Number(timeLimitVal))
         : null;
 
-    const selectedCategory = categories.find((c) => String(c.id) === watchAll.categoryUuid);
+    const selectedCategory = categories.find((c) => String(c.uuid) === watchAll.categoryUuid);
 
     function hasCategoryNameConflict(name) {
         const normalizedName = normalizeCategoryName(name);
@@ -534,7 +534,7 @@ export default function EditQuiz() {
                                         label="Category"
                                         name="categoryUuid"
                                         placeholder="Select a category"
-                                        options={categories.map((c) => ({ value: String(c.id), label: c.name }))}
+                                        options={categories.map((c) => ({ value: String(c.uuid), label: c.name }))}
                                         register={register('categoryUuid')}
                                         error={errors.categoryUuid?.message}
                                     />
