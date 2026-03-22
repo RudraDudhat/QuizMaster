@@ -76,6 +76,13 @@ function StudentRoute() {
     );
 }
 
+// Auth-only guard — no layout wrapper (full-screen quiz taking)
+function QuizRoute() {
+    const { isAuthenticated } = useAuthStore();
+    if (!isAuthenticated) return <Navigate to="/login" replace />;
+    return <Outlet />;
+}
+
 // ─── AppRouter ───────────────────────────────────────────
 
 export default function AppRouter() {
@@ -129,10 +136,14 @@ export default function AppRouter() {
                 <Route path="/student/dashboard" element={<StudentDashboard />} />
                 <Route path="/student/quizzes" element={<QuizBrowse />} />
                 <Route path="/student/quizzes/:quizUuid" element={<QuizDetail />} />
-                <Route path="/student/quiz/:attemptUuid" element={<QuizTaking />} />
                 <Route path="/student/results/:attemptUuid" element={<AttemptResult />} />
                 <Route path="/student/results/:attemptUuid/review" element={<AttemptReview />} />
                 <Route path="/student/history" element={<AttemptHistory />} />
+            </Route>
+
+            {/* ── Quiz Taking — full screen, no StudentLayout ── */}
+            <Route element={<QuizRoute />}>
+                <Route path="/student/quiz/:attemptUuid" element={<QuizTaking />} />
             </Route>
 
             {/* ── Catch All ── */}
