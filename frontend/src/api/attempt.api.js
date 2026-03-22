@@ -56,3 +56,6 @@ export const getQuizDetailForStudent = async (quizUuid) => {
     const { data } = await api.get(`/student/quizzes/${quizUuid}`);
     return data;
 };
+
+// Alias used by QuizDetail page
+export const getQuizDetail = getQuizDetailForStudent;
