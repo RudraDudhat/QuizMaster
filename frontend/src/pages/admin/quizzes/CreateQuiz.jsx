@@ -32,14 +32,20 @@ const quizSchema = z.object({
     passMarks: z.coerce.number().min(0).optional().or(z.literal('')),
     timeLimitSeconds: z.coerce.number().min(60, 'Must be at least 60 seconds').optional().or(z.literal('')),
     categoryUuid: z.string().optional().default(''),
-    maxAttempts: z.coerce.number().min(0).optional().or(z.literal('')),
-    cooldownHours: z.coerce.number().min(0).optional().or(z.literal('')),
+    maxAttempts: z.coerce.number().min(1, 'Max attempts must be at least 1').max(100, 'Max attempts cannot exceed 100').optional().or(z.literal('')),
+    cooldownHours: z.coerce.number().min(0).max(720, 'Cooldown cannot exceed 720 hours').optional().or(z.literal('')),
     shuffleQuestions: z.boolean().default(false),
     showCorrectAnswers: z.boolean().default(false),
     accessCode: z.string().max(20).optional().default(''),
     startsAt: z.string().optional().default(''),
     expiresAt: z.string().optional().default(''),
 }).refine(
+    (d) => {
+        if (!d.startsAt) return true;
+        return new Date(d.startsAt).getTime() >= Date.now();
+    },
+    { message: 'Start date must be in the present or future', path: ['startsAt'] }
+).refine(
     (d) => {
         if (d.startsAt && d.expiresAt) return new Date(d.expiresAt) > new Date(d.startsAt);
         return true;
@@ -172,7 +178,16 @@ export default function CreateQuiz() {
             toast.success('Quiz created successfully!');
             navigate('/admin/quizzes/' + result.data.uuid + '/edit');
         },
-        onError: (err) => toast.error(err.response?.data?.message || 'Failed to create quiz'),
+        onError: (err) => {
+            const response = err?.response?.data;
+            const validationErrors = response?.data;
+            const firstFieldError =
+                validationErrors && typeof validationErrors === 'object'
+                    ? Object.values(validationErrors).find((msg) => typeof msg === 'string' && msg.trim())
+                    : null;
+
+            toast.error(firstFieldError || response?.message || 'Failed to create quiz');
+        },
     });
 
     const publishMut = useMutation({
@@ -620,7 +635,7 @@ export default function CreateQuiz() {
                                     label="Max Attempts"
                                     name="maxAttempts"
                                     type="number"
-                                    placeholder="0 = unlimited"
+                                    placeholder="Leave empty for unlimited"
                                     hint="How many times a student can attempt this quiz"
                                     register={register('maxAttempts')}
                                     error={errors.maxAttempts?.message}

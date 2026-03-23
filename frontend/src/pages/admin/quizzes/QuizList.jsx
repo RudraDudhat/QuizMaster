@@ -287,21 +287,21 @@ export default function QuizList() {
             {/* ─── Delete Modal ─── */}
             <Modal
                 isOpen={deleteModal.open}
-                onClose={() => setDeleteModal({ open: false, quizUuid: null, title: '' })}
+                onClose={() => setDeleteModal({ open: false, uuid: null, title: '' })}
                 title="Delete Quiz"
                 size="sm"
                 footer={
                     <>
                         <Button
                             variant="outline"
-                            onClick={() => setDeleteModal({ open: false, quizUuid: null, title: '' })}
+                            onClick={() => setDeleteModal({ open: false, uuid: null, title: '' })}
                         >
                             Cancel
                         </Button>
                         <Button
                             variant="danger"
                             loading={deleteMut.isPending}
-                            onClick={() => deleteMut.mutate(deleteModal.quizUuid)}
+                            onClick={() => deleteMut.mutate(deleteModal.uuid)}
                         >
                             Delete
                         </Button>
