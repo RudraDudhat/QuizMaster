@@ -264,12 +264,12 @@ public class AnalyticsService {
         List<Object[]> rows = quizAttemptRepository
                 .findTopQuizzesByAttemptCount(COMPLETED_STATUSES, PageRequest.of(0, 5));
         for (Object[] row : rows) {
-            Long quizId = (Long) row[0];
-            int attemptCount = ((Long) row[1]).intValue();
+            Long quizId = ((Number) row[0]).longValue();
+            int attemptCount = row[1] != null ? ((Number) row[1]).intValue() : 0;
             BigDecimal avgScore = row[2] != null
-                    ? ((BigDecimal) row[2]).setScale(2, RoundingMode.HALF_UP)
+                    ? BigDecimal.valueOf(((Number) row[2]).doubleValue()).setScale(2, RoundingMode.HALF_UP)
                     : BigDecimal.ZERO;
-            int passCount = ((Long) row[3]).intValue();
+            int passCount = row[3] != null ? ((Number) row[3]).intValue() : 0;
             BigDecimal passRate = attemptCount > 0
                     ? BigDecimal.valueOf(passCount * 100.0 / attemptCount)
                             .setScale(2, RoundingMode.HALF_UP)
