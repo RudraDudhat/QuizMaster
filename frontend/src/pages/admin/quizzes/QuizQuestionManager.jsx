@@ -114,7 +114,10 @@ export default function QuizQuestionManager() {
     const removeMut = useMutation({
         mutationFn: (questionUuid) => removeQuestionFromQuiz(quizUuid, questionUuid),
         onSuccess: () => { toast.success('Question removed from quiz'); refetchLinked(); setRemoveModal({ open: false, questionUuid: null, questionText: '' }); },
-        onError: () => toast.error('Failed to remove question'),
+        onError: (err) => {
+            const message = err?.response?.data?.message || 'Failed to remove question';
+            toast.error(message);
+        },
     });
     const reorderMut = useMutation({
         mutationFn: (orderedIds) => reorderQuestions(quizUuid, orderedIds),

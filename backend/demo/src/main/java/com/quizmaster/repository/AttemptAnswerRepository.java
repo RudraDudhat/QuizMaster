@@ -15,6 +15,8 @@ public interface AttemptAnswerRepository extends JpaRepository<AttemptAnswer, Lo
 
     List<AttemptAnswer> findByAttemptId(Long attemptId);
 
+    long countByQuizQuestionId(Long quizQuestionId);
+
     @Query("SELECT COUNT(a) FROM AttemptAnswer a WHERE a.attempt.id = :attemptId AND a.isSkipped = false")
     int countAnsweredByAttemptId(Long attemptId);
 }

@@ -10,10 +10,12 @@ import com.quizmaster.entity.Quiz;
 import com.quizmaster.entity.QuizQuestion;
 import com.quizmaster.exception.BadRequestException;
 import com.quizmaster.mapper.QuizQuestionMapper;
+import com.quizmaster.repository.AttemptAnswerRepository;
 import com.quizmaster.repository.QuestionRepository;
 import com.quizmaster.repository.QuizQuestionRepository;
 import com.quizmaster.repository.QuizRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +32,7 @@ public class QuizQuestionService {
     private final QuizQuestionRepository quizQuestionRepository;
     private final QuizRepository quizRepository;
     private final QuestionRepository questionRepository;
+        private final AttemptAnswerRepository attemptAnswerRepository;
     private final QuizQuestionMapper quizQuestionMapper;
 
     // ─── ADD QUESTION TO QUIZ ──────────────────────────
@@ -128,10 +131,19 @@ public class QuizQuestionService {
         Question question = questionRepository.findByUuidAndDeletedAtIsNull(questionUuid)
                 .orElseThrow(() -> new BadRequestException("Question not found"));
 
-        quizQuestionRepository.findByQuizIdAndQuestionId(quiz.getId(), question.getId())
+        QuizQuestion quizQuestion = quizQuestionRepository.findByQuizIdAndQuestionId(quiz.getId(), question.getId())
                 .orElseThrow(() -> new BadRequestException("Question is not linked to this quiz"));
 
-        quizQuestionRepository.deleteByQuizIdAndQuestionId(quiz.getId(), question.getId());
+        long answersCount = attemptAnswerRepository.countByQuizQuestionId(quizQuestion.getId());
+        if (answersCount > 0) {
+            throw new BadRequestException("Cannot remove this question because attempt answers already exist for it");
+        }
+
+        try {
+            quizQuestionRepository.deleteById(quizQuestion.getId());
+        } catch (DataIntegrityViolationException ex) {
+            throw new BadRequestException("Cannot remove this question because attempt answers already exist for it");
+        }
 
         // Recalculate quiz totalMarks
         recalculateTotalMarks(quiz);
