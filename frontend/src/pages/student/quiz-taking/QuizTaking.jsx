@@ -337,7 +337,7 @@ function renderAnswerSection(question, ans, setAns) {
                             {question.questionText}
                         </pre>
                     </div>
-                    <TextAnswer ans={ans} setAns={setAns} rows={4} />
+                    <MCQSingle question={question} ans={ans} setAns={setAns} />
                 </div>
             );
         case 'IMAGE_BASED':
