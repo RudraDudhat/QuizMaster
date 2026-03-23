@@ -1,7 +1,9 @@
 import api from './axiosInstance';
 
 export const startAttempt = async (quizUuid, { accessCode } = {}) => {
-    const { data } = await api.post(`/student/quizzes/${quizUuid}/start`, { accessCode });
+    const normalizedCode = typeof accessCode === 'string' ? accessCode.trim() : '';
+    const payload = normalizedCode ? { accessCode: normalizedCode } : undefined;
+    const { data } = await api.post(`/student/quizzes/${quizUuid}/start`, payload);
     return data;
 };
 

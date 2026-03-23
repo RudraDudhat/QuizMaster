@@ -81,6 +81,7 @@ export default function QuizDetail() {
         staleTime: 30_000,
     });
     const quiz = response?.data;
+    const requiresAccessCode = Boolean(quiz?.requiresAccessCode ?? quiz?.accessCode);
 
     // Countdown (for UPCOMING quizzes)
     const countdown = useCountdown(
@@ -91,10 +92,17 @@ export default function QuizDetail() {
 
     // ── Start handler ─────────────────────────────────────
     const handleStartQuiz = async () => {
+        const trimmedAccessCode = accessCode.trim();
+
+        if (requiresAccessCode && !trimmedAccessCode) {
+            setAccessCodeError('Access code is required to start this quiz.');
+            return;
+        }
+
         setStarting(true);
         setAccessCodeError('');
         try {
-            const result = await startAttempt(quizUuid, { accessCode: accessCode || null });
+            const result = await startAttempt(quizUuid, { accessCode: trimmedAccessCode });
             const attemptUuid = result.data.attemptUuid;
             navigate(`/student/quiz/${attemptUuid}`, { state: { attemptData: result.data } });
         } catch (error) {
@@ -133,7 +141,9 @@ export default function QuizDetail() {
 
     // ── Start card status ─────────────────────────────────
     const status = quiz?.quizStatus;
-    const canStart = !['UPCOMING', 'EXPIRED', 'MAX_ATTEMPTS_REACHED'].includes(status) && !starting;
+    const canStart = !['UPCOMING', 'EXPIRED', 'MAX_ATTEMPTS_REACHED'].includes(status)
+        && (!requiresAccessCode || accessCode.trim().length > 0)
+        && !starting;
 
     const statusSection = (() => {
         if (status === 'AVAILABLE') return (
@@ -340,7 +350,7 @@ export default function QuizDetail() {
                         )}
 
                         {/* Access code */}
-                        {!isLoading && quiz?.accessCode && (
+                        {!isLoading && requiresAccessCode && (
                             <div style={{ marginBottom: 16 }}>
                                 <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: 8 }}>
                                     🔒 Access Code Required
@@ -382,6 +392,7 @@ export default function QuizDetail() {
                                         {status === 'UPCOMING' && "Quiz hasn't started yet"}
                                         {status === 'EXPIRED'  && "This quiz has expired"}
                                         {status === 'MAX_ATTEMPTS_REACHED' && "No attempts remaining"}
+                                        {status === 'AVAILABLE' && requiresAccessCode && accessCode.trim().length === 0 && 'Enter access code to start'}
                                     </p>
                                 )}
                             </>

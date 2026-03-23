@@ -54,6 +54,9 @@ public class AvailableQuizResponse {
      */
     private String quizStatus;
 
+    /** True when quiz start requires an access code, but never exposes the code value itself. */
+    private Boolean requiresAccessCode;
+
     private BigDecimal studentBestScore;
 
     private BigDecimal studentBestPercentage;

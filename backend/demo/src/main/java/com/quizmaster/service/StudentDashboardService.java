@@ -198,6 +198,7 @@ public class StudentDashboardService {
                 .startsAt(quiz.getStartsAt())
                 .expiresAt(quiz.getExpiresAt())
                 .quizStatus(quizStatus)
+                .requiresAccessCode(quiz.getAccessCode() != null && !quiz.getAccessCode().isBlank())
                 .studentBestScore(studentBestScore)
                 .studentBestPercentage(studentBestPercentage)
                 .isPassed(isPassed)
