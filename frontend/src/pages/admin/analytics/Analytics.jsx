@@ -238,7 +238,27 @@ export default function Analytics() {
         { name: 'Passed', value: passRatePct },
         { name: 'Failed', value: Math.max(0, 100 - passRatePct) },
     ];
-    const sortedQuestions = [...(quizAnalytics?.questionAccuracy ?? [])].sort((a, b) => a.accuracyRate - b.accuracyRate);
+
+    const scoreDistributionData = Array.isArray(quizAnalytics?.scoreDistribution)
+        ? quizAnalytics.scoreDistribution
+        : Object.entries(quizAnalytics?.scoreDistribution ?? {}).map(([range, count]) => ({
+            range,
+            count: Number(count) || 0,
+        }));
+
+    const sortedQuestions = [...(quizAnalytics?.questionAccuracies ?? [])]
+        .map((q) => {
+            const total = Number(q.totalAnswers) || 0;
+            const correct = Number(q.correctCount) || 0;
+            const skipped = Number(q.skippedCount) || 0;
+            const wrong = Math.max(0, total - correct - skipped);
+            return {
+                ...q,
+                wrongCount: wrong,
+                accuracyRate: Number(q.accuracyPct) || 0,
+            };
+        })
+        .sort((a, b) => a.accuracyRate - b.accuracyRate);
 
     // ════════════════════════════════════════════════════
     return (
@@ -470,7 +490,7 @@ export default function Analytics() {
                                 <StatCard loading={quizAnalyticsLoading} icon={ClipboardList} label="Total Attempts" value={quizAnalytics?.totalAttempts ?? 0}                  iconBg="#EFF6FF" iconColor="#3B82F6" />
                                 <StatCard loading={quizAnalyticsLoading} icon={TrendingUp}    label="Pass Rate"      value={formatPercentage(quizAnalytics?.passRate)}            iconBg="#F0FDF4" iconColor={successColor} />
                                 <StatCard loading={quizAnalyticsLoading} icon={BarChart2}     label="Average Score"  value={formatPercentage(quizAnalytics?.averageScore)}        iconBg="#EEF2FF" iconColor={primaryColor} />
-                                <StatCard loading={quizAnalyticsLoading} icon={PlayCircle}    label="Avg Time"       value={formatDuration(quizAnalytics?.averageTimeSeconds)}    iconBg="#FFFBEB" iconColor={warningColor} />
+                                <StatCard loading={quizAnalyticsLoading} icon={PlayCircle}    label="Avg Time"       value={formatDuration(quizAnalytics?.averageDurationSeconds)} iconBg="#FFFBEB" iconColor={warningColor} />
                             </div>
 
                             {/* B. High / Low */}
@@ -501,16 +521,16 @@ export default function Analytics() {
                                 <SectionHead title="Score Distribution" subtitle="How scores are spread across attempts" />
                                 {quizAnalyticsLoading ? (
                                     <div className="skeleton" style={{ height: 280, borderRadius: 10 }} />
-                                ) : (quizAnalytics?.scoreDistribution ?? []).length === 0 ? (
+                                ) : scoreDistributionData.length === 0 ? (
                                     <EmptyState icon={<BarChart2 size={36} />} title="No distribution data yet" />
                                 ) : (
                                     <ResponsiveContainer width="100%" height={280}>
-                                        <BarChart data={quizAnalytics?.scoreDistribution ?? []} margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
+                                        <BarChart data={scoreDistributionData} margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
                                             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                                             <XAxis dataKey="range" tick={{ fontSize: 12, fill: 'var(--color-text-secondary)' }} axisLine={false} tickLine={false} />
                                             <YAxis tick={{ fontSize: 12, fill: 'var(--color-text-secondary)' }} axisLine={false} tickLine={false} />
                                             <Tooltip
-                                                formatter={(val, _, p) => [`${val} attempts`, `Range: ${p.payload.range}%`]}
+                                                formatter={(val, _, p) => [`${val} attempts`, `Range: ${p.payload.range}`]}
                                                 contentStyle={{ borderRadius: 8, border: '1px solid var(--color-border)', fontSize: 12 }}
                                             />
                                             <Bar dataKey="count" fill={primaryColor} radius={[6, 6, 0, 0]} maxBarSize={52} />
@@ -537,7 +557,7 @@ export default function Analytics() {
                                                         <TD style={{ maxWidth: 280 }}>{truncateText(q.questionText, 50)}</TD>
                                                         <TD style={{ fontWeight: 700, color: successColor }}>{q.correctCount}</TD>
                                                         <TD style={{ fontWeight: 700, color: dangerColor }}>{q.wrongCount}</TD>
-                                                        <TD style={{ fontWeight: 700, color: warningColor }}>{q.skipCount}</TD>
+                                                        <TD style={{ fontWeight: 700, color: warningColor }}>{q.skippedCount}</TD>
                                                         <TD style={{ minWidth: 120 }}>
                                                             <div style={{ fontWeight: 600 }}>{formatPercentage(q.accuracyRate)}</div>
                                                             <MiniBar value={q.accuracyRate ?? 0} />

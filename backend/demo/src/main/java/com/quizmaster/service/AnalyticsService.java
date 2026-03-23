@@ -10,7 +10,6 @@ import com.quizmaster.entity.QuestionAccuracyView;
 import com.quizmaster.enums.AttemptStatus;
 import com.quizmaster.enums.QuizStatus;
 import com.quizmaster.enums.UserRole;
-import com.quizmaster.exception.BadRequestException;
 import com.quizmaster.exception.ResourceNotFoundException;
 import com.quizmaster.mapper.AnalyticsMapper;
 import com.quizmaster.mapper.AttemptMapper;
@@ -49,15 +48,32 @@ public class AnalyticsService {
     @Transactional(readOnly = true)
     public QuizAnalyticsResponse getQuizAnalytics(UUID quizUuid) {
         Quiz quiz = quizRepository.findByUuidWithTagsAndCategory(quizUuid)
-                .orElseThrow(() -> new BadRequestException("Quiz not found"));
-        return doGetQuizAnalytics(quiz.getId(), quiz.getUuid());
+                                .orElseThrow(() -> new ResourceNotFoundException("Quiz not found"));
+                return doGetQuizAnalytics(quiz.getId(), quiz.getUuid(), quiz.getTitle());
     }
 
     @Transactional(readOnly = true)
-    private QuizAnalyticsResponse doGetQuizAnalytics(Long quizId, UUID quizUuid) {
+        private QuizAnalyticsResponse doGetQuizAnalytics(Long quizId, UUID quizUuid, String quizTitle) {
         List<AttemptSummaryView> summaries = attemptSummaryRepo.findByQuizId(quizId);
         if (summaries.isEmpty()) {
-            throw new BadRequestException("No attempts found for quiz ID: " + quizId);
+                        return analyticsMapper.toQuizAnalyticsResponse(
+                                        quizUuid,
+                                        quizTitle,
+                                        0,
+                                        0,
+                                        BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP),
+                                        BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP),
+                                        BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP),
+                                        BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP),
+                                        BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP),
+                                        BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP),
+                                        0,
+                                        0,
+                                        BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP),
+                                        buildScoreDistribution(Collections.emptyList()),
+                                        Collections.emptyList(),
+                                        0,
+                                        BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP));
         }
 
         // --- Build question accuracies via mapper ---
@@ -82,7 +98,7 @@ public class AnalyticsService {
         }
 
         // --- Compute aggregated stats ---
-        String quizTitle = summaries.get(0).getQuizTitle();
+        String resolvedQuizTitle = summaries.get(0).getQuizTitle() != null ? summaries.get(0).getQuizTitle() : quizTitle;
         int totalAttempts = summaries.size();
 
         List<AttemptSummaryView> completed = summaries.stream()
@@ -163,7 +179,7 @@ public class AnalyticsService {
 
         return analyticsMapper.toQuizAnalyticsResponse(
                 quizUuid,
-                quizTitle,
+                resolvedQuizTitle,
                 totalAttempts,
                 completedAttempts,
                 completionRate,
