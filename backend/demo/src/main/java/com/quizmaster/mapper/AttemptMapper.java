@@ -108,10 +108,10 @@ public interface AttemptMapper {
     // ─── QuizQuestion → StartAttemptResponse.AttemptQuestionDto ──
 
     @Mapping(target = "quizQuestionUuid", source = "uuid")
-    @Mapping(target = "questionUuid", expression = "java(qq.getQuestion().getUuid().toString())")
+    @Mapping(target = "questionUuid", expression = "java(qq.getQuestion() != null && qq.getQuestion().getUuid() != null ? qq.getQuestion().getUuid().toString() : null)")
     @Mapping(target = "questionText", source = "question.questionText")
-    @Mapping(target = "questionType", expression = "java(qq.getQuestion().getQuestionType().name())")
-    @Mapping(target = "difficulty", expression = "java(qq.getQuestion().getDifficulty().name())")
+    @Mapping(target = "questionType", expression = "java(qq.getQuestion() != null && qq.getQuestion().getQuestionType() != null ? qq.getQuestion().getQuestionType().name() : null)")
+    @Mapping(target = "difficulty", expression = "java(qq.getQuestion() != null && qq.getQuestion().getDifficulty() != null ? qq.getQuestion().getDifficulty().name() : null)")
     @Mapping(target = "marks", source = "marks")
     @Mapping(target = "negativeMarks", source = "negativeMarks")
     @Mapping(target = "perQuestionSecs", source = "perQuestionSecs")

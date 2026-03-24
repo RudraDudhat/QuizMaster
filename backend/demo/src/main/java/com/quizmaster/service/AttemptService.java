@@ -51,7 +51,7 @@ public class AttemptService {
     public StartAttemptResponse startAttempt(String quizUuid, String studentEmail,
             String ipAddress, String userAgent, String accessCode) {
         User student = findUserByEmail(studentEmail);
-        Quiz quiz = quizRepository.findByUuidAndDeletedAtIsNull(UUID.fromString(quizUuid))
+        Quiz quiz = quizRepository.findByUuidAndDeletedAtIsNull(parseUuidOrThrow(quizUuid, "quizUuid"))
                 .orElseThrow(() -> new BadRequestException("Quiz not found"));
 
         // 1. Verify quiz is published
@@ -637,10 +637,29 @@ public class AttemptService {
     private List<Long> parseCommaSeparatedLongs(String s) {
         if (s == null || s.isBlank())
             return null;
-        return Arrays.stream(s.split(","))
-                .map(String::trim)
-                .filter(str -> !str.isEmpty())
-                .map(Long::parseLong)
-                .collect(Collectors.toList());
+
+        List<Long> parsed = new ArrayList<>();
+        for (String token : s.split(",")) {
+            String trimmed = token.trim();
+            if (trimmed.isEmpty()) {
+                continue;
+            }
+            try {
+                parsed.add(Long.parseLong(trimmed));
+            } catch (NumberFormatException ex) {
+                // Legacy/corrupt question_order values should not break attempt start/resume flow.
+                log.warn("Skipping non-numeric question_order token: {}", trimmed);
+            }
+        }
+
+        return parsed.isEmpty() ? null : parsed;
+    }
+
+    private UUID parseUuidOrThrow(String raw, String fieldName) {
+        try {
+            return UUID.fromString(raw);
+        } catch (IllegalArgumentException ex) {
+            throw new BadRequestException("Invalid " + fieldName + " format");
+        }
     }
 }
