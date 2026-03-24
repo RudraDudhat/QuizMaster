@@ -63,3 +63,16 @@ export function truncateText(text, maxLength) {
     if (text.length <= maxLength) return text;
     return text.slice(0, maxLength) + '...';
 }
+
+export function formatTimeAgo(instant) {
+    if (!instant) return '';
+    const now = new Date();
+    const date = new Date(instant);
+    const diffSecs = Math.floor((now - date) / 1000);
+
+    if (diffSecs < 60) return 'Just now';
+    if (diffSecs < 3600) return Math.floor(diffSecs / 60) + ' minutes ago';
+    if (diffSecs < 86400) return Math.floor(diffSecs / 3600) + ' hours ago';
+    if (diffSecs < 604800) return Math.floor(diffSecs / 86400) + ' days ago';
+    return formatDate(instant);
+}

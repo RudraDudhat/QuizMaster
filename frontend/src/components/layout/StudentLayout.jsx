@@ -1,8 +1,8 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Bell, Flame, Zap, LogOut, User } from 'lucide-react';
+import { Flame, Zap, LogOut, User } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
-import useNotifications from '../../hooks/useNotifications';
+import NotificationBell from '../common/NotificationBell';
 import Avatar from '../ui/Avatar';
 import Dropdown from '../ui/Dropdown';
 
@@ -10,7 +10,7 @@ export default function StudentLayout({ children }) {
     const navigate = useNavigate();
     const location = useLocation();
     const { user, clearAuth } = useAuthStore();
-    const { unreadCount } = useNotifications();
+
 
     const handleLogout = () => {
         clearAuth();
@@ -44,17 +44,7 @@ export default function StudentLayout({ children }) {
                     </div>
 
                     {/* Notification Bell */}
-                    <button
-                        onClick={() => navigate('/student/dashboard')}
-                        className="relative p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors"
-                    >
-                        <Bell size={20} />
-                        {unreadCount > 0 && (
-                            <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold px-1">
-                                {unreadCount > 99 ? '99+' : unreadCount}
-                            </span>
-                        )}
-                    </button>
+                    <NotificationBell />
 
                     {/* User Dropdown */}
                     <Dropdown
