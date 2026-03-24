@@ -410,7 +410,8 @@ public class AttemptService {
             case SHORT_ANSWER, FILL_IN_THE_BLANK -> evaluateTextAnswer(answer, question);
             case ORDERING -> evaluateOrdering(answer, question);
             case MATCH_THE_FOLLOWING -> evaluateMatching(answer, question);
-            case ESSAY, CODE_SNIPPET, IMAGE_BASED -> false;
+            case CODE_SNIPPET, IMAGE_BASED -> evaluateSingleChoice(answer, question);
+            case ESSAY -> false;
         };
     }
 
