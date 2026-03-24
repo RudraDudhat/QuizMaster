@@ -38,6 +38,9 @@ public class StartAttemptResponse {
         private Integer perQuestionSecs;
         private Integer displayOrder;
         private String hintText;
+        private String mediaUrl;
+        private String codeContent;
+        private String codeLanguage;
         private List<OptionDto> options;
     }
 

@@ -117,6 +117,9 @@ public interface AttemptMapper {
     @Mapping(target = "perQuestionSecs", source = "perQuestionSecs")
     @Mapping(target = "displayOrder", source = "displayOrder")
     @Mapping(target = "hintText", source = "question.hintText")
+    @Mapping(target = "mediaUrl", source = "question.mediaUrl")
+    @Mapping(target = "codeContent", source = "question.codeContent")
+    @Mapping(target = "codeLanguage", source = "question.codeLanguage")
     @Mapping(target = "options", source = "question.options", qualifiedByName = "toStudentOptionDtoList")
     StartAttemptResponse.AttemptQuestionDto toAttemptQuestionDto(QuizQuestion qq);
 

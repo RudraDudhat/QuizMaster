@@ -540,7 +540,7 @@ function QuestionFormModal({ modalState, closeModal, createMut, updateMut, tags,
             } else if (qType === 'ESSAY') {
                 base.options = []; base.shortAnswer = '';
             } else if (qType === 'CODE_SNIPPET') {
-                base.codeSnippet = detail.mediaUrl || '';
+                base.codeSnippet = detail.codeContent || '';
                 base.options = detail.options?.map((o, i) => ({
                     optionText: o.optionText, isCorrect: o.isCorrect, optionOrder: i + 1,
                 })) || [];
@@ -572,7 +572,7 @@ function QuestionFormModal({ modalState, closeModal, createMut, updateMut, tags,
                 explanation: isDupe ? (dupeQ.explanation || '') : '',
                 hintText: isDupe ? (dupeQ.hintText || '') : '',
                 mediaUrl: isDupe ? (dupeQ.mediaUrl || '') : '',
-                tagUuids: [], trueFalseAnswer: 'True', shortAnswer: '', codeSnippet: '',
+                tagUuids: [], trueFalseAnswer: 'True', shortAnswer: '', codeSnippet: isDupe ? (dupeQ.codeContent || '') : '',
                 options: [
                     { optionText: '', isCorrect: false, optionOrder: 1 },
                     { optionText: '', isCorrect: false, optionOrder: 2 },
@@ -632,7 +632,8 @@ function QuestionFormModal({ modalState, closeModal, createMut, updateMut, tags,
         } else if (qType === 'ESSAY') {
             payload.options = [];
         } else if (qType === 'CODE_SNIPPET') {
-            payload.mediaUrl = data.codeSnippet || data.mediaUrl;
+            payload.codeContent = data.codeSnippet || undefined;
+            payload.mediaUrl = undefined;
             payload.options = data.options.map((o, i) => ({
                 optionText: o.optionText, isCorrect: o.isCorrect, optionOrder: i + 1,
             }));
@@ -1006,13 +1007,13 @@ function ViewQuestionModal({ modalState, closeModal, setModalState, navigate }) 
                 )}
 
                 {/* Code block */}
-                {q.questionType === 'CODE_SNIPPET' && (q.codeSnippet || q.mediaUrl) && (
+                {q.questionType === 'CODE_SNIPPET' && q.codeContent && (
                     <div className="border border-gray-200 rounded-xl overflow-hidden">
                         <div className="px-3 py-2 bg-gray-50 border-b border-gray-200">
                             <h4 className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Code Snippet</h4>
                         </div>
                         <pre className="p-4 bg-gray-900 text-gray-100 text-sm overflow-x-auto">
-                            <code>{q.codeSnippet || q.mediaUrl}</code>
+                            <code>{q.codeContent}</code>
                         </pre>
                     </div>
                 )}

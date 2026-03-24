@@ -330,16 +330,7 @@ function renderAnswerSection(question, ans, setAns) {
         case 'ORDERING':            return <OrderingQuestion question={question} ans={ans} setAns={setAns} />;
         case 'MATCH_THE_FOLLOWING': return <MatchQuestion question={question} ans={ans} setAns={setAns} />;
         case 'CODE_SNIPPET':
-            return (
-                <div>
-                    <div style={{ background: '#1e1e2e', borderRadius: 10, padding: 16, marginBottom: 16, overflow: 'auto', border: '1px solid #374151' }}>
-                        <pre style={{ color: '#cdd6f4', fontFamily: 'monospace', fontSize: 14, lineHeight: 1.6, margin: 0, whiteSpace: 'pre-wrap' }}>
-                            {question.questionText}
-                        </pre>
-                    </div>
-                    <MCQSingle question={question} ans={ans} setAns={setAns} />
-                </div>
-            );
+            return <MCQSingle question={question} ans={ans} setAns={setAns} />;
         case 'IMAGE_BASED':
             return (
                 <div>
@@ -748,10 +739,17 @@ export default function QuizTaking() {
 
                             {/* Question text */}
                             {currentQuestion?.questionType === 'CODE_SNIPPET' ? (
-                                <div style={{ background: '#1e1e2e', borderRadius: 12, padding: '20px 24px', marginBottom: 24, overflow: 'auto', border: '1px solid #374151' }}>
-                                    <pre style={{ color: '#cdd6f4', fontFamily: '"Fira Code", monospace', fontSize: 14, lineHeight: 1.7, margin: 0, whiteSpace: 'pre-wrap' }}>
+                                <div style={{ marginBottom: 24 }}>
+                                    <div style={{ fontSize: 18, fontWeight: 500, color: 'var(--color-text-primary)', lineHeight: 1.7, marginBottom: 16, padding: '20px 24px', background: '#fff', borderRadius: 14, border: '1px solid #e5e7eb', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
                                         {currentQuestion.questionText}
-                                    </pre>
+                                    </div>
+                                    {(currentQuestion.codeContent || currentQuestion.mediaUrl) && (
+                                        <div style={{ background: '#1e1e2e', borderRadius: 12, padding: '20px 24px', overflow: 'auto', border: '1px solid #374151' }}>
+                                            <pre style={{ color: '#cdd6f4', fontFamily: '"Fira Code", monospace', fontSize: 14, lineHeight: 1.7, margin: 0, whiteSpace: 'pre-wrap' }}>
+                                                {currentQuestion.codeContent || currentQuestion.mediaUrl}
+                                            </pre>
+                                        </div>
+                                    )}
                                 </div>
                             ) : (
                                 <div style={{ fontSize: 18, fontWeight: 500, color: 'var(--color-text-primary)', lineHeight: 1.7, marginBottom: 24, padding: '20px 24px', background: '#fff', borderRadius: 14, border: '1px solid #e5e7eb', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
