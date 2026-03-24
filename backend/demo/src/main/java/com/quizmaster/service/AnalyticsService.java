@@ -1,12 +1,9 @@
 package com.quizmaster.service;
 
-import com.quizmaster.dto.projection.StudentPerformanceProjection;
 import com.quizmaster.dto.response.*;
-import com.quizmaster.entity.AttemptSummaryView;
 import com.quizmaster.entity.Question;
 import com.quizmaster.entity.Quiz;
 import com.quizmaster.entity.QuizAttempt;
-import com.quizmaster.entity.QuestionAccuracyView;
 import com.quizmaster.enums.AttemptStatus;
 import com.quizmaster.enums.QuizStatus;
 import com.quizmaster.enums.UserRole;
@@ -23,9 +20,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -36,11 +33,10 @@ public class AnalyticsService {
     private static final List<AttemptStatus> COMPLETED_STATUSES =
             List.of(AttemptStatus.SUBMITTED, AttemptStatus.AUTO_SUBMITTED);
 
-    private final AttemptSummaryViewRepository attemptSummaryRepo;
-    private final QuestionAccuracyViewRepository questionAccuracyRepo;
     private final QuestionRepository questionRepository;
     private final QuizRepository quizRepository;
     private final QuizAttemptRepository quizAttemptRepository;
+    private final AttemptAnswerRepository attemptAnswerRepository;
     private final UserRepository userRepository;
     private final AnalyticsMapper analyticsMapper;
     private final AttemptMapper attemptMapper;
@@ -48,127 +44,101 @@ public class AnalyticsService {
     @Transactional(readOnly = true)
     public QuizAnalyticsResponse getQuizAnalytics(UUID quizUuid) {
         Quiz quiz = quizRepository.findByUuidWithTagsAndCategory(quizUuid)
-                                .orElseThrow(() -> new ResourceNotFoundException("Quiz not found"));
-                return doGetQuizAnalytics(quiz.getId(), quiz.getUuid(), quiz.getTitle());
+                .orElseThrow(() -> new ResourceNotFoundException("Quiz not found"));
+        return doGetQuizAnalytics(quiz.getId(), quiz.getUuid(), quiz.getTitle());
     }
 
     @Transactional(readOnly = true)
-        private QuizAnalyticsResponse doGetQuizAnalytics(Long quizId, UUID quizUuid, String quizTitle) {
-        List<AttemptSummaryView> summaries = attemptSummaryRepo.findByQuizId(quizId);
-        if (summaries.isEmpty()) {
-                        return analyticsMapper.toQuizAnalyticsResponse(
-                                        quizUuid,
-                                        quizTitle,
-                                        0,
-                                        0,
-                                        BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP),
-                                        BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP),
-                                        BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP),
-                                        BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP),
-                                        BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP),
-                                        BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP),
-                                        0,
-                                        0,
-                                        BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP),
-                                        buildScoreDistribution(Collections.emptyList()),
-                                        Collections.emptyList(),
-                                        0,
-                                        BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP));
+    private QuizAnalyticsResponse doGetQuizAnalytics(Long quizId, UUID quizUuid, String quizTitle) {
+
+        // ── 1. Fetch all completed attempts directly from quiz_attempts table ──
+        List<QuizAttempt> attempts = quizAttemptRepository.findAllByQuizIdAndStatusIn(quizId, COMPLETED_STATUSES);
+
+        if (attempts.isEmpty()) {
+            return analyticsMapper.toQuizAnalyticsResponse(
+                    quizUuid, quizTitle,
+                    0, 0,
+                    BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP),
+                    BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP),
+                    BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP),
+                    BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP),
+                    BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP),
+                    BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP),
+                    0, 0,
+                    BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP),
+                    buildScoreDistribution(Collections.emptyList()),
+                    Collections.emptyList(),
+                    0,
+                    BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP));
         }
 
-        // --- Build question accuracies via mapper ---
-        List<QuestionAccuracyView> accuracyViews = questionAccuracyRepo.findByQuizId(quizId);
-        List<QuestionAccuracyResponse> accuracies = analyticsMapper.toQuestionAccuracyResponseList(accuracyViews);
+        // ── 2. Compute aggregated stats from QuizAttempt entities ──
+        int totalAttempts = attempts.size();
+        int completedAttempts = totalAttempts; // all are already filtered by COMPLETED_STATUSES
 
-        // Enrich with question text and type
-        Set<Long> questionIds = accuracyViews.stream()
-                .map(QuestionAccuracyView::getQuestionId)
-                .collect(Collectors.toSet());
-        Map<Long, Question> questionMap = new HashMap<>();
-        questionRepository.findAllById(questionIds).forEach(q -> questionMap.put(q.getId(), q));
+        BigDecimal completionRate = BigDecimal.valueOf(100).setScale(2, RoundingMode.HALF_UP);
 
-        for (int i = 0; i < accuracies.size(); i++) {
-            QuestionAccuracyResponse resp = accuracies.get(i);
-            Question q = questionMap.get(accuracyViews.get(i).getQuestionId());
-            if (q != null) {
-                resp.setQuestionText(q.getQuestionText());
-                resp.setQuestionType(q.getQuestionType().name());
-                resp.setQuestionUuid(q.getUuid());
-            }
-        }
-
-        // --- Compute aggregated stats ---
-        String resolvedQuizTitle = summaries.get(0).getQuizTitle() != null ? summaries.get(0).getQuizTitle() : quizTitle;
-        int totalAttempts = summaries.size();
-
-        List<AttemptSummaryView> completed = summaries.stream()
-                .filter(s -> "SUBMITTED".equals(s.getStatus()) || "TIMED_OUT".equals(s.getStatus()))
+        // Score stats
+        List<BigDecimal> scores = attempts.stream()
+                .map(QuizAttempt::getMarksObtained)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
-        int completedAttempts = completed.size();
-        BigDecimal completionRate = totalAttempts > 0
-                ? BigDecimal.valueOf(completedAttempts * 100.0 / totalAttempts).setScale(2, RoundingMode.HALF_UP)
-                : BigDecimal.ZERO;
-
-        // Score stats from completed attempts
         BigDecimal avgScore = BigDecimal.ZERO;
         BigDecimal highestScore = BigDecimal.ZERO;
         BigDecimal lowestScore = BigDecimal.ZERO;
-        BigDecimal avgPercentage = BigDecimal.ZERO;
-        BigDecimal avgDuration = BigDecimal.ZERO;
-        int passCount = 0;
-        int failCount = 0;
 
-        if (!completed.isEmpty()) {
-            List<BigDecimal> scores = completed.stream()
-                    .map(AttemptSummaryView::getMarksObtained)
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toList());
-
-            if (!scores.isEmpty()) {
-                avgScore = scores.stream().reduce(BigDecimal.ZERO, BigDecimal::add)
-                        .divide(BigDecimal.valueOf(scores.size()), 2, RoundingMode.HALF_UP);
-                highestScore = scores.stream().max(Comparator.naturalOrder()).orElse(BigDecimal.ZERO);
-                lowestScore = scores.stream().min(Comparator.naturalOrder()).orElse(BigDecimal.ZERO);
-            }
-
-            List<BigDecimal> percentages = completed.stream()
-                    .map(AttemptSummaryView::getPercentage)
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toList());
-
-            if (!percentages.isEmpty()) {
-                avgPercentage = percentages.stream().reduce(BigDecimal.ZERO, BigDecimal::add)
-                        .divide(BigDecimal.valueOf(percentages.size()), 2, RoundingMode.HALF_UP);
-            }
-
-            List<Integer> durations = completed.stream()
-                    .map(AttemptSummaryView::getDurationSeconds)
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toList());
-
-            if (!durations.isEmpty()) {
-                avgDuration = BigDecimal.valueOf(durations.stream().mapToInt(Integer::intValue).average().orElse(0))
-                        .setScale(2, RoundingMode.HALF_UP);
-            }
-
-            passCount = (int) completed.stream().filter(s -> Boolean.TRUE.equals(s.getIsPassed())).count();
-            failCount = completedAttempts - passCount;
+        if (!scores.isEmpty()) {
+            avgScore = scores.stream().reduce(BigDecimal.ZERO, BigDecimal::add)
+                    .divide(BigDecimal.valueOf(scores.size()), 2, RoundingMode.HALF_UP);
+            highestScore = scores.stream().max(Comparator.naturalOrder()).orElse(BigDecimal.ZERO);
+            lowestScore = scores.stream().min(Comparator.naturalOrder()).orElse(BigDecimal.ZERO);
         }
+
+        // Percentage stats
+        List<BigDecimal> percentages = attempts.stream()
+                .map(QuizAttempt::getPercentage)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        BigDecimal avgPercentage = BigDecimal.ZERO;
+        if (!percentages.isEmpty()) {
+            avgPercentage = percentages.stream().reduce(BigDecimal.ZERO, BigDecimal::add)
+                    .divide(BigDecimal.valueOf(percentages.size()), 2, RoundingMode.HALF_UP);
+        }
+
+        // Duration stats
+        List<Long> durations = attempts.stream()
+                .filter(a -> a.getSubmittedAt() != null && a.getStartedAt() != null)
+                .map(a -> Duration.between(a.getStartedAt(), a.getSubmittedAt()).getSeconds())
+                .collect(Collectors.toList());
+
+        BigDecimal avgDuration = BigDecimal.ZERO;
+        if (!durations.isEmpty()) {
+            avgDuration = BigDecimal.valueOf(durations.stream().mapToLong(Long::longValue).average().orElse(0))
+                    .setScale(2, RoundingMode.HALF_UP);
+        }
+
+        // Pass/Fail counts
+        int passCount = (int) attempts.stream().filter(a -> Boolean.TRUE.equals(a.getIsPassed())).count();
+        int failCount = completedAttempts - passCount;
 
         BigDecimal passRate = completedAttempts > 0
                 ? BigDecimal.valueOf(passCount * 100.0 / completedAttempts).setScale(2, RoundingMode.HALF_UP)
                 : BigDecimal.ZERO;
 
-        // --- Score distribution (10-point buckets) ---
-        Map<String, Integer> scoreDistribution = buildScoreDistribution(completed);
+        // ── 3. Score distribution (10-point buckets) ──
+        Map<String, Integer> scoreDistribution = buildScoreDistribution(attempts);
 
-        // --- Anti-cheat summary ---
-        int flaggedCount = (int) summaries.stream()
-                .filter(s -> Boolean.TRUE.equals(s.getIsFlaggedSuspicious()))
+        // ── 4. Per-question accuracy from AttemptAnswer entities ──
+        List<QuestionAccuracyResponse> accuracies = buildQuestionAccuracies(quizId);
+
+        // ── 5. Anti-cheat summary ──
+        int flaggedCount = (int) attempts.stream()
+                .filter(a -> Boolean.TRUE.equals(a.getIsFlaggedSuspicious()))
                 .count();
-        BigDecimal avgTabSwitch = summaries.stream()
-                .map(AttemptSummaryView::getTabSwitchCount)
+        BigDecimal avgTabSwitch = attempts.stream()
+                .map(QuizAttempt::getTabSwitchCount)
                 .filter(Objects::nonNull)
                 .mapToInt(Integer::intValue)
                 .average()
@@ -178,29 +148,18 @@ public class AnalyticsService {
                 .orElse(BigDecimal.ZERO);
 
         return analyticsMapper.toQuizAnalyticsResponse(
-                quizUuid,
-                resolvedQuizTitle,
-                totalAttempts,
-                completedAttempts,
-                completionRate,
-                avgScore,
-                highestScore,
-                lowestScore,
-                avgPercentage,
-                avgDuration,
-                passCount,
-                failCount,
-                passRate,
-                scoreDistribution,
-                accuracies,
-                flaggedCount,
-                avgTabSwitch);
+                quizUuid, quizTitle,
+                totalAttempts, completedAttempts,
+                completionRate, avgScore, highestScore, lowestScore,
+                avgPercentage, avgDuration,
+                passCount, failCount, passRate,
+                scoreDistribution, accuracies,
+                flaggedCount, avgTabSwitch);
     }
 
     // ─── Score distribution: 10-point buckets ───────────
 
-    private Map<String, Integer> buildScoreDistribution(List<AttemptSummaryView> completed) {
-        // Use a LinkedHashMap to maintain order
+    private Map<String, Integer> buildScoreDistribution(List<QuizAttempt> attempts) {
         Map<String, Integer> distribution = new LinkedHashMap<>();
         distribution.put("0-10", 0);
         distribution.put("11-20", 0);
@@ -213,34 +172,71 @@ public class AnalyticsService {
         distribution.put("81-90", 0);
         distribution.put("91-100", 0);
 
-        for (AttemptSummaryView s : completed) {
-            if (s.getPercentage() == null)
-                continue;
-            int pct = s.getPercentage().intValue();
+        for (QuizAttempt a : attempts) {
+            if (a.getPercentage() == null) continue;
+            int pct = a.getPercentage().intValue();
             String bucket;
-            if (pct <= 10)
-                bucket = "0-10";
-            else if (pct <= 20)
-                bucket = "11-20";
-            else if (pct <= 30)
-                bucket = "21-30";
-            else if (pct <= 40)
-                bucket = "31-40";
-            else if (pct <= 50)
-                bucket = "41-50";
-            else if (pct <= 60)
-                bucket = "51-60";
-            else if (pct <= 70)
-                bucket = "61-70";
-            else if (pct <= 80)
-                bucket = "71-80";
-            else if (pct <= 90)
-                bucket = "81-90";
-            else
-                bucket = "91-100";
+            if (pct <= 10) bucket = "0-10";
+            else if (pct <= 20) bucket = "11-20";
+            else if (pct <= 30) bucket = "21-30";
+            else if (pct <= 40) bucket = "31-40";
+            else if (pct <= 50) bucket = "41-50";
+            else if (pct <= 60) bucket = "51-60";
+            else if (pct <= 70) bucket = "61-70";
+            else if (pct <= 80) bucket = "71-80";
+            else if (pct <= 90) bucket = "81-90";
+            else bucket = "91-100";
             distribution.merge(bucket, 1, Integer::sum);
         }
         return distribution;
+    }
+
+    // ─── Per-question accuracy from AttemptAnswer ─────
+
+    private List<QuestionAccuracyResponse> buildQuestionAccuracies(Long quizId) {
+        List<Object[]> rows = attemptAnswerRepository.findQuestionAccuracyByQuizId(quizId, COMPLETED_STATUSES);
+        if (rows.isEmpty()) return Collections.emptyList();
+
+        // Collect question IDs to load question text/type
+        Set<Long> questionIds = rows.stream()
+                .map(r -> ((Number) r[0]).longValue())
+                .collect(Collectors.toSet());
+        Map<Long, Question> questionMap = new HashMap<>();
+        questionRepository.findAllById(questionIds).forEach(q -> questionMap.put(q.getId(), q));
+
+        List<QuestionAccuracyResponse> result = new ArrayList<>();
+        for (Object[] row : rows) {
+            Long questionId = ((Number) row[0]).longValue();
+            long totalAnswers = row[1] != null ? ((Number) row[1]).longValue() : 0;
+            long correctCount = row[2] != null ? ((Number) row[2]).longValue() : 0;
+            long skippedCount = row[3] != null ? ((Number) row[3]).longValue() : 0;
+            long hintUsedCount = row[4] != null ? ((Number) row[4]).longValue() : 0;
+            double avgTime = row[5] != null ? ((Number) row[5]).doubleValue() : 0;
+
+            BigDecimal accuracyPct = totalAnswers > 0
+                    ? BigDecimal.valueOf(correctCount * 100.0 / totalAnswers).setScale(2, RoundingMode.HALF_UP)
+                    : BigDecimal.ZERO;
+
+            Question q = questionMap.get(questionId);
+
+            QuestionAccuracyResponse resp = QuestionAccuracyResponse.builder()
+                    .totalAnswers(totalAnswers)
+                    .correctCount(correctCount)
+                    .skippedCount(skippedCount)
+                    .hintUsedCount(hintUsedCount)
+                    .accuracyPct(accuracyPct)
+                    .avgTimeSeconds(BigDecimal.valueOf(avgTime).setScale(2, RoundingMode.HALF_UP))
+                    .build();
+
+            if (q != null) {
+                resp.setQuestionText(q.getQuestionText());
+                resp.setQuestionType(q.getQuestionType().name());
+                resp.setQuestionUuid(q.getUuid());
+            }
+
+            result.add(resp);
+        }
+        return result;
     }
 
     // ─── Admin Dashboard ─────────────────────────────────

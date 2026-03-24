@@ -139,6 +139,11 @@ public interface QuizAttemptRepository extends JpaRepository<QuizAttempt, Long> 
             @Param("statuses") List<AttemptStatus> statuses,
             Pageable pageable);
 
+    @Query("SELECT a FROM QuizAttempt a WHERE a.quiz.id = :quizId AND a.status IN :statuses")
+    List<QuizAttempt> findAllByQuizIdAndStatusIn(
+            @Param("quizId") Long quizId,
+            @Param("statuses") List<AttemptStatus> statuses);
+
     @Query("""
             SELECT a.quiz.id        AS quizId,
                    COUNT(a)         AS attemptCount,
