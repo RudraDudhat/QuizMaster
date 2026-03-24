@@ -30,6 +30,7 @@ public class QuestionResponse {
     private BigDecimal hintMarkDeduction;
     private String mediaUrl;
     private String mediaType;
+    private String codeContent;
     private String codeLanguage;
     private Boolean isMandatory;
     private Boolean isArchived;

@@ -65,6 +65,9 @@ public class Question {
     @Column(name = "media_type", length = 20)
     private String mediaType;
 
+    @Column(name = "code_content", columnDefinition = "TEXT")
+    private String codeContent;
+
     @Column(name = "code_language", length = 40)
     private String codeLanguage;
 

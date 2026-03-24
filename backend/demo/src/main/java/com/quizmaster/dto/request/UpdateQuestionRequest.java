@@ -51,6 +51,8 @@ public class UpdateQuestionRequest {
     @Size(max = 50, message = "Media type must not exceed 50 characters")
     private String mediaType;
 
+    private String codeContent;
+
     @Size(max = 30, message = "Code language must not exceed 30 characters")
     private String codeLanguage;
 
