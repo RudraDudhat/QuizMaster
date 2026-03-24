@@ -203,6 +203,9 @@ public interface AttemptMapper {
                 .hintUsed(ans.getHintUsed())
                 .timeSpentSeconds(ans.getTimeSpentSeconds())
                 .explanation(question.getExplanation())
+                .codeContent(question.getCodeContent())
+                .codeLanguage(question.getCodeLanguage())
+                .mediaUrl(question.getMediaUrl())
                 .options(toReviewOptionDtoList(question.getOptions()))
                 .build();
     }

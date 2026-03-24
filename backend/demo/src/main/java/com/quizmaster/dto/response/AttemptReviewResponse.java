@@ -36,6 +36,9 @@ public class AttemptReviewResponse {
         private Boolean hintUsed;
         private Integer timeSpentSeconds;
         private String explanation;
+        private String codeContent;
+        private String codeLanguage;
+        private String mediaUrl;
         private List<ReviewOptionDto> options;
     }
 

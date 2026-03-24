@@ -35,8 +35,8 @@ function QuestionCard({ q, index, expanded, onToggle }) {
     }
 
     const cardBorderColor = isSkipped ? '#E5E7EB' : isEssay ? '#BFDBFE' : isCorrect ? '#A7F3D0' : '#FECACA';
-    const selectedUuids = q.studentSelectedOptionIds ?? [];
-    const correctUuids = q.correctOptionIds ?? [];
+    const selectedUuids = q.studentSelectedOptionUuids ?? [];
+    const correctUuids = q.correctOptionUuids ?? [];
 
     return (
         <div style={{ background: '#fff', borderRadius: 14, border: `1.5px solid ${cardBorderColor}`, boxShadow: 'var(--shadow-sm)', overflow: 'hidden', transition: 'box-shadow 0.2s' }}>
@@ -95,19 +95,42 @@ function QuestionCard({ q, index, expanded, onToggle }) {
                         {q.questionText}
                     </div>
 
+                    {/* Code Snippet */}
+                    {q.codeContent && (
+                        <div style={{ marginBottom: 16 }}>
+                            {q.codeLanguage && (
+                                <div style={{ display: 'inline-block', padding: '3px 10px', background: '#374151', color: '#E5E7EB', fontSize: 11, fontWeight: 600, borderRadius: '8px 8px 0 0', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                    {q.codeLanguage}
+                                </div>
+                            )}
+                            <div style={{ background: '#1e1e2e', borderRadius: q.codeLanguage ? '0 12px 12px 12px' : 12, padding: '20px 24px', overflow: 'auto', border: '1px solid #374151' }}>
+                                <pre style={{ color: '#cdd6f4', fontFamily: '"Fira Code", "Cascadia Code", monospace', fontSize: 14, lineHeight: 1.7, margin: 0, whiteSpace: 'pre-wrap' }}>
+                                    {q.codeContent}
+                                </pre>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Media / Image */}
+                    {q.mediaUrl && q.questionType !== 'CODE_SNIPPET' && (
+                        <div style={{ marginBottom: 16 }}>
+                            <img src={q.mediaUrl} alt="Question media" style={{ maxWidth: '100%', borderRadius: 12, border: '1px solid #e5e7eb' }} />
+                        </div>
+                    )}
+
                     {/* Options */}
                     {q.options?.length > 0 && !['SHORT_ANSWER', 'ESSAY', 'FILL_IN_THE_BLANK'].includes(q.questionType) && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
                             {[...q.options].sort((a, b) => a.optionOrder - b.optionOrder).map((opt) => {
-                                const isOptCorrect = opt.isCorrect || correctUuids.includes(opt.id ?? opt.uuid);
-                                const isSelected = selectedUuids.includes(opt.id ?? opt.uuid);
+                                const isOptCorrect = opt.isCorrect || correctUuids.includes(opt.uuid);
+                                const isSelected = selectedUuids.includes(opt.uuid);
                                 let optBg = '#FAFAFA';
                                 let optBorder = '#E5E7EB';
                                 if (isOptCorrect) { optBg = '#ECFDF5'; optBorder = '#6EE7B7'; }
                                 else if (isSelected) { optBg = '#FEF2F2'; optBorder = '#FCA5A5'; }
 
                                 return (
-                                    <div key={opt.id ?? opt.uuid} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 14px', borderRadius: 10, background: optBg, border: `1.5px solid ${optBorder}` }}>
+                                    <div key={opt.uuid} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 14px', borderRadius: 10, background: optBg, border: `1.5px solid ${optBorder}` }}>
                                         <div style={{ flexShrink: 0, marginTop: 2 }}>
                                             {isOptCorrect
                                                 ? <CheckCircle2 size={16} style={{ color: 'var(--color-success)' }} />
@@ -165,7 +188,7 @@ function QuestionCard({ q, index, expanded, onToggle }) {
                                     <div key={title}>
                                         <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>{title}</div>
                                         {ids.map((id, i) => {
-                                            const opt = q.options.find(o => (o.id ?? o.uuid) === id);
+                                            const opt = q.options.find(o => o.uuid === id);
                                             const studentOrder = selectedUuids.indexOf(id);
                                             const correctOrder = correctUuids.indexOf(id);
                                             const match = studentOrder === correctOrder;
@@ -192,8 +215,8 @@ function QuestionCard({ q, index, expanded, onToggle }) {
                             </div>
                             {q.options.filter(o => o.matchPairKey).map((opt, i) => {
                                 const correctMatch = q.options.find(o => o.matchPairVal && o.optionOrder === opt.optionOrder);
-                                const studentMatchId = q.matchPairs?.[opt.id ?? opt.uuid];
-                                const studentMatch = q.options.find(o => String(o.id ?? o.uuid) === String(studentMatchId));
+                                const studentMatchId = q.matchPairs?.[opt.uuid];
+                                const studentMatch = q.options.find(o => String(o.uuid) === String(studentMatchId));
                                 const isMatch = studentMatch?.matchPairVal === correctMatch?.matchPairVal;
                                 return (
                                     <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 6 }}>
