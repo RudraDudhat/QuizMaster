@@ -7,7 +7,7 @@ export default function ResetPassword() {
             minHeight: '60vh',
             fontSize: '24px',
             fontWeight: '600',
-            color: '#374151'
+            color: 'var(--color-text-secondary)'
         }}>
             Welcome to Reset Password
         </div>

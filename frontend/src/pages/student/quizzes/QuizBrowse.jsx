@@ -37,7 +37,7 @@ function MiniBar({ value }) {
     const pct = Math.min(100, Math.max(0, value ?? 0));
     const color = pct >= 70 ? 'var(--color-success)' : pct >= 50 ? 'var(--color-warning)' : 'var(--color-danger)';
     return (
-        <div style={{ width: '100%', height: 5, background: '#e5e7eb', borderRadius: 9999, overflow: 'hidden', marginTop: 4 }}>
+        <div style={{ width: '100%', height: 5, background: 'var(--color-border-muted)', borderRadius: 9999, overflow: 'hidden', marginTop: 4 }}>
             <div style={{ width: `${pct}%`, height: '100%', background: color, borderRadius: 9999 }} />
         </div>
     );
@@ -46,7 +46,7 @@ function MiniBar({ value }) {
 // ─── Skeleton card ────────────────────────────────────────
 function SkeletonCard() {
     return (
-        <div style={{ background: '#fff', border: '1px solid var(--color-border)', borderRadius: 12, overflow: 'hidden' }}>
+        <div style={{ background: 'var(--color-bg-card)', border: '2px solid var(--color-border)', borderRadius: 20, overflow: 'hidden', boxShadow: '3px 3px 0 var(--color-border)' }}>
             <div className="skeleton" style={{ height: 4 }} />
             <div style={{ padding: 18 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
@@ -59,7 +59,7 @@ function SkeletonCard() {
                 <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
                     {[...Array(4)].map((_, i) => <div key={i} className="skeleton" style={{ height: 22, width: 60, borderRadius: 6 }} />)}
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 12, borderTop: '1px solid #f1f5f9' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 12, borderTop: '1px solid var(--color-border-soft)' }}>
                     <div className="skeleton" style={{ height: 20, width: 70, borderRadius: 9999 }} />
                     <div className="skeleton" style={{ height: 30, width: 90, borderRadius: 8 }} />
                 </div>
@@ -74,20 +74,27 @@ function QuizCard({ quiz }) {
     const expiresMs = quiz.expiresAt ? new Date(quiz.expiresAt) - Date.now() : null;
     const hoursLeft = expiresMs !== null ? expiresMs / 3_600_000 : null;
     const canStart  = !['MAX_ATTEMPTS_REACHED', 'EXPIRED', 'UPCOMING'].includes(quiz.quizStatus);
+    const headerGradient =
+        quiz.difficulty === 'EASY'
+            ? 'linear-gradient(135deg,var(--color-success-soft),var(--color-success))'
+            : quiz.difficulty === 'HARD'
+                ? 'linear-gradient(135deg,var(--color-danger-soft),var(--color-danger))'
+                : 'linear-gradient(135deg,var(--color-warning-soft),var(--color-warning))';
 
     return (
         <div
             onClick={() => navigate(`/student/quizzes/${quiz.uuid}`)}
             style={{
-                background: '#fff', border: '1px solid var(--color-border)',
-                borderRadius: 12, overflow: 'hidden', cursor: 'pointer',
+                background: 'var(--color-bg-card)', border: '2px solid var(--color-border)',
+                borderRadius: 20, overflow: 'hidden', cursor: 'pointer',
                 transition: 'all 0.2s', display: 'flex', flexDirection: 'column',
+                boxShadow: '3px 3px 0 var(--color-border)',
             }}
-            onMouseEnter={e => { e.currentTarget.style.boxShadow = 'var(--shadow-md)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
-            onMouseLeave={e => { e.currentTarget.style.boxShadow = ''; e.currentTarget.style.transform = ''; }}
+            onMouseEnter={e => { e.currentTarget.style.boxShadow = '5px 5px 0 var(--color-border)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+            onMouseLeave={e => { e.currentTarget.style.boxShadow = '3px 3px 0 var(--color-border)'; e.currentTarget.style.transform = ''; }}
         >
-            {/* Difficulty strip */}
-            <div style={{ height: 4, background: diffColor(quiz.difficulty), width: '100%' }} />
+            {/* Header gradient */}
+            <div style={{ height: 72, background: headerGradient, borderBottom: '2px solid var(--color-border)' }} />
 
             <div style={{ padding: 18, display: 'flex', flexDirection: 'column', flex: 1, gap: 0 }}>
                 {/* Category + Status */}
@@ -124,7 +131,7 @@ function QuizCard({ quiz }) {
                         `💯 ${quiz.totalMarks} marks`,
                         `🎯 Pass: ${quiz.passMarks}`,
                     ].map(s => (
-                        <span key={s} style={{ fontSize: 11, background: '#f8fafc', border: '1px solid var(--color-border)', borderRadius: 6, padding: '3px 8px', color: 'var(--color-text-secondary)', fontWeight: 500 }}>{s}</span>
+                        <span key={s} style={{ fontSize: 11, background: 'var(--color-bg-card)', border: '2px solid var(--color-border)', borderRadius: 9999, padding: '3px 8px', color: 'var(--color-text-secondary)', fontWeight: 600 }}>{s}</span>
                     ))}
                 </div>
 
@@ -166,7 +173,7 @@ function QuizCard({ quiz }) {
                 )}
 
                 {/* Footer */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 12, borderTop: '1px solid #f1f5f9', marginTop: 'auto' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 12, borderTop: '2px solid var(--color-border)', marginTop: 'auto' }}>
                     <Badge variant={diffVariant(quiz.difficulty)} size="sm">{quiz.difficulty}</Badge>
                     <Button
                         variant="primary" size="sm"
@@ -210,8 +217,8 @@ export default function QuizBrowse() {
     const clearAll  = () => { setSearch(''); setDiffFilter(''); setTypeFilter(''); setStatusFilter(''); };
 
     const inputStyle = {
-        height: 38, border: '1px solid var(--color-border)', borderRadius: 8,
-        fontSize: 13, padding: '0 12px', background: '#fff', color: 'var(--color-text-primary)',
+        height: 40, border: '2px solid var(--color-border)', borderRadius: 9999,
+        fontSize: 13, padding: '0 12px', background: 'var(--color-bg-card)', color: 'var(--color-text-primary)',
         outline: 'none', fontFamily: 'inherit', cursor: 'pointer', transition: 'border-color 0.15s',
     };
 
@@ -230,7 +237,7 @@ export default function QuizBrowse() {
             </div>
 
             {/* FILTERS */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center', background: '#fff', border: '1px solid var(--color-border)', borderRadius: 12, padding: '14px 16px' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center', background: 'var(--color-bg-card)', border: '2px solid var(--color-border)', borderRadius: 16, padding: '14px 16px', boxShadow: '3px 3px 0 var(--color-border)' }}>
                 {/* Search */}
                 <div style={{ position: 'relative', flex: '1 1 200px', minWidth: 160 }}>
                     <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-secondary)', pointerEvents: 'none' }} />

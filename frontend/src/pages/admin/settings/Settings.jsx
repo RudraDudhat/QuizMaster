@@ -657,7 +657,7 @@ export default function Settings() {
                     </>
                 }
             >
-                <div className="space-y-4">
+                <div className="space-y-4 p-4 rounded-xl bg-[var(--color-block-cream)] border-2 border-[var(--color-border)] shadow-[2px_2px_0_var(--color-border)]">
                     <Input
                         label="Category Name"
                         name="editCategoryName"
@@ -746,13 +746,13 @@ export default function Settings() {
             >
                 {catDeleteModal.quizCount > 0 ? (
                     <div className="flex flex-col items-center text-center gap-3">
-                        <div className="w-16 h-16 rounded-2xl bg-red-50 border border-red-100 flex items-center justify-center">
-                            <AlertCircle size={40} className="text-red-500" />
+                        <div className="w-16 h-16 rounded-2xl bg-[var(--color-block-amber)] border-2 border-[var(--color-border)] shadow-[2px_2px_0_var(--color-border)] flex items-center justify-center">
+                            <AlertCircle size={40} className="text-[var(--color-warning)]" />
                         </div>
-                        <h3 className="text-base font-semibold text-gray-900">
+                        <h3 className="text-base font-semibold text-[var(--color-text-primary)]">
                             Cannot Delete
                         </h3>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-[var(--color-text-secondary)]">
                             &apos;{catDeleteModal.name}&apos; is used in{' '}
                             {catDeleteModal.quizCount} quiz(zes). Reassign those
                             quizzes to a different category before deleting.
@@ -760,16 +760,16 @@ export default function Settings() {
                     </div>
                 ) : (
                     <div className="flex flex-col items-center text-center gap-3">
-                        <div className="w-16 h-16 rounded-2xl bg-red-50 border border-red-100 flex items-center justify-center">
-                            <Trash2 size={40} className="text-red-500" />
+                        <div className="w-16 h-16 rounded-2xl bg-[var(--color-block-red)] border-2 border-[var(--color-border)] shadow-[2px_2px_0_var(--color-border)] flex items-center justify-center">
+                            <Trash2 size={40} className="text-[var(--color-danger)]" />
                         </div>
-                        <p className="text-sm text-gray-700">
+                        <p className="text-sm text-[var(--color-text-secondary)]">
                             Are you sure you want to delete:
                         </p>
-                        <p className="text-base font-bold text-gray-900">
+                        <p className="text-base font-bold text-[var(--color-text-primary)]">
                             {catDeleteModal.name}
                         </p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-[var(--color-text-muted)]">
                             This action cannot be undone.
                         </p>
                     </div>
@@ -841,13 +841,13 @@ export default function Settings() {
                 {tagDeleteModal.quizCount > 0 ||
                 tagDeleteModal.questionCount > 0 ? (
                     <div className="flex flex-col items-center text-center gap-3">
-                        <div className="w-16 h-16 rounded-2xl bg-red-50 border border-red-100 flex items-center justify-center">
-                            <AlertCircle size={40} className="text-red-500" />
+                        <div className="w-16 h-16 rounded-2xl bg-[var(--color-block-amber)] border-2 border-[var(--color-border)] shadow-[2px_2px_0_var(--color-border)] flex items-center justify-center">
+                            <AlertCircle size={40} className="text-[var(--color-warning)]" />
                         </div>
-                        <h3 className="text-base font-semibold text-gray-900">
+                        <h3 className="text-base font-semibold text-[var(--color-text-primary)]">
                             Cannot Delete
                         </h3>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-[var(--color-text-secondary)]">
                             &apos;{tagDeleteModal.name}&apos; is currently used in{' '}
                             {tagDeleteModal.quizCount} quiz(zes) and{' '}
                             {tagDeleteModal.questionCount} question(s). Remove it
@@ -856,16 +856,16 @@ export default function Settings() {
                     </div>
                 ) : (
                     <div className="flex flex-col items-center text-center gap-3">
-                        <div className="w-16 h-16 rounded-2xl bg-red-50 border border-red-100 flex items-center justify-center">
-                            <Trash2 size={40} className="text-red-500" />
+                        <div className="w-16 h-16 rounded-2xl bg-[var(--color-block-red)] border-2 border-[var(--color-border)] shadow-[2px_2px_0_var(--color-border)] flex items-center justify-center">
+                            <Trash2 size={40} className="text-[var(--color-danger)]" />
                         </div>
-                        <p className="text-sm text-gray-700">
+                        <p className="text-sm text-[var(--color-text-secondary)]">
                             Are you sure you want to delete tag:
                         </p>
-                        <p className="text-base font-bold text-gray-900">
+                        <p className="text-base font-bold text-[var(--color-text-primary)]">
                             {tagDeleteModal.name}
                         </p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-[var(--color-text-muted)]">
                             This action cannot be undone.
                         </p>
                     </div>

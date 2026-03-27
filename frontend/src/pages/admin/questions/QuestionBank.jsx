@@ -27,7 +27,6 @@ import Modal from '../../../components/common/Modal';
 import Pagination from '../../../components/common/Pagination';
 import EmptyState from '../../../components/common/EmptyState';
 import Card from '../../../components/ui/Card';
-import Table from '../../../components/ui/Table';
 import Dropdown from '../../../components/ui/Dropdown';
 
 /* ─── Constants ─── */
@@ -64,6 +63,7 @@ export default function QuestionBank() {
     const [cartQuizDropdownOpen, setCartQuizDropdownOpen] = useState(false);
 
     const closeModal = useCallback(() => setModalState({ mode: null, question: null }), []);
+    const isSelectMode = selectedQuestions.length > 0;
 
     /* Cleanup selection on unmount */
     useEffect(() => () => {
@@ -172,149 +172,43 @@ export default function QuestionBank() {
     const diffOptions = [{ value: '', label: 'All Difficulties' }, ...DIFFICULTY_LEVELS];
     const tagOptions = [{ value: '', label: 'All Tags' }, ...tags.map(t => ({ value: t.uuid, label: t.name }))];
 
-    /* ─── Table columns ─── */
-    const columns = [
-        {
-            key: 'questionText', label: 'Question',
-            render: (q) => (
-                <button onClick={() => setModalState({ mode: 'view', question: q })} className="text-left group max-w-xs">
-                    <span className="font-semibold text-gray-900 group-hover:text-primary transition-colors block">
-                        {truncateText(q.questionText, 80)}
-                    </span>
-                    <Badge variant={TYPE_BADGE_VARIANT[q.questionType] || 'default'} size="sm">
-                        {QUESTION_TYPES.find(t => t.value === q.questionType)?.label || q.questionType}
-                    </Badge>
-                </button>
-            ),
-        },
-        {
-            key: 'difficulty', label: 'Difficulty', align: 'center',
-            render: (q) => <Badge variant={DIFF_VARIANT[q.difficulty] || 'default'} dot>{q.difficulty}</Badge>,
-        },
-        {
-            key: 'marks', label: 'Marks', align: 'center',
-            render: (q) => (
-                <div className="text-center">
-                    <span className="font-bold text-gray-900">{getQuestionMarks(q)}</span>
-                    {q.negativeMarks > 0 && (
-                        <span className="block text-xs text-red-500 mt-0.5">-{q.negativeMarks}</span>
-                    )}
-                </div>
-            ),
-        },
-        {
-            key: 'tags', label: 'Tags', align: 'center',
-            render: (q) => {
-                if (!q.tags?.length) return <span className="text-gray-300">—</span>;
-                return (
-                    <div className="flex flex-wrap gap-1 justify-center">
-                        {q.tags.slice(0, 2).map((t, idx) => (
-                            <span key={getTagKey(t, idx)} className="text-[11px] px-2 py-0.5 rounded-full bg-primary-light text-primary font-medium">{getTagName(t)}</span>
-                        ))}
-                        {q.tags.length > 2 && (
-                            <span className="text-[11px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 font-medium">+{q.tags.length - 2} more</span>
-                        )}
-                    </div>
-                );
-            },
-        },
-        {
-            key: 'options', label: 'Options', align: 'center',
-            render: (q) => (
-                <span className="text-sm text-gray-600">
-                    {OPEN_ENDED_TYPES.includes(q.questionType) ? 'Open ended' : `${q.options?.length || 0} options`}
-                </span>
-            ),
-        },
-        {
-            key: 'usedIn', label: 'Used In', align: 'center',
-            render: (q) => {
-                const quizzes = q.usedInQuizzes || [];
-                if (!quizzes.length) return <span className="text-gray-300">—</span>;
-                if (quizzes.length === 1) {
-                    return (
-                        <button onClick={() => navigate(`/admin/quizzes/${quizzes[0].quizUuid}/questions`)}
-                            className="text-xs px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-600 font-medium hover:bg-indigo-100 transition-colors truncate max-w-[140px] block">
-                            {quizzes[0].quizTitle}
-                        </button>
-                    );
-                }
-                return (
-                    <div className="relative group">
-                        <span className="text-xs px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-600 font-medium cursor-default">
-                            {quizzes.length} quizzes
-                        </span>
-                        <div className="absolute z-20 bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block">
-                            <div className="bg-white rounded-xl shadow-xl border border-gray-200 p-2 min-w-[180px] space-y-1">
-                                {quizzes.map((qz) => (
-                                    <button key={qz.quizUuid}
-                                        onClick={() => navigate(`/admin/quizzes/${qz.quizUuid}/questions`)}
-                                        className="w-full text-left text-xs px-3 py-2 rounded-lg hover:bg-indigo-50 text-gray-700 hover:text-indigo-600 transition-colors truncate">
-                                        {qz.quizTitle}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                );
-            },
-        },
-        {
-            key: 'createdAt', label: 'Created', align: 'center',
-            render: (q) => <span className="text-xs text-gray-500 whitespace-nowrap">{formatDate(q.createdAt)}</span>,
-        },
-        {
-            key: 'select', label: '', width: '80px', align: 'center',
-            render: (q) => {
-                const qId = getQuestionId(q);
-                const isSelected = selectedQuestions.includes(qId);
-                const usedInQuizUuids = (q.usedInQuizzes || [])
-                    .map((quiz) => quiz.quizUuid)
-                    .filter(Boolean);
-                return (
-                    <button onClick={() => {
-                        if (isSelected) {
-                            setSelectedQuestions((prev) => prev.filter((id) => id !== qId));
-                            setSelectedQuestionQuizMap((prev) => {
-                                const next = { ...prev };
-                                delete next[qId];
-                                return next;
-                            });
-                            return;
-                        }
+    const toggleSelectQuestion = (q) => {
+        const qId = getQuestionId(q);
+        const isSelected = selectedQuestions.includes(qId);
+        const usedInQuizUuids = (q.usedInQuizzes || [])
+            .map((quiz) => quiz.quizUuid)
+            .filter(Boolean);
 
-                        setSelectedQuestions((prev) => [...prev, qId]);
-                        setSelectedQuestionQuizMap((prev) => ({
-                            ...prev,
-                            [qId]: usedInQuizUuids,
-                        }));
-                    }}
-                        className={`text-xs font-medium px-3 py-1.5 rounded-lg transition-all duration-200 ${
-                            isSelected
-                                ? 'bg-primary text-white shadow-sm'
-                                : 'bg-gray-100 text-gray-600 hover:bg-primary-light hover:text-primary'
-                        }`}>
-                        {isSelected ? '✓ Selected' : '+ Select'}
-                    </button>
-                );
-            },
-        },
-        {
-            key: 'actions', label: '', width: '48px', align: 'center',
-            render: (q) => (
-                <Dropdown
-                    trigger={<button className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"><MoreVertical size={16} /></button>}
-                    items={[
-                        { label: 'View', icon: <Eye size={14} />, onClick: () => setModalState({ mode: 'view', question: q }) },
-                        { label: 'Edit', icon: <Edit3 size={14} />, onClick: () => setModalState({ mode: 'edit', question: q }) },
-                        { label: 'Duplicate', icon: <Copy size={14} />, onClick: () => openDuplicate(q) },
-                        { divider: true },
-                        { label: 'Delete', icon: <Trash2 size={14} />, danger: true, onClick: () => setDeleteModal({ open: true, questionUuid: getQuestionId(q) }) },
-                    ]}
-                />
-            ),
-        },
-    ];
+        if (isSelected) {
+            setSelectedQuestions((prev) => prev.filter((id) => id !== qId));
+            setSelectedQuestionQuizMap((prev) => {
+                const next = { ...prev };
+                delete next[qId];
+                return next;
+            });
+            return;
+        }
+
+        setSelectedQuestions((prev) => [...prev, qId]);
+        setSelectedQuestionQuizMap((prev) => ({
+            ...prev,
+            [qId]: usedInQuizUuids,
+        }));
+    };
+
+    const longPressTimerRef = useRef(null);
+    const startLongPress = (q, event) => {
+        if (event?.target?.closest?.('button')) return;
+        longPressTimerRef.current = setTimeout(() => {
+            toggleSelectQuestion(q);
+        }, 450);
+    };
+    const cancelLongPress = () => {
+        if (longPressTimerRef.current) {
+            clearTimeout(longPressTimerRef.current);
+            longPressTimerRef.current = null;
+        }
+    };
 
     /* ═══════════════════════════════════════ */
     /* RENDER */
@@ -325,15 +219,15 @@ export default function QuestionBank() {
             <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
                 <div>
                     <div className="flex items-center gap-3">
-                        <h1 className="text-2xl font-bold text-gray-900">Question Bank</h1>
+                        <h1 className="text-3xl font-extrabold text-[var(--color-text-primary)]">Question Bank</h1>
                         {selectedQuestions.length > 0 && (
-                            <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full bg-primary text-white shadow-sm animate-pulse">
+                            <span className="inline-flex items-center gap-1.5 text-xs font-extrabold px-3 py-1 rounded-full bg-[var(--color-primary)] text-[var(--color-text-inverse)] border-2 border-[var(--color-border)] shadow-[2px_2px_0_var(--color-border)] animate-pulse">
                                 <ClipboardList size={13} />
                                 {selectedQuestions.length} selected
                             </span>
                         )}
                     </div>
-                    <p className="text-sm text-gray-500 mt-0.5">{totalElements} questions total</p>
+                    <p className="text-sm text-[var(--color-text-secondary)] mt-0.5">{totalElements} questions total</p>
                 </div>
                 <div className="flex gap-2">
                     <Button variant="outline" icon={<Upload size={16} />}
@@ -348,7 +242,7 @@ export default function QuestionBank() {
             </div>
 
             {/* ─── Filters ─── */}
-            <Card padding="sm">
+            <Card padding="sm" className="bg-[var(--color-block-sky)]">
                 <div className="flex flex-col sm:flex-row gap-3 p-2">
                     <div className="flex-1">
                         <Input name="search" placeholder="Search questions..."
@@ -378,16 +272,165 @@ export default function QuestionBank() {
 
             {/* ─── Table ─── */}
             {!isLoading && questions.length === 0 ? (
-                <Card padding="lg">
+                <Card padding="lg" className="bg-[var(--color-block-cream)]">
                     <EmptyState icon={<HelpCircle size={48} />}
                         title="No questions found"
                         description="Add your first question or adjust your filters"
                         action={{ label: 'Add Question', onClick: () => setModalState({ mode: 'create', question: null }) }} />
                 </Card>
             ) : (
-                <Table columns={columns} data={questions} loading={isLoading}
-                    emptyMessage="No questions match your filters"
-                    emptyIcon={<HelpCircle size={40} className="text-gray-300" />} />
+                <div className="space-y-4">
+                    <div className="grid gap-2 px-3 text-[10px] font-extrabold uppercase tracking-wide text-[var(--color-text-primary)] sm:gap-3 sm:px-4 lg:px-6 grid-cols-[minmax(0,1fr)_72px_60px_56px] sm:grid-cols-[minmax(0,1fr)_0.8fr_0.7fr_0.5fr] lg:grid-cols-[minmax(220px,2.2fr)_0.9fr_0.7fr_0.4fr_1.2fr_0.9fr_1.2fr_0.9fr]">
+                        <div>Question</div>
+                        <div className="text-right sm:text-center">Difficulty</div>
+                        <div className="text-right sm:text-center">Marks</div>
+                        <div className="text-right sm:text-center">Actions</div>
+                        <div className="hidden lg:block text-center">Tags</div>
+                        <div className="hidden lg:block text-center">Options</div>
+                        <div className="hidden lg:block text-center">Used In</div>
+                        <div className="hidden lg:block text-center">Created</div>
+                    </div>
+
+                    {isLoading ? (
+                        Array.from({ length: 6 }).map((_, idx) => (
+                            <div
+                                key={`question-row-skeleton-${idx}`}
+                                className="rounded-[26px] border-2 border-[var(--color-border)] bg-[var(--color-block-sky)] shadow-[6px_6px_0_var(--color-border)] p-4"
+                            >
+                                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-[minmax(220px,2.2fr)_0.9fr_0.7fr_1.2fr_0.9fr_1.2fr_0.9fr_0.7fr_0.4fr]">
+                                    {Array.from({ length: 9 }).map((__, cellIdx) => (
+                                        <div key={`question-row-skeleton-${idx}-${cellIdx}`} className="w-full bg-[var(--color-block-white)] border-2 border-[var(--color-border)] rounded-2xl px-3 py-3">
+                                            <div className="skeleton h-4 w-full rounded" />
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        questions.map((q) => {
+                            const qId = getQuestionId(q);
+                            const isSelected = selectedQuestions.includes(qId);
+                            const quizzes = q.usedInQuizzes || [];
+                            const typeLabel = QUESTION_TYPES.find(t => t.value === q.questionType)?.label || q.questionType;
+                            return (
+                                <div
+                                    key={qId}
+                                    className={`rounded-[26px] border-2 border-[var(--color-border)] bg-[var(--color-block-sky)] shadow-[6px_6px_0_var(--color-border)] p-3 sm:p-4 transition-colors ${
+                                        isSelected ? 'bg-[var(--color-primary-light)] ring-2 ring-[var(--color-primary)]' : ''
+                                    }`}
+                                    onTouchStart={(event) => startLongPress(q, event)}
+                                    onTouchEnd={cancelLongPress}
+                                    onTouchCancel={cancelLongPress}
+                                    onClick={(event) => {
+                                        if (event?.target?.closest?.('button')) return;
+                                        if (isSelectMode) toggleSelectQuestion(q);
+                                    }}
+                                >
+                                    <div className="grid gap-2 items-center sm:gap-3 grid-cols-[minmax(0,1fr)_72px_60px_56px] sm:grid-cols-[minmax(0,1fr)_0.8fr_0.7fr_0.5fr] lg:grid-cols-[minmax(220px,2.2fr)_0.9fr_0.7fr_0.4fr_1.2fr_0.9fr_1.2fr_0.9fr]">
+                                        <div className="w-full bg-[var(--color-block-white)] rounded-2xl px-2.5 py-2 sm:px-3">
+                                            <button onClick={() => setModalState({ mode: 'view', question: q })} className="text-left group">
+                                                <span className="font-semibold text-[var(--color-text-primary)] group-hover:text-[var(--color-primary)] transition-colors block">
+                                                    {truncateText(q.questionText, 90)}
+                                                </span>
+                                                <span className="mt-2 inline-flex items-center gap-2">
+                                                    <Badge variant={TYPE_BADGE_VARIANT[q.questionType] || 'default'} size="sm">
+                                                        {typeLabel}
+                                                    </Badge>
+                                                </span>
+                                            </button>
+                                        </div>
+
+                                        <div className="w-full bg-[var(--color-block-white)] rounded-2xl px-2.5 py-2 text-right flex flex-col items-end sm:px-3 sm:text-center sm:items-center">
+                                            <Badge variant={DIFF_VARIANT[q.difficulty] || 'default'} dot>{q.difficulty}</Badge>
+                                        </div>
+
+                                        <div className="w-full bg-[var(--color-block-white)] rounded-2xl px-2.5 py-2 text-right flex flex-col items-end sm:px-3 sm:text-center sm:items-center">
+                                            <div className="font-bold text-[var(--color-text-primary)]">
+                                                {getQuestionMarks(q)}
+                                                {q.negativeMarks > 0 && (
+                                                    <span className="ml-1 text-xs text-[var(--color-danger)]">(-{q.negativeMarks})</span>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        <div className="w-full bg-[var(--color-block-white)] rounded-2xl px-2.5 py-2 text-right flex flex-col items-end sm:px-3 sm:text-center sm:items-center">
+                                            <Dropdown
+                                                trigger={<button className="p-1.5 rounded-full text-[var(--color-text-primary)] bg-[var(--color-block-white)] hover:bg-[var(--color-primary-light)] transition-colors"><MoreVertical size={16} /></button>}
+                                                items={[
+                                                    { label: 'View', icon: <Eye size={14} />, onClick: () => setModalState({ mode: 'view', question: q }) },
+                                                    { label: 'Edit', icon: <Edit3 size={14} />, onClick: () => setModalState({ mode: 'edit', question: q }) },
+                                                    { label: 'Duplicate', icon: <Copy size={14} />, onClick: () => openDuplicate(q) },
+                                                    { divider: true },
+                                                    { label: 'Delete', icon: <Trash2 size={14} />, danger: true, onClick: () => setDeleteModal({ open: true, questionUuid: getQuestionId(q) }) },
+                                                ]}
+                                            />
+                                        </div>
+
+                                        <div className="hidden lg:flex w-full bg-[var(--color-block-white)] rounded-2xl px-3 py-2 text-center flex-col items-center">
+                                            {q.tags?.length ? (
+                                                <div className="flex flex-wrap gap-1 justify-center">
+                                                    {q.tags.slice(0, 2).map((t, idx) => (
+                                                        <span
+                                                            key={getTagKey(t, idx)}
+                                                            className="text-[11px] px-2 py-0.5 rounded-full bg-[var(--color-primary-light)] text-[var(--color-primary)] font-semibold"
+                                                        >
+                                                            {getTagName(t)}
+                                                        </span>
+                                                    ))}
+                                                    {q.tags.length > 2 && (
+                                                        <span className="text-[11px] px-2 py-0.5 rounded-full bg-[var(--color-bg-subtle)] text-[var(--color-text-secondary)] font-semibold">
+                                                            +{q.tags.length - 2} more
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            ) : (
+                                                <span className="text-[var(--color-text-muted)]">—</span>
+                                            )}
+                                        </div>
+
+                                        <div className="hidden lg:flex w-full bg-[var(--color-block-white)] rounded-2xl px-3 py-2 text-center flex-col items-center">
+                                            <span className="text-sm text-[var(--color-text-secondary)]">
+                                                {OPEN_ENDED_TYPES.includes(q.questionType) ? 'Open ended' : `${q.options?.length || 0} options`}
+                                            </span>
+                                        </div>
+
+                                        <div className="hidden lg:flex w-full bg-[var(--color-block-white)] rounded-2xl px-3 py-2 text-center flex-col items-center">
+                                            {!quizzes.length ? (
+                                                <span className="text-[var(--color-text-muted)]">—</span>
+                                            ) : quizzes.length === 1 ? (
+                                                <button onClick={() => navigate(`/admin/quizzes/${quizzes[0].quizUuid}/questions`)}
+                                                    className="text-xs px-2.5 py-1 rounded-full bg-[var(--color-primary-light)] text-[var(--color-primary)] font-medium hover:bg-[var(--color-bg-muted)] transition-colors truncate max-w-[140px]">
+                                                    {quizzes[0].quizTitle}
+                                                </button>
+                                            ) : (
+                                                <div className="relative group inline-flex">
+                                                    <span className="text-xs px-2.5 py-1 rounded-full bg-[var(--color-primary-light)] text-[var(--color-primary)] font-medium cursor-default">
+                                                        {quizzes.length} quizzes
+                                                    </span>
+                                                    <div className="absolute z-20 bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block">
+                                                        <div className="bg-[var(--color-bg-card)] rounded-xl shadow-xl border border-[var(--color-border-soft)] p-2 min-w-[180px] space-y-1">
+                                                            {quizzes.map((qz) => (
+                                                                <button key={qz.quizUuid}
+                                                                    onClick={() => navigate(`/admin/quizzes/${qz.quizUuid}/questions`)}
+                                                                    className="w-full text-left text-xs px-3 py-2 rounded-lg hover:bg-[var(--color-primary-light)] text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors truncate">
+                                                                    {qz.quizTitle}
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <div className="hidden lg:flex w-full bg-[var(--color-block-white)] rounded-2xl px-3 py-2 text-center flex-col items-center">
+                                            <span className="text-xs text-[var(--color-text-secondary)] whitespace-nowrap">{formatDate(q.createdAt)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })
+                    )}
+                </div>
             )}
 
             {/* ─── Pagination ─── */}
@@ -417,11 +460,11 @@ export default function QuestionBank() {
                         onClick={() => deleteMut.mutate(deleteModal.questionUuid)}>Delete</Button>
                 </>}>
                 <div className="text-center">
-                    <div className="mx-auto w-14 h-14 rounded-full bg-red-50 flex items-center justify-center mb-4">
-                        <AlertTriangle size={28} className="text-red-500" />
+                    <div className="mx-auto w-14 h-14 rounded-full bg-[var(--color-danger-soft)] border-2 border-[var(--color-border)] flex items-center justify-center mb-4 shadow-[2px_2px_0_var(--color-border)]">
+                        <AlertTriangle size={28} className="text-[var(--color-danger)]" />
                     </div>
-                    <p className="text-sm text-gray-700 font-medium mb-2">Are you sure you want to delete this question?</p>
-                    <p className="text-xs text-gray-400">This cannot be undone. The question will be removed from all quizzes it is linked to.</p>
+                    <p className="text-sm text-[var(--color-text-secondary)] font-semibold mb-2">Are you sure you want to delete this question?</p>
+                    <p className="text-xs text-[var(--color-text-muted)]">This cannot be undone. The question will be removed from all quizzes it is linked to.</p>
                 </div>
             </Modal>
 
@@ -431,27 +474,27 @@ export default function QuestionBank() {
                     <style>{`@keyframes slideUp { from { opacity:0; transform: translate(-50%, 20px); } to { opacity:1; transform: translate(-50%, 0); } }`}</style>
                     <div className="relative">
                         {cartQuizDropdownOpen && (
-                            <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-white rounded-xl shadow-2xl border border-gray-200 w-72 max-h-64 overflow-y-auto p-2 space-y-1">
-                                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide px-2 py-1">Select a Quiz</p>
+                            <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-[var(--color-bg-card)] rounded-xl shadow-[6px_6px_0_var(--color-border)] border-2 border-[var(--color-border)] w-72 max-h-64 overflow-y-auto p-2 space-y-1">
+                                <p className="text-xs font-semibold text-[var(--color-text-secondary)] uppercase tracking-wide px-2 py-1">Select a Quiz</p>
                                 {filteredSelectableQuizzes.length === 0 && (
-                                    <p className="text-xs text-gray-400 px-2 py-3 text-center">All selected questions already exist in available quizzes</p>
+                                    <p className="text-xs text-[var(--color-text-muted)] px-2 py-3 text-center">All selected questions already exist in available quizzes</p>
                                 )}
                                 {filteredSelectableQuizzes.map(qz => (
                                     <button key={qz.quizUuid}
                                         onClick={() => bulkAddMut.mutate({ quizUuid: qz.quizUuid, questionUuids: selectedQuestions })}
                                         disabled={bulkAddMut.isPending}
-                                        className="w-full text-left text-sm px-3 py-2.5 rounded-lg hover:bg-primary-light hover:text-primary transition-colors flex items-center justify-between gap-2 disabled:opacity-50">
+                                        className="w-full text-left text-sm px-3 py-2.5 rounded-lg hover:bg-[var(--color-primary-light)] hover:text-[var(--color-text-primary)] transition-colors flex items-center justify-between gap-2 disabled:opacity-50">
                                         <span className="truncate">{qz.title}</span>
-                                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium shrink-0 ${qz.status === 'DRAFT' ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-600'}`}>{qz.status}</span>
+                                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold shrink-0 ${qz.status === 'DRAFT' ? 'bg-[var(--color-warning-soft)] text-[var(--color-warning)]' : 'bg-[var(--color-success-soft)] text-[var(--color-success)]'}`}>{qz.status}</span>
                                     </button>
                                 ))}
                             </div>
                         )}
-                        <div className="flex items-center gap-3 px-5 py-3 rounded-2xl bg-gray-900 text-white shadow-2xl">
-                            <span className="text-sm font-medium">{selectedQuestions.length} question{selectedQuestions.length !== 1 ? 's' : ''}</span>
-                            <div className="w-px h-5 bg-gray-600" />
+                        <div className="flex items-center gap-3 px-5 py-3 rounded-2xl bg-[var(--color-bg-card)] text-[var(--color-text-primary)] border-2 border-[var(--color-border)] shadow-[6px_6px_0_var(--color-border)]">
+                            <span className="text-sm font-semibold">{selectedQuestions.length} question{selectedQuestions.length !== 1 ? 's' : ''}</span>
+                            <div className="w-px h-5 bg-[var(--color-border)]" />
                             <button onClick={() => setCartQuizDropdownOpen(prev => !prev)}
-                                className="text-sm font-semibold px-4 py-1.5 rounded-lg bg-primary hover:bg-primary-hover transition-colors">
+                                className="text-sm font-semibold px-4 py-1.5 rounded-full bg-[var(--color-primary)] text-[var(--color-text-inverse)] border-2 border-[var(--color-border)] shadow-[2px_2px_0_var(--color-border)] hover:brightness-90 transition-colors">
                                 {bulkAddMut.isPending ? 'Adding...' : 'Add to Quiz'}
                             </button>
                             <button onClick={() => {
@@ -459,7 +502,7 @@ export default function QuestionBank() {
                                 setSelectedQuestionQuizMap({});
                                 setCartQuizDropdownOpen(false);
                             }}
-                                className="text-sm text-gray-400 hover:text-white transition-colors">
+                                className="text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors">
                                 Clear
                             </button>
                         </div>
@@ -705,22 +748,22 @@ function QuestionFormModal({ modalState, closeModal, createMut, updateMut, tags,
                 <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
                     {/* Warning banner for questions used in quizzes */}
                     {isEdit && isUsedInQuizzes && !editConfirmed && (
-                        <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-50 border border-amber-200">
-                            <AlertTriangle size={20} className="text-amber-500 mt-0.5 flex-shrink-0" />
+                        <div className="flex items-start gap-3 p-4 rounded-xl bg-[var(--color-block-amber)] border border-[var(--color-warning)]">
+                            <AlertTriangle size={20} className="text-[var(--color-warning)] mt-0.5 flex-shrink-0" />
                             <div className="flex-1">
-                                <p className="text-sm font-semibold text-amber-800 mb-1">
+                                <p className="text-sm font-semibold text-[var(--color-text-primary)] mb-1">
                                     This question is used in {usedInQuizzes.length} quiz{usedInQuizzes.length !== 1 ? 'zes' : ''}
                                 </p>
-                                <p className="text-xs text-amber-700 mb-3">
+                                <p className="text-xs text-[var(--color-text-secondary)] mb-3">
                                     Editing it will affect all linked quizzes. Consider duplicating instead.
                                 </p>
                                 <div className="flex gap-2">
                                     <button type="button" onClick={() => setEditConfirmed(true)}
-                                        className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-amber-100 text-amber-700 hover:bg-amber-200 transition-colors">
+                                        className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-[var(--color-warning-soft)] text-[var(--color-warning)] hover:brightness-95 transition-colors">
                                         Edit Anyway
                                     </button>
                                     <button type="button" onClick={() => { closeModal(); openDuplicate(modalState.question); }}
-                                        className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 transition-colors">
+                                        className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-[var(--color-bg-card)] text-[var(--color-text-secondary)] border border-[var(--color-border-soft)] hover:bg-[var(--color-bg-muted)] transition-colors">
                                         Duplicate Instead
                                     </button>
                                 </div>
@@ -764,20 +807,20 @@ function QuestionFormModal({ modalState, closeModal, createMut, updateMut, tags,
 
                     {/* Tags multi-select */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1.5">Tags</label>
+                        <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1.5">Tags</label>
                         <div className="flex flex-wrap gap-2 mb-2">
                             {selectedTags?.map(uuid => {
                                 const tag = tags.find(t => t.uuid === uuid);
                                 return tag ? (
-                                    <span key={uuid} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-primary-light text-primary font-medium">
+                                    <span key={uuid} className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-[var(--color-primary-light)] text-[var(--color-primary)] font-medium">
                                         {tag.name}
                                         <button type="button" onClick={() => setValue('tagUuids', selectedTags.filter(u => u !== uuid))}
-                                            className="hover:text-primary-hover"><X size={12} /></button>
+                                            className="hover:text-[var(--color-primary-hover)]"><X size={12} /></button>
                                     </span>
                                 ) : null;
                             })}
                         </div>
-                        <select className="w-full h-10 rounded-lg border border-gray-300 bg-white pl-3 pr-10 text-sm text-gray-900 appearance-none cursor-pointer transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                        <select className="w-full h-10 rounded-lg border border-[var(--color-border-soft)] bg-[var(--color-bg-card)] pl-3 pr-10 text-sm text-[var(--color-text-primary)] appearance-none cursor-pointer transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[color:var(--color-primary)]/20 focus:border-[var(--color-primary)]"
                             value="" onChange={(e) => {
                                 const v = e.target.value;
                                 if (v && !selectedTags?.includes(v)) setValue('tagUuids', [...(selectedTags || []), v]);
@@ -798,16 +841,16 @@ function QuestionFormModal({ modalState, closeModal, createMut, updateMut, tags,
                     {/* Code snippet for CODE_SNIPPET */}
                     {questionType === 'CODE_SNIPPET' && (
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1.5">Code Block</label>
+                            <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1.5">Code Block</label>
                             <textarea rows={5} placeholder="// Paste your code snippet here"
-                                className="w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2.5 text-sm text-gray-900 font-mono placeholder:text-gray-400 resize-y transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                                className="w-full rounded-lg border border-[var(--color-border-soft)] bg-[var(--color-bg-muted)] px-3 py-2.5 text-sm text-[var(--color-text-primary)] font-mono placeholder:text-[var(--color-text-muted)] resize-y transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[color:var(--color-primary)]/20 focus:border-[var(--color-primary)]"
                                 {...register('codeSnippet')} />
                         </div>
                     )}
 
                     {/* ─── Dynamic Options Section ─── */}
-                    <div className="border-t border-gray-100 pt-5">
-                        <h4 className="text-sm font-semibold text-gray-800 mb-3">Answer Options</h4>
+                    <div className="border-t border-[var(--color-border-soft)] pt-5">
+                        <h4 className="text-sm font-semibold text-[var(--color-text-primary)] mb-3">Answer Options</h4>
 
                         {/* MCQ_SINGLE / IMAGE_BASED / CODE_SNIPPET */}
                         {(questionType === 'MCQ_SINGLE' || questionType === 'IMAGE_BASED' || questionType === 'CODE_SNIPPET') && (
@@ -818,11 +861,11 @@ function QuestionFormModal({ modalState, closeModal, createMut, updateMut, tags,
                                             onChange={() => handleRadioCorrect(idx)}
                                             className="w-4 h-4 text-primary accent-primary cursor-pointer" />
                                         <input type="text" placeholder={`Option ${idx + 1}`}
-                                            className="flex-1 h-10 rounded-lg border border-gray-300 bg-white px-3 text-sm transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                                            className="flex-1 h-10 rounded-lg border border-[var(--color-border-soft)] bg-[var(--color-bg-card)] px-3 text-sm transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[color:var(--color-primary)]/20 focus:border-[var(--color-primary)]"
                                             {...register(`options.${idx}.optionText`, { required: 'Required' })} />
                                         <button type="button" disabled={optFields.length <= 2}
                                             onClick={() => removeOpt(idx)}
-                                            className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+                                            className="p-1.5 rounded-lg text-[var(--color-text-muted)] hover:text-[var(--color-danger)] hover:bg-[var(--color-danger-soft)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
                                             <X size={16} />
                                         </button>
                                     </div>
@@ -845,11 +888,11 @@ function QuestionFormModal({ modalState, closeModal, createMut, updateMut, tags,
                                             onChange={(e) => setValue(`options.${idx}.isCorrect`, e.target.checked)}
                                             className="w-4 h-4 text-primary accent-primary rounded cursor-pointer" />
                                         <input type="text" placeholder={`Option ${idx + 1}`}
-                                            className="flex-1 h-10 rounded-lg border border-gray-300 bg-white px-3 text-sm transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                                            className="flex-1 h-10 rounded-lg border border-[var(--color-border-soft)] bg-[var(--color-bg-card)] px-3 text-sm transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[color:var(--color-primary)]/20 focus:border-[var(--color-primary)]"
                                             {...register(`options.${idx}.optionText`, { required: 'Required' })} />
                                         <button type="button" disabled={optFields.length <= 2}
                                             onClick={() => removeOpt(idx)}
-                                            className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+                                            className="p-1.5 rounded-lg text-[var(--color-text-muted)] hover:text-[var(--color-danger)] hover:bg-[var(--color-danger-soft)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
                                             <X size={16} />
                                         </button>
                                     </div>

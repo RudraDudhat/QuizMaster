@@ -24,8 +24,8 @@ export default function Pagination({ currentPage, totalPages, onPageChange, tota
     return (
         <div className="flex items-center justify-between pt-4">
             {totalElements != null ? (
-                <p className="text-sm text-gray-500">
-                    Showing <span className="font-medium text-gray-700">{totalElements}</span> results
+                <p className="text-sm text-[var(--color-text-secondary)]">
+                    Showing <span className="font-medium text-[var(--color-text-primary)]">{totalElements}</span> results
                 </p>
             ) : (
                 <div />
@@ -35,14 +35,14 @@ export default function Pagination({ currentPage, totalPages, onPageChange, tota
                 <button
                     onClick={() => onPageChange(currentPage - 1)}
                     disabled={currentPage === 0}
-                    className="inline-flex items-center justify-center w-9 h-9 rounded-lg text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent transition-colors"
+                    className="inline-flex items-center justify-center w-9 h-9 rounded-lg text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-muted)] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent transition-colors"
                 >
                     <ChevronLeft size={16} />
                 </button>
 
                 {pages.map((page, idx) =>
                     page === '...' ? (
-                        <span key={`ellipsis-${idx}`} className="w-9 h-9 flex items-center justify-center text-sm text-gray-400">
+                        <span key={`ellipsis-${idx}`} className="w-9 h-9 flex items-center justify-center text-sm text-[var(--color-text-muted)]">
                             …
                         </span>
                     ) : (
@@ -50,8 +50,8 @@ export default function Pagination({ currentPage, totalPages, onPageChange, tota
                             key={page}
                             onClick={() => onPageChange(page)}
                             className={`w-9 h-9 rounded-lg text-sm font-medium transition-colors ${page === currentPage
-                                    ? 'bg-primary text-white shadow-sm'
-                                    : 'text-gray-600 hover:bg-gray-100'
+                                    ? 'bg-[var(--color-primary)] text-[var(--color-text-inverse)] shadow-sm'
+                                    : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-muted)]'
                                 }`}
                         >
                             {page + 1}
@@ -62,7 +62,7 @@ export default function Pagination({ currentPage, totalPages, onPageChange, tota
                 <button
                     onClick={() => onPageChange(currentPage + 1)}
                     disabled={currentPage === totalPages - 1}
-                    className="inline-flex items-center justify-center w-9 h-9 rounded-lg text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent transition-colors"
+                    className="inline-flex items-center justify-center w-9 h-9 rounded-lg text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-muted)] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent transition-colors"
                 >
                     <ChevronRight size={16} />
                 </button>

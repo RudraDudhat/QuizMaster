@@ -8,9 +8,9 @@ const paddingClasses = {
 
 const shadowClasses = {
     none: '',
-    sm: 'shadow-sm',
-    md: 'shadow-md',
-    lg: 'shadow-lg',
+    sm: 'shadow-[5px_5px_0_var(--color-border)]',
+    md: 'shadow-[6px_6px_0_var(--color-border)]',
+    lg: 'shadow-[7px_7px_0_var(--color-border)]',
 };
 
 export default function Card({
@@ -25,8 +25,8 @@ export default function Card({
     const motionProps =
         hover || onClick
             ? {
-                whileHover: { y: -2, boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' },
-                transition: { duration: 0.2 },
+                whileHover: { y: -4, boxShadow: '7px 7px 0px var(--color-border)' },
+                transition: { duration: 0.15 },
             }
             : {};
 
@@ -34,7 +34,7 @@ export default function Card({
         <Component
             onClick={onClick}
             className={`
-        bg-white rounded-xl border border-gray-200
+                bg-[var(--color-bg-card)] rounded-[20px] border-2 border-[var(--color-border)]
         ${paddingClasses[padding]}
         ${shadowClasses[shadow]}
         ${onClick ? 'cursor-pointer' : ''}

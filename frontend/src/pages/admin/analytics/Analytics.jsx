@@ -42,7 +42,7 @@ function MiniBar({ value }) {
         pct >= 40 ? 'var(--color-warning)' :
                     'var(--color-danger)';
     return (
-        <div style={{ width: '100%', height: 5, background: '#e5e7eb', borderRadius: 9999, overflow: 'hidden', marginTop: 4 }}>
+        <div style={{ width: '100%', height: 5, background: 'var(--color-border-soft)', borderRadius: 9999, overflow: 'hidden', marginTop: 4 }}>
             <div style={{ width: `${pct}%`, height: '100%', background: color, borderRadius: 9999, transition: 'width 0.6s ease' }} />
         </div>
     );
@@ -61,14 +61,14 @@ function PassRateBar({ value }) {
         return () => clearTimeout(t);
     }, [pct]);
     return (
-        <div style={{ width: '100%', height: 10, background: '#e5e7eb', borderRadius: 9999, overflow: 'hidden', marginTop: 12 }}>
+        <div style={{ width: '100%', height: 10, background: 'var(--color-border-soft)', borderRadius: 9999, overflow: 'hidden', marginTop: 12 }}>
             <div style={{ width: `${width}%`, height: '100%', background: color, borderRadius: 9999, transition: 'width 1s cubic-bezier(.4,0,.2,1)' }} />
         </div>
     );
 }
 
 // ─── Stat card ───────────────────────────────────────────
-function StatCard({ icon: Icon, label, value, iconBg, iconColor, loading }) {
+function StatCard({ icon: Icon, label, value, iconBg, iconColor, loading, toneClass = '' }) {
     if (loading) {
         return (
             <Card padding="md" shadow="sm">
@@ -83,7 +83,7 @@ function StatCard({ icon: Icon, label, value, iconBg, iconColor, loading }) {
         );
     }
     return (
-        <Card padding="md" shadow="sm" hover>
+        <Card padding="md" shadow="sm" hover className={toneClass}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                 <div style={{ width: 44, height: 44, borderRadius: 10, background: iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <Icon size={20} style={{ color: iconColor }} />
@@ -124,7 +124,7 @@ function SectionHead({ title, subtitle, action }) {
 // ─── Shimmer rows ─────────────────────────────────────────
 function ShimmerRows({ cols, rows = 5 }) {
     return Array.from({ length: rows }).map((_, i) => (
-        <tr key={i} style={{ borderBottom: '1px solid #f1f5f9' }}>
+        <tr key={i} style={{ borderBottom: '1px solid var(--color-border-subtle)' }}>
             {Array.from({ length: cols }).map((__, j) => (
                 <td key={j} style={{ padding: '12px 16px' }}>
                     <div className="skeleton" style={{ height: 14, width: `${55 + (j * 13) % 40}%`, borderRadius: 6 }} />
@@ -136,15 +136,15 @@ function ShimmerRows({ cols, rows = 5 }) {
 
 // ─── Table header ────────────────────────────────────────
 const TH = ({ children }) => (
-    <th style={{ padding: '10px 14px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap', background: '#f8fafc' }}>
+    <th style={{ padding: '10px 14px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap', background: 'var(--color-bg-muted)' }}>
         {children}
     </th>
 );
 
 // ─── Table row ────────────────────────────────────────────
 const TR = ({ children }) => (
-    <tr style={{ borderBottom: '1px solid #f1f5f9' }}
-        onMouseEnter={e => e.currentTarget.style.background = '#f9fafb'}
+    <tr style={{ borderBottom: '1px solid var(--color-border-subtle)' }}
+        onMouseEnter={e => e.currentTarget.style.background = 'var(--color-bg-hover)'}
         onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
         {children}
     </tr>
@@ -170,6 +170,7 @@ export default function Analytics() {
     const dangerColor  = getCSSVar('--color-danger');
     const primaryColor = getCSSVar('--color-primary');
     const warningColor = getCSSVar('--color-warning');
+    const infoColor    = getCSSVar('--color-info');
 
     // ── Queries ───────────────────────────────────────────
     const { data: overviewResponse, isLoading: overviewLoading, refetch: refetchOverview } = useQuery({
@@ -267,8 +268,9 @@ export default function Analytics() {
             {/* PAGE HEADER */}
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 24 }}>
                 <div>
-                    <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--color-text-primary)', margin: 0 }}>Analytics</h1>
-                    <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', marginTop: 4 }}>Platform performance and insights</p>
+                    <h1 style={{ fontSize: 30, fontWeight: 900, color: 'var(--color-text-primary)', margin: 0 }}>Analytics</h1>
+                    <div style={{ width: 56, height: 6, background: 'var(--color-primary)', borderRadius: 9999, marginTop: 6 }} />
+                    <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', marginTop: 6 }}>Platform performance and insights</p>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <span style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>Data refreshes every 60 seconds</span>
@@ -296,15 +298,15 @@ export default function Analytics() {
 
                     {/* Stats Row */}
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 14 }}>
-                        <StatCard loading={overviewLoading} icon={Users}        label="Total Students"  value={overview?.totalStudents  ?? 0} iconBg="#EEF2FF" iconColor={primaryColor} />
-                        <StatCard loading={overviewLoading} icon={BookOpen}     label="Total Quizzes"   value={overview?.totalQuizzes   ?? 0} iconBg="#F0FDF4" iconColor={successColor} />
-                        <StatCard loading={overviewLoading} icon={PlayCircle}   label="Active Quizzes"  value={overview?.activeQuizzes  ?? 0} iconBg="#FFFBEB" iconColor={warningColor} />
-                        <StatCard loading={overviewLoading} icon={ClipboardList} label="Total Attempts" value={overview?.totalAttempts  ?? 0} iconBg="#EFF6FF" iconColor="#3B82F6" />
-                        <StatCard loading={overviewLoading} icon={TrendingUp}   label="Attempts Today"  value={overview?.attemptsToday  ?? 0} iconBg="#FFF1F2" iconColor={dangerColor} />
+                        <StatCard loading={overviewLoading} icon={Users}        label="Total Students"  value={overview?.totalStudents  ?? 0} iconBg="var(--color-primary-light)" iconColor={primaryColor} toneClass="bg-[var(--color-block-blue)]" />
+                        <StatCard loading={overviewLoading} icon={BookOpen}     label="Total Quizzes"   value={overview?.totalQuizzes   ?? 0} iconBg="var(--color-success-soft)" iconColor={successColor} toneClass="bg-[var(--color-block-green)]" />
+                        <StatCard loading={overviewLoading} icon={PlayCircle}   label="Active Quizzes"  value={overview?.activeQuizzes  ?? 0} iconBg="var(--color-warning-soft)" iconColor={warningColor} toneClass="bg-[var(--color-block-amber)]" />
+                        <StatCard loading={overviewLoading} icon={ClipboardList} label="Total Attempts" value={overview?.totalAttempts  ?? 0} iconBg="var(--color-info-soft)" iconColor={infoColor} toneClass="bg-[var(--color-block-sky)]" />
+                        <StatCard loading={overviewLoading} icon={TrendingUp}   label="Attempts Today"  value={overview?.attemptsToday  ?? 0} iconBg="var(--color-danger-soft)" iconColor={dangerColor} toneClass="bg-[var(--color-block-red)]" />
                     </div>
 
                     {/* Pass Rate */}
-                    <Card padding="lg" shadow="sm">
+                    <Card padding="lg" shadow="sm" className="bg-[var(--color-block-cream)]">
                         <div style={{ display: 'flex', gap: 40, flexWrap: 'wrap', alignItems: 'center' }}>
                             {/* Left */}
                             <div style={{ flex: '1 1 55%', minWidth: 220 }}>
@@ -356,7 +358,7 @@ export default function Analytics() {
                     </Card>
 
                     {/* Top Quizzes */}
-                    <Card padding="lg" shadow="sm">
+                    <Card padding="lg" shadow="sm" className="bg-[var(--color-block-sky)]">
                         <SectionHead title="Top Performing Quizzes" subtitle="By number of attempts" />
                         {overviewLoading ? (
                             <table style={{ width: '100%', borderCollapse: 'collapse' }}><tbody><ShimmerRows cols={6} rows={5} /></tbody></table>
@@ -392,7 +394,7 @@ export default function Analytics() {
                     </Card>
 
                     {/* Recent Attempts */}
-                    <Card padding="lg" shadow="sm">
+                    <Card padding="lg" shadow="sm" className="bg-[var(--color-block-mint)]">
                         <SectionHead
                             title="Recent Attempts"
                             subtitle="Latest 10 submissions across all quizzes"
@@ -435,7 +437,7 @@ export default function Analytics() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
                     {/* Quiz Selector */}
-                    <Card padding="lg" shadow="sm">
+                    <Card padding="lg" shadow="sm" className="bg-[var(--color-block-blue)]">
                         <SectionHead title="Select a Quiz to Analyze" />
                         <div style={{ position: 'relative', marginBottom: 12 }}>
                             <Search size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-secondary)', pointerEvents: 'none' }} />
@@ -444,12 +446,12 @@ export default function Analytics() {
                                 placeholder="Search quizzes..."
                                 value={quizSearch}
                                 onChange={e => setQuizSearch(e.target.value)}
-                                style={{ width: '100%', padding: '9px 12px 9px 36px', border: '1px solid var(--color-border)', borderRadius: 8, fontSize: 13, outline: 'none', background: '#fff', color: 'var(--color-text-primary)', fontFamily: 'inherit' }}
+                                style={{ width: '100%', padding: '9px 12px 9px 36px', border: '1px solid var(--color-border)', borderRadius: 8, fontSize: 13, outline: 'none', background: 'var(--color-bg-card)', color: 'var(--color-text-primary)', fontFamily: 'inherit' }}
                                 onFocus={e => e.target.style.borderColor = 'var(--color-primary)'}
                                 onBlur={e  => e.target.style.borderColor = 'var(--color-border)'}
                             />
                         </div>
-                        <div style={{ maxHeight: 240, overflowY: 'auto', border: '1px solid var(--color-border)', borderRadius: 10, background: '#fafbfc' }}>
+                        <div style={{ maxHeight: 240, overflowY: 'auto', border: '1px solid var(--color-border)', borderRadius: 10, background: 'var(--color-bg-muted)' }}>
                             {filteredQuizList.length === 0 ? (
                                 <div style={{ padding: 24, textAlign: 'center', color: 'var(--color-text-secondary)', fontSize: 13 }}>No quizzes found</div>
                             ) : filteredQuizList.map((quiz, i) => {
@@ -458,7 +460,7 @@ export default function Analytics() {
                                     <div key={quiz.quizUuid}
                                         onClick={() => { setSelectedQuizUuid(quiz.quizUuid); setAttemptsPage(0); }}
                                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 16px', cursor: 'pointer', borderBottom: i < filteredQuizList.length - 1 ? '1px solid var(--color-border)' : 'none', background: isSel ? 'var(--color-primary-light)' : 'transparent', borderLeft: isSel ? '3px solid var(--color-primary)' : '3px solid transparent', transition: 'all 0.15s' }}
-                                        onMouseEnter={e => { if (!isSel) e.currentTarget.style.background = '#f1f5f9'; }}
+                                        onMouseEnter={e => { if (!isSel) e.currentTarget.style.background = 'var(--color-bg-muted-2)'; }}
                                         onMouseLeave={e => { if (!isSel) e.currentTarget.style.background = 'transparent'; }}
                                     >
                                         <div style={{ fontWeight: 600, fontSize: 13, color: isSel ? 'var(--color-primary)' : 'var(--color-text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{quiz.title}</div>
@@ -479,7 +481,7 @@ export default function Analytics() {
                         <>
                             {/* Quiz banner */}
                             {quizAnalytics && !quizAnalyticsLoading && (
-                                <div style={{ background: 'linear-gradient(135deg, var(--color-primary) 0%, #4338CA 100%)', borderRadius: 12, padding: '16px 24px', color: '#fff' }}>
+                                <div style={{ background: 'linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-deep) 100%)', borderRadius: 12, padding: '16px 24px', color: 'var(--color-text-inverse)' }}>
                                     <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', opacity: 0.75 }}>Analyzing</div>
                                     <div style={{ fontSize: 18, fontWeight: 700, marginTop: 2 }}>{quizAnalytics.quizTitle}</div>
                                 </div>
@@ -487,19 +489,19 @@ export default function Analytics() {
 
                             {/* A. Stats Cards */}
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))', gap: 14 }}>
-                                <StatCard loading={quizAnalyticsLoading} icon={ClipboardList} label="Total Attempts" value={quizAnalytics?.totalAttempts ?? 0}                  iconBg="#EFF6FF" iconColor="#3B82F6" />
-                                <StatCard loading={quizAnalyticsLoading} icon={TrendingUp}    label="Pass Rate"      value={formatPercentage(quizAnalytics?.passRate)}            iconBg="#F0FDF4" iconColor={successColor} />
-                                <StatCard loading={quizAnalyticsLoading} icon={BarChart2}     label="Average Score"  value={formatPercentage(quizAnalytics?.averageScore)}        iconBg="#EEF2FF" iconColor={primaryColor} />
-                                <StatCard loading={quizAnalyticsLoading} icon={PlayCircle}    label="Avg Time"       value={formatDuration(quizAnalytics?.averageDurationSeconds)} iconBg="#FFFBEB" iconColor={warningColor} />
+                                <StatCard loading={quizAnalyticsLoading} icon={ClipboardList} label="Total Attempts" value={quizAnalytics?.totalAttempts ?? 0}                  iconBg="var(--color-info-soft)" iconColor={infoColor} toneClass="bg-[var(--color-block-sky)]" />
+                                <StatCard loading={quizAnalyticsLoading} icon={TrendingUp}    label="Pass Rate"      value={formatPercentage(quizAnalytics?.passRate)}            iconBg="var(--color-success-soft)" iconColor={successColor} toneClass="bg-[var(--color-block-green)]" />
+                                <StatCard loading={quizAnalyticsLoading} icon={BarChart2}     label="Average Score"  value={formatPercentage(quizAnalytics?.averageScore)}        iconBg="var(--color-primary-light)" iconColor={primaryColor} toneClass="bg-[var(--color-block-blue)]" />
+                                <StatCard loading={quizAnalyticsLoading} icon={PlayCircle}    label="Avg Time"       value={formatDuration(quizAnalytics?.averageDurationSeconds)} iconBg="var(--color-warning-soft)" iconColor={warningColor} toneClass="bg-[var(--color-block-amber)]" />
                             </div>
 
                             {/* B. High / Low */}
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
                                 {[
-                                    { label: 'Highest Score', val: quizAnalytics?.highestScore, Icon: TrendingUp,   bg: '#F0FDF4', color: successColor },
-                                    { label: 'Lowest Score',  val: quizAnalytics?.lowestScore,  Icon: TrendingDown, bg: '#FEF2F2', color: dangerColor  },
+                                    { label: 'Highest Score', val: quizAnalytics?.highestScore, Icon: TrendingUp,   bg: 'var(--color-success-soft)', color: successColor },
+                                    { label: 'Lowest Score',  val: quizAnalytics?.lowestScore,  Icon: TrendingDown, bg: 'var(--color-danger-soft)', color: dangerColor  },
                                 ].map(({ label, val, Icon, bg, color }) => (
-                                    <Card key={label} padding="md" shadow="sm">
+                                    <Card key={label} padding="md" shadow="sm" className={label === 'Highest Score' ? 'bg-[var(--color-block-green)]' : 'bg-[var(--color-block-red)]'}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                                             <div style={{ width: 40, height: 40, borderRadius: 10, background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                                 <Icon size={18} style={{ color }} />
@@ -517,7 +519,7 @@ export default function Analytics() {
                             </div>
 
                             {/* C. Score Distribution */}
-                            <Card padding="lg" shadow="sm">
+                            <Card padding="lg" shadow="sm" className="bg-[var(--color-block-cream)]">
                                 <SectionHead title="Score Distribution" subtitle="How scores are spread across attempts" />
                                 {quizAnalyticsLoading ? (
                                     <div className="skeleton" style={{ height: 280, borderRadius: 10 }} />
@@ -526,7 +528,7 @@ export default function Analytics() {
                                 ) : (
                                     <ResponsiveContainer width="100%" height={280}>
                                         <BarChart data={scoreDistributionData} margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
-                                            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                                            <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-subtle)" />
                                             <XAxis dataKey="range" tick={{ fontSize: 12, fill: 'var(--color-text-secondary)' }} axisLine={false} tickLine={false} />
                                             <YAxis tick={{ fontSize: 12, fill: 'var(--color-text-secondary)' }} axisLine={false} tickLine={false} />
                                             <Tooltip
@@ -540,7 +542,7 @@ export default function Analytics() {
                             </Card>
 
                             {/* D. Question Accuracy */}
-                            <Card padding="lg" shadow="sm">
+                            <Card padding="lg" shadow="sm" className="bg-[var(--color-block-mint)]">
                                 <SectionHead title="Question-by-Question Accuracy" subtitle="Hardest questions first" />
                                 {quizAnalyticsLoading ? (
                                     <table style={{ width: '100%', borderCollapse: 'collapse' }}><tbody><ShimmerRows cols={6} rows={5} /></tbody></table>
@@ -571,7 +573,7 @@ export default function Analytics() {
                             </Card>
 
                             {/* E. Attempts */}
-                            <Card padding="lg" shadow="sm">
+                            <Card padding="lg" shadow="sm" className="bg-[var(--color-block-sky)]">
                                 <SectionHead title="All Attempts" subtitle={`${attemptsTotalElements} total`} />
                                 {attemptsLoading ? (
                                     <table style={{ width: '100%', borderCollapse: 'collapse' }}><tbody><ShimmerRows cols={8} rows={10} /></tbody></table>
@@ -627,13 +629,13 @@ export default function Analytics() {
 
                     {/* Summary */}
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 14 }}>
-                        <StatCard loading={studentsLoading || overviewLoading} icon={Users}         label="Total Students"    value={studentsTotalElements}                       iconBg="#EEF2FF" iconColor={primaryColor} />
-                        <StatCard loading={studentsLoading || overviewLoading} icon={TrendingUp}    label="Platform Pass Rate" value={formatPercentage(overview?.platformPassRate)} iconBg="#F0FDF4" iconColor={successColor} />
-                        <StatCard loading={studentsLoading || overviewLoading} icon={ClipboardList} label="Total Attempts"     value={overview?.totalAttempts ?? 0}                iconBg="#EFF6FF" iconColor="#3B82F6" />
+                        <StatCard loading={studentsLoading || overviewLoading} icon={Users}         label="Total Students"    value={studentsTotalElements}                       iconBg="var(--color-primary-light)" iconColor={primaryColor} toneClass="bg-[var(--color-block-blue)]" />
+                        <StatCard loading={studentsLoading || overviewLoading} icon={TrendingUp}    label="Platform Pass Rate" value={formatPercentage(overview?.platformPassRate)} iconBg="var(--color-success-soft)" iconColor={successColor} toneClass="bg-[var(--color-block-green)]" />
+                        <StatCard loading={studentsLoading || overviewLoading} icon={ClipboardList} label="Total Attempts"     value={overview?.totalAttempts ?? 0}                iconBg="var(--color-info-soft)" iconColor={infoColor} toneClass="bg-[var(--color-block-sky)]" />
                     </div>
 
                     {/* Table */}
-                    <Card padding="lg" shadow="sm">
+                    <Card padding="lg" shadow="sm" className="bg-[var(--color-block-mint)]">
                         <SectionHead title="Student Performance" subtitle={`${studentsTotalElements} students total`} />
                         {studentsLoading ? (
                             <table style={{ width: '100%', borderCollapse: 'collapse' }}><tbody><ShimmerRows cols={8} rows={10} /></tbody></table>
@@ -673,7 +675,7 @@ export default function Analytics() {
                                                         <MiniBar value={s.passRate ?? 0} />
                                                     </TD>
                                                     <TD style={{ whiteSpace: 'nowrap', color: 'var(--color-text-secondary)' }}>
-                                                        {s.lastAttemptAt ? formatDateTime(s.lastAttemptAt) : <span style={{ fontStyle: 'italic', color: '#cbd5e1' }}>No attempts yet</span>}
+                                                        {s.lastAttemptAt ? formatDateTime(s.lastAttemptAt) : <span style={{ fontStyle: 'italic', color: 'var(--color-text-muted)' }}>No attempts yet</span>}
                                                     </TD>
                                                     <TD>
                                                         <Button variant="outline" size="sm" onClick={() => navigate(`/admin/students/${s.studentUuid}`)}>View</Button>

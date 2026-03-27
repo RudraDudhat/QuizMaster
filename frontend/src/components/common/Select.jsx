@@ -15,9 +15,9 @@ export default function Select({
     return (
         <div className="w-full">
             {label && (
-                <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-1.5">
+                <label htmlFor={name} className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1.5">
                     {label}
-                    {required && <span className="text-red-500 ml-0.5">*</span>}
+                    {required && <span className="text-[var(--color-danger)] ml-0.5">*</span>}
                 </label>
             )}
             <div className="relative">
@@ -26,12 +26,12 @@ export default function Select({
                     name={name}
                     disabled={disabled}
                     className={`
-            w-full h-10 rounded-lg border bg-white pl-3 pr-10 text-sm text-gray-900
+                        w-full h-10 rounded-lg border bg-[var(--color-bg-card)] pl-3 pr-10 text-sm text-[var(--color-text-primary)]
             appearance-none cursor-pointer
             transition-all duration-150
-            focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary
-            disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed
-            ${error ? 'border-red-400 focus:border-red-500 focus:ring-red-100' : 'border-gray-300'}
+                        focus:outline-none focus:ring-2 focus:ring-[color:var(--color-primary)]/20 focus:border-[var(--color-primary)]
+                        disabled:bg-[var(--color-bg-soft)] disabled:text-[var(--color-text-muted)] disabled:cursor-not-allowed
+                        ${error ? 'border-[var(--color-danger)] focus:border-[var(--color-danger)] focus:ring-[color:var(--color-danger)]/20' : 'border-[color:var(--color-border)]/30'}
             ${className}
           `}
                     {...(register || {})}
@@ -53,10 +53,10 @@ export default function Select({
                 </select>
                 <ChevronDown
                     size={16}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] pointer-events-none"
                 />
             </div>
-            {error && <p className="mt-1.5 text-xs text-red-500 font-medium">{error}</p>}
+            {error && <p className="mt-1.5 text-xs text-[var(--color-danger)] font-medium">{error}</p>}
         </div>
     );
 }

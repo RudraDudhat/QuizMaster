@@ -15,8 +15,14 @@ const onlineDotSize = {
 };
 
 const bgColors = [
-    'bg-indigo-500', 'bg-rose-500', 'bg-amber-500', 'bg-teal-500',
-    'bg-violet-500', 'bg-cyan-500', 'bg-pink-500', 'bg-emerald-500',
+    'bg-[var(--color-avatar-1)]',
+    'bg-[var(--color-avatar-2)]',
+    'bg-[var(--color-avatar-3)]',
+    'bg-[var(--color-avatar-4)]',
+    'bg-[var(--color-avatar-5)]',
+    'bg-[var(--color-avatar-6)]',
+    'bg-[var(--color-avatar-7)]',
+    'bg-[var(--color-avatar-8)]',
 ];
 
 function getInitials(name) {
@@ -47,13 +53,13 @@ export default function Avatar({ src, name, size = 'md', online = false }) {
                     className={`rounded-full object-cover ${sizeClasses[size]}`}
                 />
             ) : (
-                <span className={`flex items-center justify-center rounded-full text-white font-semibold ${sizeClasses[size]} ${bg}`}>
+                <span className={`flex items-center justify-center rounded-full text-[var(--color-text-inverse)] font-semibold ${sizeClasses[size]} ${bg}`}>
                     {initials}
                 </span>
             )}
             {online && (
                 <span
-                    className={`absolute bottom-0 right-0 rounded-full bg-emerald-500 border-white ${onlineDotSize[size]}`}
+                    className={`absolute bottom-0 right-0 rounded-full bg-[var(--color-success)] border-[var(--color-bg-card)] ${onlineDotSize[size]}`}
                 />
             )}
         </div>

@@ -2,15 +2,15 @@ import Spinner from './Spinner';
 
 const variantClasses = {
     primary:
-        'bg-primary text-white shadow-sm hover:bg-primary-hover active:shadow-none',
+        'bg-[var(--color-primary)] text-[var(--color-text-inverse)] border-2 border-[var(--color-border)] shadow-[3px_3px_0_var(--color-border)] hover:brightness-90 hover:-translate-x-[1px] hover:-translate-y-[1px] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none',
     secondary:
-        'bg-gray-100 text-gray-700 hover:bg-gray-200 active:bg-gray-300',
+        'bg-[var(--color-bg-card)] text-[var(--color-text-primary)] border-2 border-[var(--color-border)] shadow-[3px_3px_0_var(--color-border)] hover:-translate-x-[1px] hover:-translate-y-[1px] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none',
     danger:
-        'bg-red-500 text-white shadow-sm hover:bg-red-600 active:bg-red-700',
+        'bg-[var(--color-danger)] text-[var(--color-text-inverse)] border-2 border-[var(--color-border)] shadow-[3px_3px_0_var(--color-border)] hover:brightness-95 hover:-translate-x-[1px] hover:-translate-y-[1px] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none',
     ghost:
-        'bg-transparent text-gray-700 hover:bg-gray-100 active:bg-gray-200',
+        'bg-transparent text-[var(--color-text-primary)] hover:bg-[var(--color-primary-light)] active:scale-95',
     outline:
-        'bg-white border border-gray-300 text-gray-700 shadow-sm hover:bg-gray-50 active:bg-gray-100',
+        'bg-[var(--color-bg-card)] text-[var(--color-text-primary)] border-2 border-[var(--color-border)] shadow-[3px_3px_0_var(--color-border)] hover:-translate-x-[1px] hover:-translate-y-[1px] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none',
 };
 
 const sizeClasses = {
@@ -40,9 +40,9 @@ export default function Button({
             onClick={onClick}
             disabled={isDisabled}
             className={`
-        inline-flex items-center justify-center font-medium rounded-lg
+        inline-flex items-center justify-center font-semibold rounded-full
         transition-all duration-150 cursor-pointer select-none
-        focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-1
+        focus:outline-none focus:ring-2 focus:ring-[color:var(--color-primary)] focus:ring-opacity-30 focus:ring-offset-2
         ${variantClasses[variant]}
         ${sizeClasses[size]}
         ${fullWidth ? 'w-full' : ''}

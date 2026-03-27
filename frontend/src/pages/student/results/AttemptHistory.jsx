@@ -28,7 +28,7 @@ const STATUS_OPTIONS = [
 function MiniProgressBar({ pct }) {
     const color = pct >= 70 ? 'var(--color-success)' : pct >= 50 ? 'var(--color-warning)' : 'var(--color-danger)';
     return (
-        <div style={{ height: 4, background: '#F3F4F6', borderRadius: 4, overflow: 'hidden', width: 80, marginTop: 4 }}>
+        <div style={{ height: 4, background: 'var(--color-bg-muted)', borderRadius: 4, overflow: 'hidden', width: 80, marginTop: 4 }}>
             <div style={{ height: '100%', width: `${Math.min(pct, 100)}%`, background: color, borderRadius: 4, transition: 'width 0.5s ease' }} />
         </div>
     );
@@ -142,7 +142,7 @@ export default function AttemptHistory() {
                 return (
                     <Dropdown
                         trigger={
-                            <button style={{ width: 32, height: 32, borderRadius: 8, border: '1.5px solid var(--color-border)', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--color-text-secondary)' }}>
+                            <button style={{ width: 32, height: 32, borderRadius: 8, border: '1.5px solid var(--color-border)', background: 'var(--color-bg-card)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--color-text-secondary)' }}>
                                 <MoreVertical size={15} />
                             </button>
                         }
@@ -169,10 +169,10 @@ export default function AttemptHistory() {
             <style>{`@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}`}</style>
 
             {/* ── Header ── */}
-            <div style={{ background: '#fff', borderBottom: '1px solid var(--color-border)', padding: '16px 20px', boxShadow: 'var(--shadow-sm)' }}>
+            <div style={{ background: 'var(--color-bg-card)', borderBottom: '1px solid var(--color-border)', padding: '16px 20px', boxShadow: 'var(--shadow-sm)' }}>
                 <div style={{ maxWidth: 1100, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <button onClick={() => navigate('/student/dashboard')} style={{ width: 36, height: 36, borderRadius: 10, border: '1.5px solid var(--color-border)', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--color-text-secondary)', flexShrink: 0 }}>
+                        <button onClick={() => navigate('/student/dashboard')} style={{ width: 36, height: 36, borderRadius: 10, border: '1.5px solid var(--color-border)', background: 'var(--color-bg-card)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--color-text-secondary)', flexShrink: 0 }}>
                             <ArrowLeft size={16} />
                         </button>
                         <div>
@@ -183,10 +183,10 @@ export default function AttemptHistory() {
                         </div>
                     </div>
                     <div style={{ display: 'flex', gap: 8 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 12px', borderRadius: 20, background: '#ECFDF5', fontSize: 12, fontWeight: 700, color: 'var(--color-success)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 12px', borderRadius: 20, background: 'var(--color-success-soft)', fontSize: 12, fontWeight: 700, color: 'var(--color-success)' }}>
                             <CheckCircle2 size={13} /> {passedCount} Passed
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 12px', borderRadius: 20, background: '#FEF2F2', fontSize: 12, fontWeight: 700, color: 'var(--color-danger)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 12px', borderRadius: 20, background: 'var(--color-danger-soft)', fontSize: 12, fontWeight: 700, color: 'var(--color-danger)' }}>
                             <XCircle size={13} /> {failedCount} Failed
                         </div>
                     </div>
@@ -204,7 +204,7 @@ export default function AttemptHistory() {
                             value={search}
                             onChange={e => setSearch(e.target.value)}
                             placeholder="Search by quiz name..."
-                            style={{ width: '100%', height: 40, paddingLeft: 34, paddingRight: 12, border: '1.5px solid var(--color-border)', borderRadius: 10, fontSize: 14, outline: 'none', background: '#fff', color: 'var(--color-text-primary)', transition: 'border-color 0.15s' }}
+                            style={{ width: '100%', height: 40, paddingLeft: 34, paddingRight: 12, border: '1.5px solid var(--color-border)', borderRadius: 10, fontSize: 14, outline: 'none', background: 'var(--color-bg-card)', color: 'var(--color-text-primary)', transition: 'border-color 0.15s' }}
                             onFocus={e => e.target.style.borderColor = 'var(--color-primary)'}
                             onBlur={e => e.target.style.borderColor = 'var(--color-border)'}
                         />
@@ -214,7 +214,7 @@ export default function AttemptHistory() {
                     <select
                         value={statusFilter}
                         onChange={e => setStatusFilter(e.target.value)}
-                        style={{ height: 40, padding: '0 12px', border: '1.5px solid var(--color-border)', borderRadius: 10, fontSize: 14, outline: 'none', background: '#fff', color: 'var(--color-text-primary)', cursor: 'pointer', flex: '0 0 180px' }}
+                        style={{ height: 40, padding: '0 12px', border: '1.5px solid var(--color-border)', borderRadius: 10, fontSize: 14, outline: 'none', background: 'var(--color-bg-card)', color: 'var(--color-text-primary)', cursor: 'pointer', flex: '0 0 180px' }}
                     >
                         {STATUS_OPTIONS.map(o => (
                             <option key={o.value} value={o.value}>{o.label}</option>
@@ -231,7 +231,7 @@ export default function AttemptHistory() {
 
                 {/* ── Table ── */}
                 {filteredAttempts.length === 0 && !isLoading ? (
-                    <div style={{ background: '#fff', borderRadius: 16, border: '1px solid var(--color-border)' }}>
+                    <div style={{ background: 'var(--color-bg-card)', borderRadius: 16, border: '1px solid var(--color-border)' }}>
                         <EmptyState
                             icon={<ClipboardList size={48} />}
                             title={hasFilters ? 'No results match your filters' : 'No attempts yet'}

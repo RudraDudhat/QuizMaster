@@ -25,11 +25,11 @@ function SidebarContent({ collapsed, user, location: loc }) {
     return (
         <>
             {!collapsed && (
-                <div className="px-4 py-5 border-b border-gray-100">
+                <div className="px-4 py-5 border-b-2 border-[var(--color-border)]">
                     <div className="flex items-center gap-3">
                         <Avatar name={user?.fullName} size="sm" />
                         <div className="min-w-0">
-                            <p className="text-sm font-semibold text-gray-900 truncate">{user?.fullName}</p>
+                            <p className="text-sm font-extrabold text-[var(--color-text-primary)] truncate">{user?.fullName}</p>
                             <Badge variant="info" size="sm">{user?.role}</Badge>
                         </div>
                     </div>
@@ -43,9 +43,9 @@ function SidebarContent({ collapsed, user, location: loc }) {
                         <NavLink
                             key={item.path}
                             to={item.path}
-                            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${isActive
-                                    ? 'bg-primary-light text-primary'
-                                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                            className={`flex items-center gap-3 px-3 py-2.5 rounded-full text-sm font-semibold transition-all duration-150 ${isActive
+                                    ? 'bg-[var(--color-primary)] text-[var(--color-text-inverse)] border-2 border-[var(--color-border)] shadow-[3px_3px_0_var(--color-border)]'
+                                    : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-primary-soft)] hover:text-[var(--color-text-primary)]'
                                 } ${collapsed ? 'justify-center' : ''}`}
                             title={collapsed ? item.label : undefined}
                         >
@@ -77,25 +77,25 @@ export default function AdminLayout({ children }) {
     );
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-[var(--color-bg-page)]">
             {/* Top Navbar */}
-            <header className="fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-200 z-50 flex items-center justify-between px-4 lg:px-6">
+            <header className="fixed top-0 left-0 right-0 h-16 bg-[var(--color-bg-card)] border-b-2 border-[var(--color-border)] z-50 flex items-center justify-between px-4 lg:px-6">
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => {
                             if (window.innerWidth < 768) setMobileOpen(true);
                             else setCollapsed((c) => !c);
                         }}
-                        className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+                        className="p-2 rounded-full border-2 border-[var(--color-border)] text-[var(--color-text-primary)] hover:bg-[var(--color-primary-soft)] transition-colors"
                     >
                         <Menu size={20} />
                     </button>
                     <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                            <span className="text-white text-sm font-bold">Q</span>
+                        <div className="w-9 h-9 bg-[var(--color-primary)] rounded-xl border-2 border-[var(--color-border)] flex items-center justify-center shadow-[2px_2px_0_var(--color-border)]">
+                            <span className="text-[var(--color-text-inverse)] text-sm font-extrabold">Q</span>
                         </div>
-                        <span className="text-lg font-bold text-gray-900 hidden sm:block">
-                            QuizMaster <span className="text-primary">Pro</span>
+                        <span className="text-lg font-extrabold text-[var(--color-text-primary)] hidden sm:block">
+                            QuizMaster <span className="text-[var(--color-primary)]">Pro</span>
                         </span>
                     </div>
                 </div>
@@ -104,7 +104,7 @@ export default function AdminLayout({ children }) {
                     <NotificationBell />
                     <Dropdown
                         trigger={
-                            <div className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
+                            <div className="flex items-center gap-2 p-1.5 rounded-full border-2 border-[var(--color-border)] hover:bg-[var(--color-primary-soft)] transition-colors">
                                 <Avatar name={user?.fullName} size="sm" />
                             </div>
                         }
@@ -119,17 +119,17 @@ export default function AdminLayout({ children }) {
 
             {/* Desktop Sidebar */}
             <aside
-                className={`fixed top-16 left-0 bottom-0 bg-white border-r border-gray-200 z-40 hidden md:flex flex-col transition-all duration-300 ease-in-out ${collapsed ? 'w-[68px]' : 'w-60'
+                className={`fixed top-16 left-0 bottom-0 bg-[var(--color-bg-card)] border-r-2 border-[var(--color-border)] z-40 hidden md:flex flex-col transition-all duration-300 ease-in-out ${collapsed ? 'w-[68px]' : 'w-60'
                     }`}
             >
                 <SidebarContent collapsed={collapsed} user={user} location={location} />
-                <div className="px-3 pt-2 pb-3 border-t border-gray-100 flex flex-col gap-2">
+                <div className="px-3 pt-2 pb-3 border-t-2 border-[var(--color-border)] flex flex-col gap-2">
                     <NavLink
                         to="/admin/settings"
                         className={({ isActive }) =>
-                            `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${isActive
-                                ? 'bg-primary-light text-primary'
-                                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                            `flex items-center gap-3 px-3 py-2.5 rounded-full text-sm font-semibold transition-all duration-150 ${isActive
+                                ? 'bg-[var(--color-primary)] text-[var(--color-text-inverse)] border-2 border-[var(--color-border)] shadow-[3px_3px_0_var(--color-border)]'
+                                : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-primary-soft)] hover:text-[var(--color-text-primary)]'
                             } ${collapsed ? 'justify-center' : ''}`
                         }
                         title={collapsed ? 'Settings' : undefined}
@@ -139,7 +139,7 @@ export default function AdminLayout({ children }) {
                     </NavLink>
                     <button
                         onClick={() => setCollapsed((c) => !c)}
-                        className="w-full flex items-center justify-center p-2 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
+                        className="w-full flex items-center justify-center p-2 rounded-full border-2 border-[var(--color-border)] text-[var(--color-text-primary)] hover:bg-[var(--color-primary-soft)] transition-colors"
                     >
                         {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
                     </button>
@@ -154,7 +154,7 @@ export default function AdminLayout({ children }) {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="fixed inset-0 bg-black/40 z-50 md:hidden"
+                            className="fixed inset-0 bg-[color:var(--color-overlay)] z-50 md:hidden"
                             onClick={() => setMobileOpen(false)}
                         />
                         <motion.aside
@@ -162,13 +162,13 @@ export default function AdminLayout({ children }) {
                             animate={{ x: 0 }}
                             exit={{ x: -260 }}
                             transition={{ type: 'tween', duration: 0.25 }}
-                            className="fixed top-0 left-0 bottom-0 w-60 bg-white z-50 md:hidden flex flex-col shadow-xl"
+                            className="fixed top-0 left-0 bottom-0 w-60 bg-[var(--color-bg-card)] z-50 md:hidden flex flex-col shadow-[6px_6px_0_var(--color-border)] border-r-2 border-[var(--color-border)]"
                         >
-                            <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200">
-                                <span className="text-lg font-bold text-gray-900">Menu</span>
+                            <div className="h-16 flex items-center justify-between px-4 border-b-2 border-[var(--color-border)]">
+                                <span className="text-lg font-extrabold text-[var(--color-text-primary)]">Menu</span>
                                 <button
                                     onClick={() => setMobileOpen(false)}
-                                    className="p-2 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                                    className="p-2 rounded-full border-2 border-[var(--color-border)] text-[var(--color-text-primary)] hover:bg-[var(--color-primary-soft)]"
                                 >
                                     <X size={20} />
                                 </button>
@@ -186,11 +186,11 @@ export default function AdminLayout({ children }) {
             >
                 {/* Breadcrumb */}
                 {currentSection && (
-                    <div className="bg-white border-b border-gray-200 px-6 py-3">
-                        <p className="text-sm text-gray-500">
-                            <span className="text-gray-400">Admin</span>
-                            <span className="mx-2 text-gray-300">/</span>
-                            <span className="font-medium text-gray-700">{currentSection.label}</span>
+                    <div className="bg-[var(--color-bg-card)] border-b-2 border-[var(--color-border)] px-6 py-3">
+                        <p className="text-sm text-[var(--color-text-muted)]">
+                            <span className="text-[var(--color-text-muted)]">Admin</span>
+                            <span className="mx-2 text-[color:var(--color-text-muted)]/70">/</span>
+                            <span className="font-semibold text-[var(--color-text-primary)]">{currentSection.label}</span>
                         </p>
                     </div>
                 )}

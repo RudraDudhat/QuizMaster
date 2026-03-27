@@ -77,18 +77,18 @@ export default function ForgotPassword() {
     return (
         <div className="min-h-screen flex">
             {/* Left decorative panel */}
-            <div className="hidden md:flex md:w-[40%] bg-gradient-to-br from-primary to-indigo-700 flex-col items-center justify-center p-10 text-white relative overflow-hidden">
-                <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+            <div className="hidden md:flex md:w-[40%] bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary-hover)] flex-col items-center justify-center p-10 text-[var(--color-text-inverse)] relative overflow-hidden">
+                <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle, var(--color-text-inverse) 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
                 <div className="relative z-10 text-center max-w-xs">
-                    <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center mx-auto mb-6">
-                        <BookOpen size={32} className="text-white" />
+                    <div className="w-16 h-16 rounded-2xl bg-[color:var(--color-text-inverse)]/20 backdrop-blur-sm flex items-center justify-center mx-auto mb-6">
+                        <BookOpen size={32} className="text-[var(--color-text-inverse)]" />
                     </div>
                     <h2 className="text-3xl font-bold mb-2">QuizMaster Pro</h2>
-                    <p className="text-indigo-200 mb-8">We'll help you get back in.</p>
+                    <p className="text-[color:var(--color-text-inverse)]/80 mb-8">We'll help you get back in.</p>
                     <div className="space-y-3 text-left">
                         {['Reset link sent instantly', 'Secure one-time token', 'Back to learning in minutes'].map((t) => (
-                            <div key={t} className="flex items-center gap-2.5 text-sm text-indigo-100">
-                                <CheckCircle2 size={16} className="text-emerald-300 flex-shrink-0" />
+                            <div key={t} className="flex items-center gap-2.5 text-sm text-[color:var(--color-text-inverse)]/80">
+                                <CheckCircle2 size={16} className="text-[var(--color-success)] flex-shrink-0" />
                                 <span>{t}</span>
                             </div>
                         ))}
@@ -97,14 +97,14 @@ export default function ForgotPassword() {
             </div>
 
             {/* Right form panel */}
-            <div className="flex-1 flex items-center justify-center p-6 sm:p-10 bg-white">
+            <div className="flex-1 flex items-center justify-center p-6 sm:p-10 bg-[var(--color-bg-card)]">
                 <div className="w-full max-w-[420px]">
                     {/* Mobile logo */}
                     <div className="flex items-center gap-2 mb-8 md:hidden">
-                        <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
-                            <BookOpen size={20} className="text-white" />
+                        <div className="w-9 h-9 rounded-lg bg-[var(--color-primary)] flex items-center justify-center">
+                            <BookOpen size={20} className="text-[var(--color-text-inverse)]" />
                         </div>
-                        <span className="text-lg font-bold">QuizMaster <span className="text-primary">Pro</span></span>
+                        <span className="text-lg font-bold">QuizMaster <span className="text-[var(--color-primary)]">Pro</span></span>
                     </div>
 
                     {/* ─── STATE A: Form ─── */}
@@ -118,8 +118,8 @@ export default function ForgotPassword() {
                         }}
                     >
                         <div className="animate-[fadeSlide_0.4s_ease_forwards]">
-                            <h1 className="text-2xl font-bold text-gray-900 mb-1">Forgot Password?</h1>
-                            <p className="text-gray-500 text-sm mb-8">
+                            <h1 className="text-2xl font-bold text-[var(--color-text-primary)] mb-1">Forgot Password?</h1>
+                            <p className="text-[var(--color-text-secondary)] text-sm mb-8">
                                 Enter your registered email address and we'll send you a reset link.
                             </p>
 
@@ -138,8 +138,8 @@ export default function ForgotPassword() {
                                 </Button>
                             </form>
 
-                            <p className="text-center text-sm text-gray-500 mt-8">
-                                <Link to="/login" className="text-primary font-semibold hover:underline inline-flex items-center gap-1">
+                            <p className="text-center text-sm text-[var(--color-text-secondary)] mt-8">
+                                <Link to="/login" className="text-[var(--color-primary)] font-semibold hover:underline inline-flex items-center gap-1">
                                     <ArrowLeft size={14} /> Back to Sign In
                                 </Link>
                             </p>
@@ -150,15 +150,15 @@ export default function ForgotPassword() {
                     {submitted && (
                         <div className="animate-[fadeSlide_0.4s_ease_forwards]">
                             <div className="text-center">
-                                <div className="w-20 h-20 rounded-full bg-emerald-50 flex items-center justify-center mx-auto mb-6">
-                                    <MailCheck size={36} className="text-emerald-500" />
+                                <div className="w-20 h-20 rounded-full bg-[var(--color-success-soft)] flex items-center justify-center mx-auto mb-6">
+                                    <MailCheck size={36} className="text-[var(--color-success)]" />
                                 </div>
-                                <h1 className="text-2xl font-bold text-gray-900 mb-2">Check Your Email</h1>
-                                <p className="text-gray-500 text-sm mb-1">We sent a password reset link to:</p>
-                                <p className="text-sm font-semibold text-gray-900 bg-gray-50 rounded-lg px-4 py-2 inline-block mb-4">
+                                <h1 className="text-2xl font-bold text-[var(--color-text-primary)] mb-2">Check Your Email</h1>
+                                <p className="text-[var(--color-text-secondary)] text-sm mb-1">We sent a password reset link to:</p>
+                                <p className="text-sm font-semibold text-[var(--color-text-primary)] bg-[var(--color-bg-soft)] rounded-lg px-4 py-2 inline-block mb-4">
                                     {sentEmail}
                                 </p>
-                                <p className="text-xs text-gray-400 mb-8">
+                                <p className="text-xs text-[var(--color-text-muted)] mb-8">
                                     The link will expire in 15 minutes. If you don't see it, check your spam folder.
                                 </p>
                             </div>
@@ -178,8 +178,8 @@ export default function ForgotPassword() {
                                 </Button>
                             </div>
 
-                            <p className="text-center text-sm text-gray-500 mt-8">
-                                <Link to="/login" className="text-primary font-semibold hover:underline inline-flex items-center gap-1">
+                            <p className="text-center text-sm text-[var(--color-text-secondary)] mt-8">
+                                <Link to="/login" className="text-[var(--color-primary)] font-semibold hover:underline inline-flex items-center gap-1">
                                     <ArrowLeft size={14} /> Back to Sign In
                                 </Link>
                             </p>

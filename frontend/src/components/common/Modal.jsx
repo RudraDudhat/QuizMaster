@@ -42,7 +42,7 @@ export default function Modal({
                 >
                     {/* Backdrop */}
                     <motion.div
-                        className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"
+                        className="absolute inset-0 bg-[color:var(--color-overlay)]"
                         onClick={closeOnBackdrop ? onClose : undefined}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -51,19 +51,19 @@ export default function Modal({
 
                     {/* Panel */}
                     <motion.div
-                        className={`relative w-full ${sizeClasses[size]} bg-white rounded-xl shadow-xl border border-gray-100 z-10`}
-                        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                        className={`relative w-full ${sizeClasses[size]} bg-[var(--color-bg-card)] rounded-2xl border-2 border-[var(--color-border)] shadow-[6px_6px_0_var(--color-border)] z-10`}
+                        initial={{ opacity: 0, scale: 0.95, y: 12 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                        exit={{ opacity: 0, scale: 0.95, y: 12 }}
                         transition={{ duration: 0.2, ease: 'easeOut' }}
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* Header */}
-                        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-                            <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+                        <div className="flex items-center justify-between px-6 py-4 border-b-2 border-[var(--color-border)]">
+                            <h3 className="text-lg font-extrabold text-[var(--color-text-primary)]">{title}</h3>
                             <button
                                 onClick={onClose}
-                                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                                className="p-1.5 rounded-full border-2 border-[var(--color-border)] text-[var(--color-text-primary)] hover:bg-[var(--color-primary-light)] transition-colors"
                             >
                                 <X size={18} />
                             </button>
@@ -76,7 +76,7 @@ export default function Modal({
 
                         {/* Footer */}
                         {footer && (
-                            <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100 bg-gray-50/50 rounded-b-xl">
+                            <div className="flex items-center justify-end gap-3 px-6 py-4 border-t-2 border-[var(--color-border)] bg-[var(--color-bg-subtle)] rounded-b-2xl">
                                 {footer}
                             </div>
                         )}

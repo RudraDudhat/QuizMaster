@@ -36,12 +36,12 @@ function isAnswered(ans) {
 }
 
 function getDifficultyColor(d) {
-    if (!d) return '#6b7280';
+    if (!d) return 'var(--color-text-subtle)';
     switch (String(d).toUpperCase()) {
-        case 'EASY':   return '#10B981';
-        case 'MEDIUM': return '#F59E0B';
-        case 'HARD':   return '#EF4444';
-        default:       return '#6b7280';
+        case 'EASY':   return 'var(--color-success)';
+        case 'MEDIUM': return 'var(--color-warning)';
+        case 'HARD':   return 'var(--color-danger)';
+        default:       return 'var(--color-text-subtle)';
     }
 }
 
@@ -49,47 +49,50 @@ function getDifficultyColor(d) {
 const css = {
     topBar: {
         position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
-        height: 56, background: '#fff', borderBottom: '1px solid #e5e7eb',
+        height: 56, background: 'var(--color-bg-card)', borderBottom: '2px solid var(--color-border)',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '0 20px', gap: 12, boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+        padding: '0 20px', gap: 12,
     },
     optionBtn: (selected) => ({
         width: '100%', display: 'flex', alignItems: 'flex-start', gap: 14,
-        padding: '14px 18px', borderRadius: 10, cursor: 'pointer',
-        border: selected ? '2px solid var(--color-primary)' : '2px solid #e5e7eb',
-        background: selected ? 'var(--color-primary-light)' : '#fff',
+        padding: '14px 18px', borderRadius: 14, cursor: 'pointer',
+        border: '2px solid var(--color-border)',
+        background: selected ? 'var(--color-primary)' : 'var(--color-bg-card)',
+        color: selected ? 'var(--color-text-inverse)' : 'var(--color-text-primary)',
+        boxShadow: selected ? '3px 3px 0 var(--color-border)' : '2px 2px 0 var(--color-border)',
         textAlign: 'left', transition: 'all 0.15s', outline: 'none',
         marginBottom: 10,
     }),
     radioCircle: (selected) => ({
         width: 20, height: 20, borderRadius: '50%', flexShrink: 0, marginTop: 1,
-        border: selected ? '6px solid var(--color-primary)' : '2px solid #d1d5db',
-        background: '#fff', transition: 'all 0.15s',
+        border: selected ? '6px solid var(--color-bg-card)' : '2px solid var(--color-border)',
+        background: 'var(--color-bg-card)', transition: 'all 0.15s',
     }),
     checkBox: (selected) => ({
         width: 20, height: 20, borderRadius: 5, flexShrink: 0, marginTop: 1,
-        border: selected ? '2px solid var(--color-primary)' : '2px solid #d1d5db',
-        background: selected ? 'var(--color-primary)' : '#fff',
+        border: '2px solid var(--color-border)',
+        background: selected ? 'var(--color-primary)' : 'var(--color-bg-card)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        transition: 'all 0.15s', color: '#fff', fontSize: 12, fontWeight: 700,
+        transition: 'all 0.15s', color: 'var(--color-text-inverse)', fontSize: 12, fontWeight: 700,
     }),
     tfBtn: (selected) => ({
         flex: 1, padding: '18px 24px', borderRadius: 12, cursor: 'pointer',
-        border: selected ? '2.5px solid var(--color-primary)' : '2px solid #e5e7eb',
-        background: selected ? 'var(--color-primary)' : '#fff',
-        color: selected ? '#fff' : 'var(--color-text-primary)',
+        border: '2px solid var(--color-border)',
+        background: selected ? 'var(--color-primary)' : 'var(--color-bg-card)',
+        color: selected ? 'var(--color-text-inverse)' : 'var(--color-text-primary)',
         fontSize: 17, fontWeight: 700, transition: 'all 0.18s', textAlign: 'center',
+        boxShadow: selected ? '3px 3px 0 var(--color-border)' : '2px 2px 0 var(--color-border)',
     }),
     navBtn: (state) => {
         const colors = {
-            current:         { bg: 'var(--color-primary)', color: '#fff',     border: 'var(--color-primary)' },
-            answered_flagged:{ bg: '#F59E0B',              color: '#fff',     border: '#F59E0B' },
-            answered:        { bg: '#10B981',              color: '#fff',     border: '#10B981' },
-            flagged:         { bg: '#FEF3C7',              color: '#92400E',  border: '#F59E0B' },
-            empty:           { bg: '#fff',                 color: '#6b7280',  border: '#e5e7eb' },
-        }[state] || { bg: '#fff', color: '#6b7280', border: '#e5e7eb' };
+            current:         { bg: 'var(--color-primary)', color: 'var(--color-text-inverse)', border: 'var(--color-primary)' },
+            answered_flagged:{ bg: 'var(--color-warning)', color: 'var(--color-text-inverse)', border: 'var(--color-warning)' },
+            answered:        { bg: 'var(--color-success)', color: 'var(--color-text-inverse)', border: 'var(--color-success)' },
+            flagged:         { bg: 'var(--color-warning-soft)', color: 'var(--color-warning)', border: 'var(--color-warning)' },
+            empty:           { bg: 'var(--color-bg-card)', color: 'var(--color-text-subtle)', border: 'var(--color-border-soft)' },
+        }[state] || { bg: 'var(--color-bg-card)', color: 'var(--color-text-subtle)', border: 'var(--color-border-soft)' };
         return {
-            width: 40, height: 40, borderRadius: 8, cursor: 'pointer',
+            width: 40, height: 40, borderRadius: 10, cursor: 'pointer',
             border: `2px solid ${colors.border}`, background: colors.bg,
             color: colors.color, fontSize: 13, fontWeight: 600,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -98,8 +101,8 @@ const css = {
     },
     draggableItem: (isDragging) => ({
         display: 'flex', alignItems: 'center', gap: 12,
-        padding: '12px 16px', borderRadius: 10, marginBottom: 8,
-        border: '2px solid #e5e7eb', background: isDragging ? '#EEF2FF' : '#fff',
+        padding: '12px 16px', borderRadius: 12, marginBottom: 8,
+        border: '2px solid var(--color-border)', background: isDragging ? 'var(--color-primary-light)' : 'var(--color-bg-card)',
         opacity: isDragging ? 0.7 : 1, cursor: 'grab',
         transition: 'all 0.15s',
     }),
@@ -119,7 +122,7 @@ function MCQSingle({ question, ans, setAns }) {
                         onClick={() => setAns(cur => ({ ...cur, selectedOptionUuids: [opt.uuid] }))}>
                         <div style={css.radioCircle(selected)} />
                         <div style={{ flex: 1 }}>
-                            <span style={{ fontSize: 15, lineHeight: 1.5, color: 'var(--color-text-primary)' }}>
+                            <span style={{ fontSize: 15, lineHeight: 1.5, color: selected ? 'var(--color-text-inverse)' : 'var(--color-text-primary)' }}>
                                 {opt.optionText}
                             </span>
                             {opt.mediaUrl && <img src={opt.mediaUrl} alt="" style={{ marginTop: 8, maxWidth: 240, borderRadius: 8 }} />}
@@ -150,7 +153,7 @@ function MCQMulti({ question, ans, setAns }) {
                     <button key={opt.uuid} style={css.optionBtn(selected)} onClick={() => toggle(opt.uuid)}>
                         <div style={css.checkBox(selected)}>{selected && '✓'}</div>
                         <div style={{ flex: 1 }}>
-                            <span style={{ fontSize: 15, lineHeight: 1.5, color: 'var(--color-text-primary)' }}>
+                            <span style={{ fontSize: 15, lineHeight: 1.5, color: selected ? 'var(--color-text-inverse)' : 'var(--color-text-primary)' }}>
                                 {opt.optionText}
                             </span>
                             {opt.mediaUrl && <img src={opt.mediaUrl} alt="" style={{ marginTop: 8, maxWidth: 240, borderRadius: 8 }} />}
@@ -193,13 +196,13 @@ function TextAnswer({ ans, setAns, rows = 3, essay = false }) {
                 onChange={e => setAns(cur => ({ ...cur, textAnswer: e.target.value }))}
                 placeholder={essay ? 'Write your essay answer here...' : 'Type your answer here...'}
                 style={{
-                    width: '100%', padding: '12px 14px', border: '2px solid #e5e7eb',
-                    borderRadius: 10, fontSize: 15, fontFamily: 'inherit', resize: 'vertical',
+                    width: '100%', padding: '12px 14px', border: '2px solid var(--color-border)',
+                    borderRadius: 12, fontSize: 15, fontFamily: 'inherit', resize: 'vertical',
                     outline: 'none', transition: 'border-color 0.15s', lineHeight: 1.6,
-                    background: '#fafbfc',
+                    background: 'var(--color-bg-card)',
                 }}
                 onFocus={e => e.target.style.borderColor = 'var(--color-primary)'}
-                onBlur={e  => e.target.style.borderColor = '#e5e7eb'}
+                onBlur={e  => e.target.style.borderColor = 'var(--color-border)'}
             />
             {essay && (
                 <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', marginTop: 8, fontStyle: 'italic' }}>
@@ -248,7 +251,7 @@ function OrderingQuestion({ question, ans, setAns }) {
                     onDragEnd={handleDragEnd}
                     style={css.draggableItem(dragging === i)}
                 >
-                    <GripVertical size={16} style={{ color: '#9ca3af', flexShrink: 0 }} />
+                    <GripVertical size={16} style={{ color: 'var(--color-text-muted)', flexShrink: 0 }} />
                     <div style={{ width: 26, height: 26, borderRadius: '50%', background: 'var(--color-primary-light)', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 12, flexShrink: 0 }}>
                         {i + 1}
                     </div>
@@ -275,7 +278,7 @@ function MatchQuestion({ question, ans, setAns }) {
         ...rights.map(o => ({ value: String(o.uuid), label: o.matchPairVal || o.optionText })),
     ];
 
-    const colorsArr = ['#6366F1','#10B981','#F59E0B','#EF4444','#8B5CF6','#06B6D4'];
+    const colorsArr = ['var(--color-primary)', 'var(--color-success)', 'var(--color-warning)', 'var(--color-danger)', 'var(--color-info)', 'var(--color-accent-yellow)'];
 
     return (
         <div>
@@ -287,11 +290,11 @@ function MatchQuestion({ question, ans, setAns }) {
                     const c = colorsArr[i % colorsArr.length];
                     return (
                         <div key={left.uuid} style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-                            <div style={{ flex: '1 1 200px', display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', background: '#f8fafc', borderRadius: 10, border: '2px solid #e5e7eb' }}>
+                            <div style={{ flex: '1 1 200px', display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', background: 'var(--color-bg-muted)', borderRadius: 10, border: '2px solid var(--color-border-soft)' }}>
                                 <div style={{ width: 10, height: 10, borderRadius: '50%', background: c, flexShrink: 0 }} />
                                 <span style={{ fontSize: 14, fontWeight: 500 }}>{left.matchPairKey || left.optionText}</span>
                             </div>
-                            <div style={{ color: '#9ca3af', fontWeight: 700, fontSize: 18 }}>→</div>
+                            <div style={{ color: 'var(--color-text-muted)', fontWeight: 700, fontSize: 18 }}>→</div>
                             <div style={{ flex: '1 1 200px', position: 'relative' }}>
                                 <select
                                     value={String(pairs[left.uuid] ?? '')}
@@ -302,11 +305,11 @@ function MatchQuestion({ question, ans, setAns }) {
                                         else delete newPairs[left.uuid];
                                         setAns(cur => ({ ...cur, matchPairs: newPairs }));
                                     }}
-                                    style={{ width: '100%', height: 44, borderRadius: 10, border: `2px solid ${pairs[left.uuid] ? c : '#e5e7eb'}`, padding: '0 36px 0 12px', fontSize: 14, outline: 'none', background: '#fff', appearance: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
+                                    style={{ width: '100%', height: 44, borderRadius: 10, border: `2px solid ${pairs[left.uuid] ? c : 'var(--color-border-soft)'}`, padding: '0 36px 0 12px', fontSize: 14, outline: 'none', background: 'var(--color-bg-card)', appearance: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
                                 >
                                     {rightOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                                 </select>
-                                <span style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#9ca3af' }}>▼</span>
+                                <span style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--color-text-muted)' }}>▼</span>
                             </div>
                         </div>
                     );
@@ -335,7 +338,7 @@ function renderAnswerSection(question, ans, setAns) {
             return (
                 <div>
                     {question.mediaUrl && (
-                        <img src={question.mediaUrl} alt="Question" style={{ maxWidth: '100%', borderRadius: 12, marginBottom: 16, border: '1px solid #e5e7eb' }} />
+                        <img src={question.mediaUrl} alt="Question" style={{ maxWidth: '100%', borderRadius: 12, marginBottom: 16, border: '1px solid var(--color-border-soft)' }} />
                     )}
                     <MCQSingle question={question} ans={ans} setAns={setAns} />
                 </div>
@@ -398,8 +401,8 @@ export default function QuizTaking() {
     if (!attemptData) {
         return (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', gap: 16, background: 'var(--color-bg-page)' }}>
-                <div style={{ width: 64, height: 64, background: '#FEF2F2', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <AlertTriangle size={32} style={{ color: '#EF4444' }} />
+                <div style={{ width: 64, height: 64, background: 'var(--color-danger-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <AlertTriangle size={32} style={{ color: 'var(--color-danger)' }} />
                 </div>
                 <h2 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>Invalid attempt session</h2>
                 <p style={{ color: 'var(--color-text-secondary)', fontSize: 14, margin: 0 }}>
@@ -665,7 +668,7 @@ export default function QuizTaking() {
                                 <Spinner size="sm" /> Saving...
                             </div>
                         ) : lastSaved ? (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#10B981' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: 'var(--color-success)' }}>
                                 <CheckCircle size={13} /> Saved
                             </div>
                         ) : null}
@@ -673,7 +676,7 @@ export default function QuizTaking() {
                         <button
                             onClick={() => setShowNavigator(p => !p)}
                             title="Question Navigator"
-                            style={{ width: 36, height: 36, border: showNavigator ? '2px solid var(--color-primary)' : '1px solid #e5e7eb', borderRadius: 8, background: showNavigator ? 'var(--color-primary-light)' : '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: showNavigator ? 'var(--color-primary)' : '#6b7280' }}
+                            style={{ width: 36, height: 36, border: showNavigator ? '2px solid var(--color-primary)' : '1px solid var(--color-border-soft)', borderRadius: 8, background: showNavigator ? 'var(--color-primary-light)' : 'var(--color-bg-card)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: showNavigator ? 'var(--color-primary)' : 'var(--color-text-subtle)' }}
                         >
                             <Grid3X3 size={16} />
                         </button>
@@ -694,19 +697,19 @@ export default function QuizTaking() {
                             {/* Question header */}
                             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                                    <span style={{ padding: '4px 12px', background: 'var(--color-primary)', color: '#fff', borderRadius: 20, fontSize: 12, fontWeight: 700 }}>
+                                    <span style={{ padding: '4px 12px', background: 'var(--color-primary)', color: 'var(--color-text-inverse)', borderRadius: 20, fontSize: 12, fontWeight: 700 }}>
                                         Q{currentIndex + 1}
                                     </span>
-                                    <span style={{ padding: '4px 10px', background: '#F0FDF4', color: '#10B981', border: '1px solid #86efac', borderRadius: 20, fontSize: 12, fontWeight: 600 }}>
+                                    <span style={{ padding: '4px 10px', background: 'var(--color-success-soft)', color: 'var(--color-success)', border: '1px solid var(--color-success)', borderRadius: 20, fontSize: 12, fontWeight: 600 }}>
                                         +{currentQuestion?.marks ?? 0} marks
                                     </span>
                                     {currentQuestion?.negativeMarks > 0 && (
-                                        <span style={{ padding: '4px 10px', background: '#FEF2F2', color: '#EF4444', border: '1px solid #fca5a5', borderRadius: 20, fontSize: 12, fontWeight: 600 }}>
+                                        <span style={{ padding: '4px 10px', background: 'var(--color-danger-soft)', color: 'var(--color-danger)', border: '1px solid var(--color-danger)', borderRadius: 20, fontSize: 12, fontWeight: 600 }}>
                                             -{currentQuestion.negativeMarks}
                                         </span>
                                     )}
                                     {currentQuestion?.difficulty && (
-                                        <span style={{ padding: '4px 10px', background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 20, fontSize: 11, fontWeight: 600, color: getDifficultyColor(currentQuestion.difficulty) }}>
+                                        <span style={{ padding: '4px 10px', background: 'var(--color-bg-hover)', border: '1px solid var(--color-border-soft)', borderRadius: 20, fontSize: 11, fontWeight: 600, color: getDifficultyColor(currentQuestion.difficulty) }}>
                                             {currentQuestion.difficulty}
                                         </span>
                                     )}
@@ -714,7 +717,7 @@ export default function QuizTaking() {
 
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                     {currentQuestion?.perQuestionSecs && (
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 20, background: '#FEF3C7', color: '#92400E', fontSize: 12, fontWeight: 600 }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 20, background: 'var(--color-warning-soft)', color: 'var(--color-warning)', fontSize: 12, fontWeight: 600 }}>
                                             <Clock size={12} />
                                             {Math.max(0, currentQuestion.perQuestionSecs - questionTimeSpent)}s
                                         </div>
@@ -722,14 +725,14 @@ export default function QuizTaking() {
                                     <button
                                         onClick={toggleFlag}
                                         title={currentAns?.isFlagged ? 'Remove flag' : 'Flag for review'}
-                                        style={{ width: 36, height: 36, borderRadius: 8, border: currentAns?.isFlagged ? '2px solid #F59E0B' : '1px solid #e5e7eb', background: currentAns?.isFlagged ? '#FFFBEB' : '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, transition: 'all 0.15s' }}
+                                        style={{ width: 36, height: 36, borderRadius: 8, border: currentAns?.isFlagged ? '2px solid var(--color-warning)' : '1px solid var(--color-border-soft)', background: currentAns?.isFlagged ? 'var(--color-warning-soft)' : 'var(--color-bg-card)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, transition: 'all 0.15s' }}
                                     >
                                         🚩
                                     </button>
                                     {currentQuestion?.hintText && (
                                         <button
                                             onClick={openHint}
-                                            style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 8, border: '1px solid #e5e7eb', background: '#fff', cursor: 'pointer', fontSize: 12, fontWeight: 600, color: '#F59E0B', transition: 'all 0.15s' }}
+                                            style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 8, border: '1px solid var(--color-border-soft)', background: 'var(--color-bg-card)', cursor: 'pointer', fontSize: 12, fontWeight: 600, color: 'var(--color-warning)', transition: 'all 0.15s' }}
                                         >
                                             <Lightbulb size={13} /> Hint
                                         </button>
@@ -740,41 +743,41 @@ export default function QuizTaking() {
                             {/* Question text */}
                             {currentQuestion?.questionType === 'CODE_SNIPPET' ? (
                                 <div style={{ marginBottom: 24 }}>
-                                    <div style={{ fontSize: 18, fontWeight: 500, color: 'var(--color-text-primary)', lineHeight: 1.7, marginBottom: 16, padding: '20px 24px', background: '#fff', borderRadius: 14, border: '1px solid #e5e7eb', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+                                    <div style={{ fontSize: 18, fontWeight: 500, color: 'var(--color-text-primary)', lineHeight: 1.7, marginBottom: 16, padding: '20px 24px', background: 'var(--color-bg-card)', borderRadius: 14, border: '1px solid var(--color-border-soft)', boxShadow: 'var(--shadow-soft)' }}>
                                         {currentQuestion.questionText}
                                     </div>
                                     {(currentQuestion.codeContent || currentQuestion.mediaUrl) && (
-                                        <div style={{ background: '#1e1e2e', borderRadius: 12, padding: '20px 24px', overflow: 'auto', border: '1px solid #374151' }}>
-                                            <pre style={{ color: '#cdd6f4', fontFamily: '"Fira Code", monospace', fontSize: 14, lineHeight: 1.7, margin: 0, whiteSpace: 'pre-wrap' }}>
+                                        <div style={{ background: 'var(--color-code-bg)', borderRadius: 12, padding: '20px 24px', overflow: 'auto', border: '1px solid var(--color-code-border)' }}>
+                                            <pre style={{ color: 'var(--color-code-text)', fontFamily: '"Fira Code", monospace', fontSize: 14, lineHeight: 1.7, margin: 0, whiteSpace: 'pre-wrap' }}>
                                                 {currentQuestion.codeContent || currentQuestion.mediaUrl}
                                             </pre>
                                         </div>
                                     )}
                                 </div>
                             ) : (
-                                <div style={{ fontSize: 18, fontWeight: 500, color: 'var(--color-text-primary)', lineHeight: 1.7, marginBottom: 24, padding: '20px 24px', background: '#fff', borderRadius: 14, border: '1px solid #e5e7eb', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+                                <div style={{ fontSize: 18, fontWeight: 500, color: 'var(--color-text-primary)', lineHeight: 1.7, marginBottom: 24, padding: '20px 24px', background: 'var(--color-bg-card)', borderRadius: 14, border: '1px solid var(--color-border-soft)', boxShadow: 'var(--shadow-soft)' }}>
                                     {currentQuestion?.questionText}
                                     {currentQuestion?.mediaUrl && currentQuestion.questionType !== 'CODE_SNIPPET' && (
-                                        <img src={currentQuestion.mediaUrl} alt="Question media" style={{ display: 'block', marginTop: 16, maxWidth: '100%', borderRadius: 10, border: '1px solid #e5e7eb' }} />
+                                        <img src={currentQuestion.mediaUrl} alt="Question media" style={{ display: 'block', marginTop: 16, maxWidth: '100%', borderRadius: 10, border: '1px solid var(--color-border-soft)' }} />
                                     )}
                                 </div>
                             )}
 
                             {/* Hint panel */}
                             {showHint && currentQuestion?.hintText && (
-                                <div style={{ padding: '14px 18px', background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: 12, marginBottom: 20, display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-                                    <Lightbulb size={18} style={{ color: '#F59E0B', flexShrink: 0, marginTop: 1 }} />
+                                <div style={{ padding: '14px 18px', background: 'var(--color-warning-soft)', border: '1px solid var(--color-warning)', borderRadius: 12, marginBottom: 20, display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                                    <Lightbulb size={18} style={{ color: 'var(--color-warning)', flexShrink: 0, marginTop: 1 }} />
                                     <div style={{ flex: 1 }}>
-                                        <span style={{ fontSize: 13, fontWeight: 700, color: '#92400E' }}>Hint: </span>
-                                        <span style={{ fontSize: 13, color: '#78350F' }}>{currentQuestion.hintText}</span>
-                                        <div style={{ fontSize: 11, color: '#A16207', marginTop: 4 }}>(Using hint is recorded)</div>
+                                        <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-warning)' }}>Hint: </span>
+                                        <span style={{ fontSize: 13, color: 'var(--color-text-secondary)' }}>{currentQuestion.hintText}</span>
+                                        <div style={{ fontSize: 11, color: 'var(--color-text-secondary)', marginTop: 4 }}>(Using hint is recorded)</div>
                                     </div>
-                                    <button onClick={() => setShowHint(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#92400E', padding: 2 }}><X size={14} /></button>
+                                    <button onClick={() => setShowHint(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-warning)', padding: 2 }}><X size={14} /></button>
                                 </div>
                             )}
 
                             {/* Answer section */}
-                            <div style={{ background: '#fff', borderRadius: 14, padding: '20px 24px', border: '1px solid #e5e7eb', marginBottom: 24, boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+                            <div style={{ background: 'var(--color-bg-card)', borderRadius: 14, padding: '20px 24px', border: '1px solid var(--color-border-soft)', marginBottom: 24, boxShadow: 'var(--shadow-soft)' }}>
                                 {renderAnswerSection(currentQuestion, currentAns, setCurrentAns)}
                             </div>
 
@@ -796,11 +799,11 @@ export default function QuizTaking() {
                                         const state = getNavState(idx);
                                         const dotColor = {
                                             current: 'var(--color-primary)',
-                                            answered_flagged: '#F59E0B',
-                                            answered: '#10B981',
-                                            flagged: '#FEF3C7',
-                                            empty: '#e5e7eb',
-                                        }[state] ?? '#e5e7eb';
+                                            answered_flagged: 'var(--color-warning)',
+                                            answered: 'var(--color-success)',
+                                            flagged: 'var(--color-warning-soft)',
+                                            empty: 'var(--color-border-soft)',
+                                        }[state] ?? 'var(--color-border-soft)';
                                         return (
                                             <button key={idx}
                                                 onClick={() => goTo(idx)}
@@ -851,10 +854,10 @@ export default function QuizTaking() {
 
                     {/* ══ NAVIGATOR PANEL ══ */}
                     {showNavigator && (
-                        <div style={{ width: 300, background: '#fff', borderLeft: '1px solid #e5e7eb', overflowY: 'auto', padding: '20px', flexShrink: 0, boxShadow: '-4px 0 12px rgba(0,0,0,0.06)' }}>
+                        <div style={{ width: 300, background: 'var(--color-bg-card)', borderLeft: '1px solid var(--color-border-soft)', overflowY: 'auto', padding: '20px', flexShrink: 0, boxShadow: '-4px 0 12px rgba(0,0,0,0.06)' }}>
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
                                 <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700 }}>Question Navigator</h3>
-                                <button onClick={() => setShowNavigator(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280' }}>
+                                <button onClick={() => setShowNavigator(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-subtle)' }}>
                                     <X size={16} />
                                 </button>
                             </div>
@@ -862,11 +865,11 @@ export default function QuizTaking() {
                             {/* Stats */}
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 18 }}>
                                 {[
-                                    { label: 'Answered',  val: answeredCount,            color: '#10B981' },
-                                    { label: 'Flagged',   val: flaggedCount,              color: '#F59E0B' },
-                                    { label: 'Remaining', val: questions.length - answeredCount, color: '#6b7280' },
+                                    { label: 'Answered',  val: answeredCount,            color: 'var(--color-success)' },
+                                    { label: 'Flagged',   val: flaggedCount,              color: 'var(--color-warning)' },
+                                    { label: 'Remaining', val: questions.length - answeredCount, color: 'var(--color-text-subtle)' },
                                 ].map(({ label, val, color }) => (
-                                    <div key={label} style={{ textAlign: 'center', padding: '8px 4px', background: '#f8fafc', borderRadius: 8, border: '1px solid #e5e7eb' }}>
+                                    <div key={label} style={{ textAlign: 'center', padding: '8px 4px', background: 'var(--color-bg-muted)', borderRadius: 8, border: '1px solid var(--color-border-soft)' }}>
                                         <div style={{ fontSize: 18, fontWeight: 700, color }}>{val}</div>
                                         <div style={{ fontSize: 10, color: 'var(--color-text-secondary)', fontWeight: 500 }}>{label}</div>
                                     </div>
@@ -876,13 +879,13 @@ export default function QuizTaking() {
                             {/* Legend */}
                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16, fontSize: 11, color: 'var(--color-text-secondary)' }}>
                                 {[
-                                    { color: '#10B981',              label: 'Answered' },
+                                    { color: 'var(--color-success)', label: 'Answered' },
                                     { color: 'var(--color-primary)', label: 'Current' },
-                                    { color: '#F59E0B',              label: 'Flagged' },
-                                    { color: '#e5e7eb',              label: 'Not answered' },
+                                    { color: 'var(--color-warning)', label: 'Flagged' },
+                                    { color: 'var(--color-border-soft)', label: 'Not answered' },
                                 ].map(({ color, label }) => (
                                     <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                                        <div style={{ width: 12, height: 12, borderRadius: 3, background: color, border: color === '#e5e7eb' ? '1px solid #d1d5db' : 'none' }} />
+                                        <div style={{ width: 12, height: 12, borderRadius: 3, background: color, border: color === 'var(--color-border-soft)' ? '1px solid var(--color-border-muted)' : 'none' }} />
                                         {label}
                                     </div>
                                 ))}
@@ -925,26 +928,26 @@ export default function QuizTaking() {
                     }
                 >
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                        <div style={{ border: '1px solid #e5e7eb', borderRadius: 10, overflow: 'hidden' }}>
+                        <div style={{ border: '1px solid var(--color-border-soft)', borderRadius: 10, overflow: 'hidden' }}>
                             {[
                                 { label: 'Total Questions', val: questions.length, color: 'var(--color-text-primary)' },
-                                { label: 'Answered',        val: answeredCount,     color: '#10B981' },
-                                { label: 'Unanswered',      val: unanswered,        color: unanswered > 0 ? '#EF4444' : '#10B981' },
-                                { label: 'Flagged',         val: flaggedCount,      color: flaggedCount > 0 ? '#F59E0B' : 'var(--color-text-primary)' },
+                                { label: 'Answered',        val: answeredCount,     color: 'var(--color-success)' },
+                                { label: 'Unanswered',      val: unanswered,        color: unanswered > 0 ? 'var(--color-danger)' : 'var(--color-success)' },
+                                { label: 'Flagged',         val: flaggedCount,      color: flaggedCount > 0 ? 'var(--color-warning)' : 'var(--color-text-primary)' },
                             ].map(({ label, val, color }, i) => (
-                                <div key={label} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 16px', borderBottom: i < 3 ? '1px solid #f1f5f9' : 'none', background: i % 2 ? '#fafbfc' : '#fff' }}>
+                                <div key={label} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 16px', borderBottom: i < 3 ? '1px solid var(--color-border-subtle)' : 'none', background: i % 2 ? 'var(--color-bg-muted)' : 'var(--color-bg-card)' }}>
                                     <span style={{ fontSize: 13, color: 'var(--color-text-secondary)' }}>{label}</span>
                                     <span style={{ fontSize: 14, fontWeight: 700, color }}>{val}</span>
                                 </div>
                             ))}
                         </div>
                         {unanswered > 0 && (
-                            <div style={{ padding: '12px 14px', background: '#FEF2F2', border: '1px solid #fca5a5', borderRadius: 10, fontSize: 13, color: '#991B1B' }}>
+                            <div style={{ padding: '12px 14px', background: 'var(--color-danger-soft)', border: '1px solid var(--color-danger)', borderRadius: 10, fontSize: 13, color: 'var(--color-danger)' }}>
                                 ⚠️ You have <strong>{unanswered}</strong> unanswered question(s). They will receive 0 marks.
                             </div>
                         )}
                         {flaggedCount > 0 && (
-                            <div style={{ padding: '12px 14px', background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: 10, fontSize: 13, color: '#92400E' }}>
+                            <div style={{ padding: '12px 14px', background: 'var(--color-warning-soft)', border: '1px solid var(--color-warning)', borderRadius: 10, fontSize: 13, color: 'var(--color-warning)' }}>
                                 🚩 You have <strong>{flaggedCount}</strong> flagged question(s). Review them before submitting.
                             </div>
                         )}
@@ -965,8 +968,8 @@ export default function QuizTaking() {
                     }
                 >
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, padding: '8px 0', textAlign: 'center' }}>
-                        <div style={{ width: 56, height: 56, background: '#FEF3C7', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <AlertTriangle size={28} style={{ color: '#F59E0B' }} />
+                        <div style={{ width: 56, height: 56, background: 'var(--color-warning-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <AlertTriangle size={28} style={{ color: 'var(--color-warning)' }} />
                         </div>
                         <p style={{ fontSize: 15, color: 'var(--color-text-primary)', lineHeight: 1.6, margin: 0 }}>
                             {warningModal.message}

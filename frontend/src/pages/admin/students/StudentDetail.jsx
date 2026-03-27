@@ -577,17 +577,17 @@ export default function StudentDetail() {
                 }
             >
                 <div className="flex flex-col items-center text-center gap-3">
-                    <div className="w-16 h-16 rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center">
-                        <RotateCcw size={44} className="text-amber-600" />
+                    <div className="w-16 h-16 rounded-2xl bg-[var(--color-block-amber)] border-2 border-[var(--color-border)] shadow-[2px_2px_0_var(--color-border)] flex items-center justify-center">
+                        <RotateCcw size={44} className="text-[var(--color-warning)]" />
                     </div>
                     <div className="space-y-2">
-                        <p className="text-sm text-gray-700">Reset all attempts for:</p>
-                        <p className="text-base font-bold text-gray-900">{resetModal?.quizTitle}</p>
-                        <p className="text-sm text-gray-500">Student: {student?.fullName}</p>
+                        <p className="text-sm text-[var(--color-text-secondary)]">Reset all attempts for:</p>
+                        <p className="text-base font-bold text-[var(--color-text-primary)]">{resetModal?.quizTitle}</p>
+                        <p className="text-sm text-[var(--color-text-muted)]">Student: {student?.fullName}</p>
                     </div>
-                    <div className="mt-1 w-full rounded-xl border border-red-100 bg-red-50 p-4 text-left">
-                        <p className="text-sm font-semibold text-red-700">Warning</p>
-                        <p className="mt-1 text-sm text-red-600">
+                    <div className="mt-1 w-full rounded-xl border-2 border-[var(--color-border)] bg-[var(--color-block-red)] p-4 text-left shadow-[2px_2px_0_var(--color-border)]">
+                        <p className="text-sm font-semibold text-[var(--color-danger)]">Warning</p>
+                        <p className="mt-1 text-sm text-[var(--color-text-primary)]">
                             All attempts for this quiz will be invalidated. The student will be able to retake the quiz
                             from the beginning. This cannot be undone.
                         </p>
@@ -626,27 +626,29 @@ export default function StudentDetail() {
                 }
             >
                 <div className="flex flex-col items-center text-center gap-3">
-                    <div className="w-16 h-16 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center">
+                    <div
+                        className={`w-16 h-16 rounded-2xl border-2 border-[var(--color-border)] shadow-[2px_2px_0_var(--color-border)] flex items-center justify-center ${student?.isActive ? 'bg-[var(--color-block-red)]' : 'bg-[var(--color-block-mint)]'}`}
+                    >
                         {student?.isActive ? (
-                            <UserX size={44} className="text-red-500" />
+                            <UserX size={44} className="text-[var(--color-danger)]" />
                         ) : (
-                            <UserCheck size={44} className="text-emerald-600" />
+                            <UserCheck size={44} className="text-[var(--color-success)]" />
                         )}
                     </div>
 
                     {student?.isActive ? (
                         <div className="space-y-2">
-                            <p className="text-sm text-gray-700">Are you sure you want to suspend:</p>
-                            <p className="text-base font-bold text-gray-900">{student?.fullName}</p>
-                            <p className="text-sm text-gray-500">
+                            <p className="text-sm text-[var(--color-text-secondary)]">Are you sure you want to suspend:</p>
+                            <p className="text-base font-bold text-[var(--color-text-primary)]">{student?.fullName}</p>
+                            <p className="text-sm text-[var(--color-text-muted)]">
                                 They will lose access immediately and all active sessions will be terminated.
                             </p>
                         </div>
                     ) : (
                         <div className="space-y-2">
-                            <p className="text-base font-semibold text-gray-900">Reinstate this student?</p>
-                            <p className="text-base font-bold text-gray-900">{student?.fullName}</p>
-                            <p className="text-sm text-gray-500">They will regain full access to the platform.</p>
+                            <p className="text-base font-semibold text-[var(--color-text-primary)]">Reinstate this student?</p>
+                            <p className="text-base font-bold text-[var(--color-text-primary)]">{student?.fullName}</p>
+                            <p className="text-sm text-[var(--color-text-muted)]">They will regain full access to the platform.</p>
                         </div>
                     )}
 

@@ -118,11 +118,11 @@ export default function QuizList() {
                     onClick={() => navigate(`/admin/quizzes/${q.uuid}/edit`)}
                     className="text-left group"
                 >
-                    <span className="font-semibold text-gray-900 group-hover:text-primary transition-colors">
+                    <span className="font-semibold text-[var(--color-text-primary)] group-hover:text-[var(--color-primary)] transition-colors">
                         {truncateText(q.title, 40)}
                     </span>
                     {q.categoryName && (
-                        <span className="block text-xs text-gray-400 mt-0.5">{q.categoryName}</span>
+                        <span className="block text-xs text-[var(--color-text-muted)] mt-0.5">{q.categoryName}</span>
                     )}
                     <div className="mt-1 flex flex-wrap gap-1.5">
                         {q.assignedGroups?.length > 0 ? (
@@ -130,19 +130,19 @@ export default function QuizList() {
                                 {q.assignedGroups.slice(0, 2).map((g) => (
                                     <span
                                         key={g.uuid}
-                                        className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-100"
+                                        className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[var(--color-warning-soft)] text-[var(--color-warning)] border-2 border-[var(--color-border)]"
                                     >
                                         🔒 {g.name}
                                     </span>
                                 ))}
                                 {q.assignedGroups.length > 2 && (
-                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-100">
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[var(--color-warning-soft)] text-[var(--color-warning)] border-2 border-[var(--color-border)]">
                                         +{q.assignedGroups.length - 2} more
                                     </span>
                                 )}
                             </>
                         ) : (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-100">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[var(--color-success-soft)] text-[var(--color-success)] border-2 border-[var(--color-border)]">
                                 🌐 Open access
                             </span>
                         )}
@@ -161,21 +161,21 @@ export default function QuizList() {
         },
         {
             key: 'questionCount', label: 'Questions', align: 'center',
-            render: (q) => <span className="text-gray-700">{q.questionCount} questions</span>,
+            render: (q) => <span className="text-[var(--color-text-secondary)]">{q.questionCount} questions</span>,
         },
         {
             key: 'marks', label: 'Marks', align: 'center',
             render: (q) => (
                 <div className="text-center">
-                    <span className="text-gray-700 font-medium">{formatScore('-', q.totalMarks)}</span>
-                    <span className="block text-[11px] text-gray-400 mt-0.5">{q.passMarks} to pass</span>
+                    <span className="text-[var(--color-text-primary)] font-semibold">{formatScore('-', q.totalMarks)}</span>
+                    <span className="block text-[11px] text-[var(--color-text-muted)] mt-0.5">{q.passMarks} to pass</span>
                 </div>
             ),
         },
         {
             key: 'timeLimit', label: 'Time Limit', align: 'center',
             render: (q) => (
-                <span className="text-gray-600 text-xs">
+                <span className="text-[var(--color-text-secondary)] text-xs">
                     {q.timeLimitSeconds ? formatDuration(q.timeLimitSeconds) : 'No limit'}
                 </span>
             ),
@@ -186,14 +186,14 @@ export default function QuizList() {
         },
         {
             key: 'createdAt', label: 'Created', align: 'center',
-            render: (q) => <span className="text-xs text-gray-500 whitespace-nowrap">{formatDate(q.createdAt)}</span>,
+            render: (q) => <span className="text-xs text-[var(--color-text-muted)] whitespace-nowrap">{formatDate(q.createdAt)}</span>,
         },
         {
             key: 'actions', label: '', width: '48px', align: 'center',
             render: (q) => (
                 <Dropdown
                     trigger={
-                        <button className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+                        <button className="p-1.5 rounded-full border-2 border-[var(--color-border)] text-[var(--color-text-primary)] hover:bg-[var(--color-primary-light)] transition-colors">
                             <MoreVertical size={16} />
                         </button>
                     }
@@ -217,8 +217,8 @@ export default function QuizList() {
             {/* ─── Header ─── */}
             <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Quizzes</h1>
-                    <p className="text-sm text-gray-500 mt-0.5">
+                    <h1 className="text-3xl font-extrabold text-[var(--color-text-primary)]">Quizzes</h1>
+                    <p className="text-sm text-[var(--color-text-secondary)] mt-1">
                         {totalElements} {totalElements === 1 ? 'quiz' : 'quizzes'} total
                     </p>
                 </div>
@@ -231,7 +231,7 @@ export default function QuizList() {
             </div>
 
             {/* ─── Filters ─── */}
-            <Card padding="sm">
+            <Card padding="sm" className="bg-[var(--color-block-sky)]">
                 <div className="flex flex-col sm:flex-row gap-3 p-2">
                     <div className="flex-1">
                         <Input
@@ -258,7 +258,7 @@ export default function QuizList() {
 
             {/* ─── Table ─── */}
             {!isLoading && filtered.length === 0 && quizzes.length === 0 ? (
-                <Card padding="lg">
+                <Card padding="lg" className="bg-[var(--color-block-cream)]">
                     <EmptyState
                         icon={<BookOpen size={48} />}
                         title="No quizzes found"
@@ -272,7 +272,7 @@ export default function QuizList() {
                     data={filtered}
                     loading={isLoading}
                     emptyMessage="No quizzes match your search"
-                    emptyIcon={<BookOpen size={40} className="text-gray-300" />}
+                    emptyIcon={<BookOpen size={40} className="text-[var(--color-border-muted)]" />}
                 />
             )}
 
@@ -309,16 +309,16 @@ export default function QuizList() {
                 }
             >
                 <div className="text-center">
-                    <div className="mx-auto w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mb-4">
-                        <AlertTriangle size={24} className="text-red-500" />
+                    <div className="mx-auto w-12 h-12 rounded-full bg-[var(--color-block-red)] border-2 border-[var(--color-border)] shadow-[2px_2px_0_var(--color-border)] flex items-center justify-center mb-4">
+                        <AlertTriangle size={24} className="text-[var(--color-danger)]" />
                     </div>
-                    <p className="text-sm text-gray-600 mb-2">
+                    <p className="text-sm text-[var(--color-text-secondary)] mb-2">
                         Are you sure you want to delete:
                     </p>
-                    <p className="font-semibold text-gray-900 mb-3">
+                    <p className="font-semibold text-[var(--color-text-primary)] mb-3">
                         {deleteModal.title}
                     </p>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-[var(--color-text-muted)]">
                         This action cannot be undone. All questions linked to this quiz will be unlinked.
                     </p>
                 </div>

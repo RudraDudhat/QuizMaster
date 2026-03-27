@@ -23,15 +23,15 @@ import Badge from '../../../components/common/Badge';
 
 function statusToBarColor(value) {
     const v = Number(value ?? 0);
-    if (v >= 70) return 'bg-emerald-500';
-    if (v >= 50) return 'bg-amber-500';
-    return 'bg-red-500';
+    if (v >= 70) return 'bg-[var(--color-success)]';
+    if (v >= 50) return 'bg-[var(--color-warning)]';
+    return 'bg-[var(--color-danger)]';
 }
 
 function MiniBar({ value }) {
     const v = Math.max(0, Math.min(100, Number(value ?? 0)));
     return (
-        <div className="mt-1.5 h-1.5 w-full rounded-full bg-gray-100 overflow-hidden">
+        <div className="mt-1.5 h-1.5 w-full rounded-full bg-[var(--color-bg-subtle)] overflow-hidden">
             <div
                 className={`h-full rounded-full ${statusToBarColor(v)} transition-[width] duration-300`}
                 style={{ width: `${v}%` }}
@@ -138,10 +138,10 @@ export default function StudentList() {
                         >
                             <Avatar name={student?.fullName} size="sm" />
                             <div className="min-w-0">
-                                <div className="font-semibold text-gray-900 truncate">
+                                <div className="font-semibold text-[var(--color-text-primary)] truncate">
                                     {student?.fullName}
                                 </div>
-                                <div className="text-xs text-gray-500 truncate">{student?.email}</div>
+                                <div className="text-xs text-[var(--color-text-secondary)] truncate">{student?.email}</div>
                             </div>
                         </div>
                     );
@@ -168,10 +168,10 @@ export default function StudentList() {
                     if (student?.__skeleton) return <div className="skeleton h-10 w-32 rounded" />;
                     return (
                         <div className="space-y-1">
-                            <div className="text-sm font-semibold text-gray-900">
+                            <div className="text-sm font-semibold text-[var(--color-text-primary)]">
                                 🔥 {student?.xpPoints ?? 0} XP
                             </div>
-                            <div className="text-xs text-gray-500">⚡ {student?.streakDays ?? 0} day streak</div>
+                            <div className="text-xs text-[var(--color-text-secondary)]">⚡ {student?.streakDays ?? 0} day streak</div>
                         </div>
                     );
                 },
@@ -185,8 +185,8 @@ export default function StudentList() {
                     if (student?.__skeleton) return <div className="skeleton h-8 w-16 rounded mx-auto" />;
                     return (
                         <div className="text-center">
-                            <div className="font-semibold text-gray-900">{student?.totalAttempts ?? 0}</div>
-                            <div className="text-xs text-gray-500">attempts</div>
+                            <div className="font-semibold text-[var(--color-text-primary)]">{student?.totalAttempts ?? 0}</div>
+                            <div className="text-xs text-[var(--color-text-secondary)]">attempts</div>
                         </div>
                     );
                 },
@@ -199,7 +199,7 @@ export default function StudentList() {
                     if (student?.__skeleton) return <div className="skeleton h-10 w-32 rounded" />;
                     return (
                         <div className="min-w-[140px]">
-                            <div className="text-sm font-semibold text-gray-900">
+                            <div className="text-sm font-semibold text-[var(--color-text-primary)]">
                                 {formatPercentage(student?.averageScore ?? 0)}
                             </div>
                             <MiniBar value={student?.averageScore ?? 0} />
@@ -215,7 +215,7 @@ export default function StudentList() {
                     if (student?.__skeleton) return <div className="skeleton h-10 w-32 rounded" />;
                     return (
                         <div className="min-w-[140px]">
-                            <div className="text-sm font-semibold text-gray-900">
+                            <div className="text-sm font-semibold text-[var(--color-text-primary)]">
                                 {formatPercentage(student?.passRate ?? 0)}
                             </div>
                             <MiniBar value={student?.passRate ?? 0} />
@@ -232,8 +232,8 @@ export default function StudentList() {
                     const lastLogin = student?.lastLoginAt ? formatDate(student?.lastLoginAt) : 'Never logged in';
                     return (
                         <div>
-                            <div className="text-sm font-medium text-gray-900">{formatDate(student?.createdAt)}</div>
-                            <div className="text-xs text-gray-500 mt-0.5">Last login: {lastLogin}</div>
+                            <div className="text-sm font-medium text-[var(--color-text-primary)]">{formatDate(student?.createdAt)}</div>
+                            <div className="text-xs text-[var(--color-text-secondary)] mt-0.5">Last login: {lastLogin}</div>
                         </div>
                     );
                 },
@@ -250,7 +250,7 @@ export default function StudentList() {
                             <Dropdown
                                 trigger={
                                     <button
-                                        className="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-800 transition-colors shadow-sm"
+                                        className="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-[var(--color-border-soft)] bg-[var(--color-bg-card)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-muted)] hover:text-[var(--color-text-primary)] transition-colors shadow-sm"
                                         aria-label="Actions"
                                         type="button"
                                     >
@@ -308,34 +308,34 @@ export default function StudentList() {
 
     const modalTitle = suspendModal?.isActive ? 'Suspend Student' : 'Reinstate Student';
     const modalIcon = suspendModal?.isActive ? (
-        <UserX size={44} className="text-red-500" />
+        <UserX size={44} className="text-[var(--color-danger)]" />
     ) : (
-        <UserCheck size={44} className="text-emerald-600" />
+        <UserCheck size={44} className="text-[var(--color-success)]" />
     );
 
     return (
         <div className="space-y-5">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Students</h1>
-                    <p className="text-sm text-gray-500 mt-1">{totalElements} students registered</p>
+                    <h1 className="text-3xl font-extrabold text-[var(--color-text-primary)]">Students</h1>
+                    <p className="text-sm text-[var(--color-text-secondary)] mt-1">{totalElements} students registered</p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
-                    <span className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-sm shadow-sm">
-                        <span className="text-emerald-600">✅</span>
-                        <span className="font-semibold text-gray-900">Active:</span>
-                        <span className="text-gray-600 font-medium">{activeCount}</span>
+                    <span className="inline-flex items-center gap-2 rounded-full border-2 border-[var(--color-border)] bg-[var(--color-bg-card)] px-3 py-1.5 text-sm shadow-[2px_2px_0_var(--color-border)]">
+                        <span className="text-[var(--color-success)]">✅</span>
+                        <span className="font-semibold text-[var(--color-text-primary)]">Active:</span>
+                        <span className="text-[var(--color-text-secondary)] font-medium">{activeCount}</span>
                     </span>
-                    <span className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-sm shadow-sm">
-                        <span className="text-red-500">🚫</span>
-                        <span className="font-semibold text-gray-900">Suspended:</span>
-                        <span className="text-gray-600 font-medium">{suspendedCount}</span>
+                    <span className="inline-flex items-center gap-2 rounded-full border-2 border-[var(--color-border)] bg-[var(--color-bg-card)] px-3 py-1.5 text-sm shadow-[2px_2px_0_var(--color-border)]">
+                        <span className="text-[var(--color-danger)]">🚫</span>
+                        <span className="font-semibold text-[var(--color-text-primary)]">Suspended:</span>
+                        <span className="text-[var(--color-text-secondary)] font-medium">{suspendedCount}</span>
                     </span>
                 </div>
             </div>
 
-            <Card padding="md" className="bg-white">
+            <Card padding="md" className="bg-[var(--color-block-sky)]">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-end w-full">
                         <div className="w-full sm:max-w-md">
@@ -381,7 +381,7 @@ export default function StudentList() {
                 </div>
             </Card>
 
-            <Card padding="md" className="bg-white">
+            <Card padding="md" className="bg-[var(--color-block-mint)]">
                 {!isLoading && filteredStudents.length === 0 ? (
                     <EmptyState
                         icon={<Users size={48} />}
@@ -446,25 +446,27 @@ export default function StudentList() {
                 }
             >
                 <div className="flex flex-col items-center text-center gap-3">
-                    <div className="w-16 h-16 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center">
+                    <div
+                        className={`w-16 h-16 rounded-2xl border-2 border-[var(--color-border)] shadow-[2px_2px_0_var(--color-border)] flex items-center justify-center ${suspendModal?.isActive ? 'bg-[var(--color-block-red)]' : 'bg-[var(--color-block-mint)]'}`}
+                    >
                         {modalIcon}
                     </div>
 
                     {suspendModal?.isActive ? (
                         <div className="space-y-2">
-                            <p className="text-sm text-gray-700">
+                            <p className="text-sm text-[var(--color-text-secondary)]">
                                 Are you sure you want to suspend:
                             </p>
-                            <p className="text-base font-bold text-gray-900">{suspendModal?.fullName}</p>
-                            <p className="text-sm text-gray-500">
+                            <p className="text-base font-extrabold text-[var(--color-text-primary)]">{suspendModal?.fullName}</p>
+                            <p className="text-sm text-[var(--color-text-muted)]">
                                 They will lose access immediately and all active sessions will be terminated.
                             </p>
                         </div>
                     ) : (
                         <div className="space-y-2">
-                            <p className="text-base font-semibold text-gray-900">Reinstate this student?</p>
-                            <p className="text-base font-bold text-gray-900">{suspendModal?.fullName}</p>
-                            <p className="text-sm text-gray-500">
+                            <p className="text-base font-semibold text-[var(--color-text-primary)]">Reinstate this student?</p>
+                            <p className="text-base font-extrabold text-[var(--color-text-primary)]">{suspendModal?.fullName}</p>
+                            <p className="text-sm text-[var(--color-text-muted)]">
                                 They will regain full access to the platform.
                             </p>
                         </div>

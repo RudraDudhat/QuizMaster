@@ -366,12 +366,12 @@ export default function QuizQuestionManager() {
                         onClick={() => removeMut.mutate(removeModal.questionUuid)}>Remove</Button>
                 </>}>
                 <div className="text-center">
-                    <div className="mx-auto w-14 h-14 rounded-full bg-red-50 flex items-center justify-center mb-4">
-                        <AlertTriangle size={28} className="text-red-500" />
+                    <div className="mx-auto w-14 h-14 rounded-full bg-[var(--color-block-red)] border-2 border-[var(--color-border)] shadow-[2px_2px_0_var(--color-border)] flex items-center justify-center mb-4">
+                        <AlertTriangle size={28} className="text-[var(--color-danger)]" />
                     </div>
-                    <p className="text-sm text-gray-700 font-medium mb-2">Remove this question from the quiz?</p>
-                    <p className="text-sm font-semibold text-gray-900 mb-3">{truncateText(removeModal.questionText, 80)}</p>
-                    <p className="text-xs text-gray-400">The question will remain in the Question Bank. Only the link to this quiz will be removed.</p>
+                    <p className="text-sm text-[var(--color-text-secondary)] font-medium mb-2">Remove this question from the quiz?</p>
+                    <p className="text-sm font-semibold text-[var(--color-text-primary)] mb-3">{truncateText(removeModal.questionText, 80)}</p>
+                    <p className="text-xs text-[var(--color-text-muted)]">The question will remain in the Question Bank. Only the link to this quiz will be removed.</p>
                 </div>
             </Modal>
         </div>
@@ -456,9 +456,9 @@ function AddQuestionModal({ addModal, setAddModal, addMut, linkedCount, serverEr
                 <Button loading={addMut.isPending} onClick={handleSubmit(onSubmit)}>Add to Quiz</Button>
             </>}>
             {/* Question preview */}
-            <div className="mb-5 p-4 rounded-xl bg-gray-50 border border-gray-100">
-                <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Question</p>
-                <p className="text-sm font-semibold text-gray-900 leading-relaxed mb-2">{q.questionText}</p>
+            <div className="mb-5 p-4 rounded-xl bg-[var(--color-block-cream)] border-2 border-[var(--color-border)] shadow-[2px_2px_0_var(--color-border)]">
+                <p className="text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-1.5">Question</p>
+                <p className="text-sm font-semibold text-[var(--color-text-primary)] leading-relaxed mb-2">{q.questionText}</p>
                 <div className="flex gap-1.5">
                     <Badge variant={TYPE_VARIANT[q.questionType] || 'default'} size="sm">{typeLabel}</Badge>
                     <Badge variant={DIFF_VARIANT[q.difficulty] || 'default'} size="sm">{q.difficulty}</Badge>
@@ -466,7 +466,7 @@ function AddQuestionModal({ addModal, setAddModal, addMut, linkedCount, serverEr
             </div>
 
             {/* Form */}
-            <h4 className="text-sm font-semibold text-gray-800 mb-4">Configure for this Quiz</h4>
+            <h4 className="text-sm font-semibold text-[var(--color-text-primary)] mb-4">Configure for this Quiz</h4>
             <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
                 <div className="grid grid-cols-2 gap-4">
                     <Input label="Marks" name="marks" type="number" required placeholder="e.g. 5"
@@ -505,10 +505,10 @@ function AddQuestionModal({ addModal, setAddModal, addMut, linkedCount, serverEr
                 </div>
 
                 {/* Pool toggle */}
-                <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 border border-gray-100">
+                <div className="flex items-center justify-between p-4 rounded-xl bg-[var(--color-block-mint)] border-2 border-[var(--color-border)] shadow-[2px_2px_0_var(--color-border)]">
                     <div>
-                        <p className="text-sm font-medium text-gray-800">Include in Pool</p>
-                        <p className="text-xs text-gray-400 mt-0.5">Uncheck to exclude from random pool selection</p>
+                        <p className="text-sm font-medium text-[var(--color-text-primary)]">Include in Pool</p>
+                        <p className="text-xs text-[var(--color-text-muted)] mt-0.5">Uncheck to exclude from random pool selection</p>
                     </div>
                     <button type="button" onClick={() => setValue('isInPool', !isInPool)}
                         className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${isInPool ? 'bg-primary' : 'bg-gray-300'}`}>

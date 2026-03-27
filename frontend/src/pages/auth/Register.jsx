@@ -9,6 +9,7 @@ import useAuthStore from '../../store/authStore';
 import { register as registerApi } from '../../api/auth.api';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
+import { SparkleIcon } from '../../components/common/Decorations';
 
 const schema = z
     .object({
@@ -34,11 +35,11 @@ const criteria = [
     { test: (p) => /[!@#$%^&*]/.test(p), label: 'Special character' },
 ];
 const strengthMeta = [
-    { label: 'Weak', color: 'bg-red-500', text: 'text-red-500' },
-    { label: 'Weak', color: 'bg-red-500', text: 'text-red-500' },
-    { label: 'Fair', color: 'bg-amber-500', text: 'text-amber-500' },
-    { label: 'Good', color: 'bg-blue-500', text: 'text-blue-500' },
-    { label: 'Strong', color: 'bg-emerald-500', text: 'text-emerald-500' },
+    { label: 'Weak', color: 'bg-[var(--color-danger)]', text: 'text-[var(--color-danger)]' },
+    { label: 'Weak', color: 'bg-[var(--color-danger)]', text: 'text-[var(--color-danger)]' },
+    { label: 'Fair', color: 'bg-[var(--color-warning)]', text: 'text-[var(--color-warning)]' },
+    { label: 'Good', color: 'bg-[var(--color-info)]', text: 'text-[var(--color-info)]' },
+    { label: 'Strong', color: 'bg-[var(--color-success)]', text: 'text-[var(--color-success)]' },
 ];
 
 function PasswordStrength({ password = '' }) {
@@ -49,7 +50,7 @@ function PasswordStrength({ password = '' }) {
         <div className="mt-2.5 space-y-1.5">
             <div className="flex gap-1">
                 {[0, 1, 2, 3].map((i) => (
-                    <div key={i} className={`h-1.5 flex-1 rounded-full transition-colors duration-200 ${i < met ? meta.color : 'bg-gray-200'}`} />
+                    <div key={i} className={`h-1.5 flex-1 rounded-full transition-colors duration-200 ${i < met ? meta.color : 'bg-[var(--color-border-muted)]'}`} />
                 ))}
             </div>
             <p className={`text-xs font-medium ${meta.text}`}>Password strength: {meta.label}</p>
@@ -100,18 +101,20 @@ export default function Register() {
     return (
         <div className="min-h-screen flex">
             {/* Left decorative panel */}
-            <div className="hidden md:flex md:w-[40%] bg-gradient-to-br from-primary to-indigo-700 flex-col items-center justify-center p-10 text-white relative overflow-hidden">
-                <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+            <div className="hidden md:flex md:w-[40%] bg-[var(--color-primary)] flex-col items-center justify-center p-10 text-[var(--color-text-inverse)] relative overflow-hidden">
+                <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle, var(--color-text-inverse) 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
+                <SparkleIcon className="absolute top-8 left-8" color="var(--color-accent-yellow)" />
+                <SparkleIcon className="absolute bottom-10 right-10" color="var(--color-accent-yellow)" />
                 <div className="relative z-10 text-center max-w-xs">
-                    <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center mx-auto mb-6">
-                        <BookOpen size={32} className="text-white" />
+                    <div className="w-16 h-16 rounded-2xl border-2 border-[var(--color-text-inverse)] bg-[color:var(--color-text-inverse)]/20 flex items-center justify-center mx-auto mb-6">
+                        <BookOpen size={32} className="text-[var(--color-text-inverse)]" />
                     </div>
-                    <h2 className="text-3xl font-bold mb-2">QuizMaster Pro</h2>
-                    <p className="text-indigo-200 mb-8">Join thousands of educators and students.</p>
+                    <h2 className="text-3xl font-extrabold mb-2">Join QuizMaster</h2>
+                    <p className="text-[color:var(--color-text-inverse)]/80 mb-8">Create playful quizzes with real-time results.</p>
                     <div className="space-y-3 text-left">
                         {['Free to get started', '10 powerful question types', 'Real-time analytics and reports'].map((t) => (
-                            <div key={t} className="flex items-center gap-2.5 text-sm text-indigo-100">
-                                <CheckCircle2 size={16} className="text-emerald-300 flex-shrink-0" />
+                            <div key={t} className="flex items-center gap-2.5 text-sm text-[color:var(--color-text-inverse)]/90">
+                                <CheckCircle2 size={16} className="text-[var(--color-accent-yellow)] flex-shrink-0" />
                                 <span>{t}</span>
                             </div>
                         ))}
@@ -120,18 +123,18 @@ export default function Register() {
             </div>
 
             {/* Right form panel */}
-            <div className="flex-1 flex items-center justify-center p-6 sm:p-10 bg-white overflow-y-auto">
+            <div className="flex-1 flex items-center justify-center p-6 sm:p-10 bg-[var(--color-bg-card)] overflow-y-auto">
                 <div className="w-full max-w-[420px] animate-[fadeSlide_0.4s_ease_forwards]">
                     {/* Mobile logo */}
                     <div className="flex items-center gap-2 mb-8 md:hidden">
-                        <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
-                            <BookOpen size={20} className="text-white" />
+                        <div className="w-9 h-9 rounded-xl bg-[var(--color-primary)] border-2 border-[var(--color-border)] flex items-center justify-center shadow-[2px_2px_0_var(--color-border)]">
+                            <BookOpen size={18} className="text-[var(--color-text-inverse)]" />
                         </div>
-                        <span className="text-lg font-bold">QuizMaster <span className="text-primary">Pro</span></span>
+                        <span className="text-lg font-extrabold">QuizMaster</span>
                     </div>
 
-                    <h1 className="text-2xl font-bold text-gray-900 mb-1">Create Your Account</h1>
-                    <p className="text-gray-500 text-sm mb-8">Join QuizMaster Pro for free today</p>
+                    <h1 className="text-3xl font-extrabold text-[var(--color-text-primary)] mb-1">Create Your Account</h1>
+                    <p className="text-[var(--color-text-secondary)] text-sm mb-8">Join QuizMaster for free today</p>
 
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
                         <Input
@@ -161,7 +164,7 @@ export default function Register() {
                                 placeholder="Create a password (min 8 characters)"
                                 prefixIcon={<Lock size={18} />}
                                 suffixIcon={
-                                    <button type="button" tabIndex={-1} onClick={() => setShowPw((p) => !p)} className="cursor-pointer text-gray-400 hover:text-gray-600">
+                                    <button type="button" tabIndex={-1} onClick={() => setShowPw((p) => !p)} className="cursor-pointer text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]">
                                         {showPw ? <EyeOff size={18} /> : <Eye size={18} />}
                                     </button>
                                 }
@@ -178,7 +181,7 @@ export default function Register() {
                             placeholder="Repeat your password"
                             prefixIcon={<Lock size={18} />}
                             suffixIcon={
-                                <button type="button" tabIndex={-1} onClick={() => setShowConfirm((p) => !p)} className="cursor-pointer text-gray-400 hover:text-gray-600">
+                                <button type="button" tabIndex={-1} onClick={() => setShowConfirm((p) => !p)} className="cursor-pointer text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]">
                                     {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
                                 </button>
                             }
@@ -191,9 +194,9 @@ export default function Register() {
                         </Button>
                     </form>
 
-                    <p className="text-center text-sm text-gray-500 mt-8">
+                    <p className="text-center text-sm text-[var(--color-text-secondary)] mt-8">
                         Already have an account?{' '}
-                        <Link to="/login" className="text-primary font-semibold hover:underline">
+                        <Link to="/login" className="text-[var(--color-primary)] font-semibold hover:underline">
                             Sign in
                         </Link>
                     </p>

@@ -39,8 +39,8 @@ function useCountdown(target) {
 // ─── Info box ─────────────────────────────────────────────
 function InfoBox({ icon, label, value }) {
     return (
-        <div style={{ background: '#f8fafc', border: '1px solid var(--color-border)', borderRadius: 10, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{ width: 36, height: 36, background: '#fff', border: '1px solid var(--color-border)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <div style={{ background: 'var(--color-bg-muted)', border: '1px solid var(--color-border)', borderRadius: 10, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ width: 36, height: 36, background: 'var(--color-bg-card)', border: '1px solid var(--color-border)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 {icon}
             </div>
             <div>
@@ -54,7 +54,7 @@ function InfoBox({ icon, label, value }) {
 // ─── Rule item ────────────────────────────────────────────
 function RuleItem({ icon, text, color }) {
     return (
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '8px 0', borderBottom: '1px solid #f8fafc' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '8px 0', borderBottom: '1px solid var(--color-border-subtle)' }}>
             <span style={{ color: color ?? 'var(--color-success)', marginTop: 1, flexShrink: 0 }}>{icon}</span>
             <span style={{ fontSize: 13, color: 'var(--color-text-primary)', lineHeight: 1.5 }}>{text}</span>
         </div>
@@ -177,7 +177,7 @@ export default function QuizDetail() {
         );
         if (status === 'COMPLETED' || quiz?.isPassed) return (
             <div style={{ textAlign: 'center', padding: '12px 0 16px' }}>
-                <Trophy size={40} style={{ color: '#F59E0B', margin: '0 auto 8px' }} />
+                <Trophy size={40} style={{ color: 'var(--color-warning)', margin: '0 auto 8px' }} />
                 <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text-primary)' }}>Quiz Completed! 🏆</div>
                 <div style={{ fontSize: 13, color: 'var(--color-text-secondary)', marginTop: 4 }}>
                     Best score: {formatPercentage(quiz?.studentBestPercentage)}
@@ -337,7 +337,7 @@ export default function QuizDetail() {
                                     {quiz?.maxAttempts === 0 ? '∞' : quiz?.maxAttempts}
                                 </div>
                                 {(quiz?.maxAttempts ?? 0) > 0 && (
-                                    <div style={{ width: '100%', height: 6, background: '#e5e7eb', borderRadius: 9999, overflow: 'hidden' }}>
+                                    <div style={{ width: '100%', height: 6, background: 'var(--color-border-soft)', borderRadius: 9999, overflow: 'hidden' }}>
                                         <div style={{
                                             width: `${Math.min(100, ((quiz?.attemptsUsed ?? 0) / quiz.maxAttempts) * 100)}%`,
                                             height: '100%',
@@ -363,7 +363,7 @@ export default function QuizDetail() {
                                     style={{
                                         width: '100%', height: 40, border: `1px solid ${accessCodeError ? 'var(--color-danger)' : 'var(--color-border)'}`,
                                         borderRadius: 8, padding: '0 12px', fontSize: 14,
-                                        fontFamily: 'monospace', outline: 'none', background: '#fff', boxSizing: 'border-box',
+                                        fontFamily: 'monospace', outline: 'none', background: 'var(--color-bg-card)', boxSizing: 'border-box',
                                     }}
                                     onFocus={e => { if (!accessCodeError) e.target.style.borderColor = 'var(--color-primary)'; }}
                                     onBlur={e  => { if (!accessCodeError) e.target.style.borderColor = 'var(--color-border)'; }}

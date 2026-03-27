@@ -574,7 +574,7 @@ export default function GroupManagement() {
                     </>
                 )}
             >
-                <div className="space-y-4">
+                <div className="space-y-4 p-4 rounded-xl bg-[var(--color-block-cream)] border-2 border-[var(--color-border)] shadow-[2px_2px_0_var(--color-border)]">
                     <Input
                         label="Group Name"
                         required
@@ -636,8 +636,8 @@ export default function GroupManagement() {
                         onChange={(e) => setStudentSearch(e.target.value)}
                     />
 
-                    <div className="border border-gray-200 rounded-xl overflow-hidden">
-                        <div className="max-h-[240px] overflow-y-auto divide-y divide-gray-100 bg-white">
+                    <div className="border-2 border-[var(--color-border)] rounded-xl overflow-hidden bg-[var(--color-block-white)] shadow-[2px_2px_0_var(--color-border)]">
+                        <div className="max-h-[240px] overflow-y-auto divide-y divide-[var(--color-border-muted)]">
                             {studentsLoading ? (
                                 <div className="p-3 space-y-3">
                                     {Array.from({ length: 4 }).map((_, i) => (
@@ -654,7 +654,7 @@ export default function GroupManagement() {
                                     ))}
                                 </div>
                             ) : availableStudents.length === 0 ? (
-                                <div className="py-10 text-center text-sm text-gray-500">
+                                <div className="py-10 text-center text-sm text-[var(--color-text-muted)]">
                                     {debouncedStudentSearch ? 'No students found' : 'Type to search for students'}
                                 </div>
                             ) : (
@@ -665,8 +665,8 @@ export default function GroupManagement() {
                                             <div className="flex items-center gap-3 min-w-0">
                                                 <Avatar name={s.fullName} size="sm" />
                                                 <div className="min-w-0">
-                                                    <p className="text-sm font-semibold text-gray-900 truncate">{s.fullName}</p>
-                                                    <p className="text-xs text-gray-500 truncate">{s.email}</p>
+                                                    <p className="text-sm font-semibold text-[var(--color-text-primary)] truncate">{s.fullName}</p>
+                                                    <p className="text-xs text-[var(--color-text-muted)] truncate">{s.email}</p>
                                                 </div>
                                             </div>
                                             {isSelected ? (
@@ -695,23 +695,23 @@ export default function GroupManagement() {
                     </div>
 
                     {selectedStudents.length > 0 && (
-                        <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
-                            <p className="text-sm font-semibold text-gray-900 mb-3">
+                        <div className="bg-[var(--color-block-amber)] border-2 border-[var(--color-border)] rounded-xl p-4 shadow-[2px_2px_0_var(--color-border)]">
+                            <p className="text-sm font-semibold text-[var(--color-text-primary)] mb-3">
                                 Adding {selectedStudents.length} student(s):
                             </p>
                             <div className="flex gap-2 overflow-x-auto pb-1">
                                 {selectedStudents.map((s) => (
                                     <div
                                         key={s.uuid}
-                                        className="flex items-center gap-2 px-3 py-2 rounded-full bg-white border border-gray-200 shadow-sm whitespace-nowrap"
+                                        className="flex items-center gap-2 px-3 py-2 rounded-full bg-[var(--color-block-white)] border-2 border-[var(--color-border)] shadow-[2px_2px_0_var(--color-border)] whitespace-nowrap"
                                     >
-                                        <span className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[11px] font-bold">
+                                        <span className="w-6 h-6 rounded-full bg-[var(--color-primary-soft)] text-[var(--color-primary)] flex items-center justify-center text-[11px] font-bold">
                                             {(s.fullName || '?')[0]?.toUpperCase?.() ?? '?'}
                                         </span>
-                                        <span className="text-xs font-semibold text-gray-800">{s.fullName}</span>
+                                        <span className="text-xs font-semibold text-[var(--color-text-primary)]">{s.fullName}</span>
                                         <button
                                             onClick={() => setSelectedStudents((prev) => prev.filter((x) => x.uuid !== s.uuid))}
-                                            className="w-6 h-6 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                                            className="w-6 h-6 rounded-full flex items-center justify-center text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] hover:bg-[var(--color-block-white)] transition-colors"
                                             aria-label="Remove"
                                         >
                                             <X size={14} />
@@ -746,12 +746,12 @@ export default function GroupManagement() {
                 )}
             >
                 <div className="text-center">
-                    <div className="mx-auto w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mb-4">
-                        <AlertTriangle size={24} className="text-red-500" />
+                    <div className="mx-auto w-12 h-12 rounded-full bg-[var(--color-block-red)] border-2 border-[var(--color-border)] shadow-[2px_2px_0_var(--color-border)] flex items-center justify-center mb-4">
+                        <AlertTriangle size={24} className="text-[var(--color-danger)]" />
                     </div>
-                    <p className="text-sm text-gray-600 mb-2">Are you sure you want to delete:</p>
-                    <p className="font-semibold text-gray-900 mb-3">{deleteModal.groupName}</p>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-sm text-[var(--color-text-secondary)] mb-2">Are you sure you want to delete:</p>
+                    <p className="font-semibold text-[var(--color-text-primary)] mb-3">{deleteModal.groupName}</p>
+                    <p className="text-xs text-[var(--color-text-muted)]">
                         All {selectedGroup?.uuid === deleteModal.groupUuid ? (members?.length ?? 0) : 'the'} members will be removed from this group. This cannot be undone.
                     </p>
                 </div>

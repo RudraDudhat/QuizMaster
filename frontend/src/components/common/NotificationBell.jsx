@@ -328,7 +328,7 @@ const styles = {
         justifyContent: 'center',
         borderRadius: 'var(--radius-full)',
         background: 'var(--color-danger)',
-        color: '#fff',
+        color: 'var(--color-text-inverse)',
         fontSize: 10,
         fontWeight: 700,
         padding: '0 5px',

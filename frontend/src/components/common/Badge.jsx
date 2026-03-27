@@ -1,17 +1,19 @@
 const variantClasses = {
-    success: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-    warning: 'bg-amber-50 text-amber-700 border-amber-200',
-    danger: 'bg-red-50 text-red-700 border-red-200',
-    info: 'bg-blue-50 text-blue-700 border-blue-200',
-    default: 'bg-gray-100 text-gray-700 border-gray-200',
+    primary: 'bg-[var(--color-primary-light)] text-[var(--color-primary)] border-[color:var(--color-primary)]/20',
+    success: 'bg-[color:var(--color-accent-green)]/15 text-[var(--color-success)] border-[color:var(--color-success)]/20',
+    warning: 'bg-[color:var(--color-accent-orange)]/15 text-[var(--color-warning)] border-[color:var(--color-warning)]/20',
+    danger: 'bg-[color:var(--color-danger)]/15 text-[var(--color-danger)] border-[color:var(--color-danger)]/20',
+    info: 'bg-[color:var(--color-info)]/15 text-[var(--color-info)] border-[color:var(--color-info)]/20',
+    default: 'bg-[var(--color-bg-subtle)] text-[var(--color-text-secondary)] border-[color:var(--color-border)]/10',
 };
 
 const dotColors = {
-    success: 'bg-emerald-500',
-    warning: 'bg-amber-500',
-    danger: 'bg-red-500',
-    info: 'bg-blue-500',
-    default: 'bg-gray-400',
+    primary: 'bg-[var(--color-primary)]',
+    success: 'bg-[var(--color-success)]',
+    warning: 'bg-[var(--color-warning)]',
+    danger: 'bg-[var(--color-danger)]',
+    info: 'bg-[var(--color-info)]',
+    default: 'bg-[var(--color-text-muted)]',
 };
 
 const sizeClasses = {
@@ -22,7 +24,7 @@ const sizeClasses = {
 export default function Badge({ children, variant = 'default', size = 'md', dot = false }) {
     return (
         <span
-            className={`inline-flex items-center gap-1.5 rounded-full border font-semibold leading-none whitespace-nowrap ${variantClasses[variant]} ${sizeClasses[size]}`}
+            className={`inline-flex items-center gap-1.5 rounded-full border font-medium leading-none whitespace-nowrap ${variantClasses[variant]} ${sizeClasses[size]}`}
         >
             {dot && <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${dotColors[variant]}`} />}
             {children}

@@ -22,24 +22,24 @@ function QuestionCard({ q, index, expanded, onToggle }) {
     let statusIcon, statusBg, statusColor, statusLabel;
     if (isSkipped) {
         statusIcon = <SkipForward size={14} />;
-        statusBg = '#F3F4F6'; statusColor = '#6B7280'; statusLabel = 'Skipped';
+        statusBg = 'var(--color-bg-muted)'; statusColor = 'var(--color-text-secondary)'; statusLabel = 'Skipped';
     } else if (isEssay && isCorrect == null) {
         statusIcon = <PenLine size={14} />;
-        statusBg = '#EFF6FF'; statusColor = 'var(--color-info)'; statusLabel = 'Manual';
+        statusBg = 'var(--color-info-soft)'; statusColor = 'var(--color-info)'; statusLabel = 'Manual';
     } else if (isCorrect) {
         statusIcon = <CheckCircle2 size={14} />;
-        statusBg = '#ECFDF5'; statusColor = 'var(--color-success)'; statusLabel = 'Correct';
+        statusBg = 'var(--color-success-soft)'; statusColor = 'var(--color-success)'; statusLabel = 'Correct';
     } else {
         statusIcon = <XCircle size={14} />;
-        statusBg = '#FEF2F2'; statusColor = 'var(--color-danger)'; statusLabel = 'Wrong';
+        statusBg = 'var(--color-danger-soft)'; statusColor = 'var(--color-danger)'; statusLabel = 'Wrong';
     }
 
-    const cardBorderColor = isSkipped ? '#E5E7EB' : isEssay ? '#BFDBFE' : isCorrect ? '#A7F3D0' : '#FECACA';
+    const cardBorderColor = isSkipped ? 'var(--color-border-muted)' : isEssay ? 'var(--color-info)' : isCorrect ? 'var(--color-success)' : 'var(--color-danger)';
     const selectedUuids = q.studentSelectedOptionUuids ?? [];
     const correctUuids = q.correctOptionUuids ?? [];
 
     return (
-        <div style={{ background: '#fff', borderRadius: 14, border: `1.5px solid ${cardBorderColor}`, boxShadow: 'var(--shadow-sm)', overflow: 'hidden', transition: 'box-shadow 0.2s' }}>
+        <div style={{ background: 'var(--color-bg-card)', borderRadius: 14, border: `1.5px solid ${cardBorderColor}`, boxShadow: 'var(--shadow-sm)', overflow: 'hidden', transition: 'box-shadow 0.2s' }}>
             {/* Header */}
             <button
                 onClick={onToggle}
@@ -72,7 +72,7 @@ function QuestionCard({ q, index, expanded, onToggle }) {
                         {formatDuration(q.timeSpentSeconds) || '—'}
                     </div>
                     {q.hintUsed && (
-                        <span style={{ fontSize: 10, fontWeight: 700, color: '#92400E', background: '#FFFBEB', border: '1px solid #FDE68A', borderRadius: 6, padding: '2px 6px' }}>
+                        <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--color-warning)', background: 'var(--color-warning-soft)', border: '1px solid var(--color-warning)', borderRadius: 6, padding: '2px 6px' }}>
                             💡 Hint used
                         </span>
                     )}
@@ -89,7 +89,7 @@ function QuestionCard({ q, index, expanded, onToggle }) {
                 overflow: 'hidden',
                 transition: 'max-height 0.35s ease, opacity 0.25s ease',
             }}>
-                <div style={{ padding: '0 18px 20px', borderTop: '1px solid #F3F4F6' }}>
+                <div style={{ padding: '0 18px 20px', borderTop: '1px solid var(--color-border-soft)' }}>
                     {/* Full question */}
                     <div style={{ padding: '16px 0', fontSize: 15, fontWeight: 500, color: 'var(--color-text-primary)', lineHeight: 1.7 }}>
                         {q.questionText}
@@ -99,12 +99,12 @@ function QuestionCard({ q, index, expanded, onToggle }) {
                     {q.codeContent && (
                         <div style={{ marginBottom: 16 }}>
                             {q.codeLanguage && (
-                                <div style={{ display: 'inline-block', padding: '3px 10px', background: '#374151', color: '#E5E7EB', fontSize: 11, fontWeight: 600, borderRadius: '8px 8px 0 0', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                <div style={{ display: 'inline-block', padding: '3px 10px', background: 'var(--color-code-bg)', color: 'var(--color-code-text)', fontSize: 11, fontWeight: 600, borderRadius: '8px 8px 0 0', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                                     {q.codeLanguage}
                                 </div>
                             )}
-                            <div style={{ background: '#1e1e2e', borderRadius: q.codeLanguage ? '0 12px 12px 12px' : 12, padding: '20px 24px', overflow: 'auto', border: '1px solid #374151' }}>
-                                <pre style={{ color: '#cdd6f4', fontFamily: '"Fira Code", "Cascadia Code", monospace', fontSize: 14, lineHeight: 1.7, margin: 0, whiteSpace: 'pre-wrap' }}>
+                            <div style={{ background: 'var(--color-code-bg)', borderRadius: q.codeLanguage ? '0 12px 12px 12px' : 12, padding: '20px 24px', overflow: 'auto', border: '1px solid var(--color-border-muted)' }}>
+                                <pre style={{ color: 'var(--color-code-text)', fontFamily: '"Fira Code", "Cascadia Code", monospace', fontSize: 14, lineHeight: 1.7, margin: 0, whiteSpace: 'pre-wrap' }}>
                                     {q.codeContent}
                                 </pre>
                             </div>
@@ -114,7 +114,7 @@ function QuestionCard({ q, index, expanded, onToggle }) {
                     {/* Media / Image */}
                     {q.mediaUrl && q.questionType !== 'CODE_SNIPPET' && (
                         <div style={{ marginBottom: 16 }}>
-                            <img src={q.mediaUrl} alt="Question media" style={{ maxWidth: '100%', borderRadius: 12, border: '1px solid #e5e7eb' }} />
+                            <img src={q.mediaUrl} alt="Question media" style={{ maxWidth: '100%', borderRadius: 12, border: '1px solid var(--color-border-muted)' }} />
                         </div>
                     )}
 
@@ -124,10 +124,10 @@ function QuestionCard({ q, index, expanded, onToggle }) {
                             {[...q.options].sort((a, b) => a.optionOrder - b.optionOrder).map((opt) => {
                                 const isOptCorrect = opt.isCorrect || correctUuids.includes(opt.uuid);
                                 const isSelected = selectedUuids.includes(opt.uuid);
-                                let optBg = '#FAFAFA';
-                                let optBorder = '#E5E7EB';
-                                if (isOptCorrect) { optBg = '#ECFDF5'; optBorder = '#6EE7B7'; }
-                                else if (isSelected) { optBg = '#FEF2F2'; optBorder = '#FCA5A5'; }
+                                let optBg = 'var(--color-bg-soft)';
+                                let optBorder = 'var(--color-border-muted)';
+                                if (isOptCorrect) { optBg = 'var(--color-success-soft)'; optBorder = 'var(--color-success)'; }
+                                else if (isSelected) { optBg = 'var(--color-danger-soft)'; optBorder = 'var(--color-danger)'; }
 
                                 return (
                                     <div key={opt.uuid} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 14px', borderRadius: 10, background: optBg, border: `1.5px solid ${optBorder}` }}>
@@ -136,16 +136,16 @@ function QuestionCard({ q, index, expanded, onToggle }) {
                                                 ? <CheckCircle2 size={16} style={{ color: 'var(--color-success)' }} />
                                                 : isSelected
                                                     ? <XCircle size={16} style={{ color: 'var(--color-danger)' }} />
-                                                    : <div style={{ width: 16, height: 16, borderRadius: '50%', border: '2px solid #D1D5DB' }} />
+                                                    : <div style={{ width: 16, height: 16, borderRadius: '50%', border: '2px solid var(--color-border-muted)' }} />
                                             }
                                         </div>
                                         <span style={{ flex: 1, fontSize: 14, color: 'var(--color-text-primary)', lineHeight: 1.5 }}>{opt.optionText}</span>
                                         <div style={{ flexShrink: 0, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                                             {isOptCorrect && (
-                                                <span style={{ fontSize: 10, fontWeight: 700, color: '#065F46', background: '#D1FAE5', borderRadius: 6, padding: '2px 7px' }}>Correct</span>
+                                                <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--color-success)', background: 'var(--color-success-soft)', borderRadius: 6, padding: '2px 7px' }}>Correct</span>
                                             )}
                                             {isSelected && (
-                                                <span style={{ fontSize: 10, fontWeight: 700, color: isOptCorrect ? '#065F46' : '#991B1B', background: isOptCorrect ? '#D1FAE5' : '#FEE2E2', borderRadius: 6, padding: '2px 7px' }}>Your Answer</span>
+                                                <span style={{ fontSize: 10, fontWeight: 700, color: isOptCorrect ? 'var(--color-success)' : 'var(--color-danger)', background: isOptCorrect ? 'var(--color-success-soft)' : 'var(--color-danger-soft)', borderRadius: 6, padding: '2px 7px' }}>Your Answer</span>
                                             )}
                                         </div>
                                     </div>
@@ -158,7 +158,7 @@ function QuestionCard({ q, index, expanded, onToggle }) {
                     {q.textAnswer && (
                         <div style={{ marginBottom: 16 }}>
                             <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Your Answer</div>
-                            <div style={{ padding: '12px 14px', background: '#F8FAFC', border: '1.5px solid #E5E7EB', borderRadius: 10, fontSize: 14, color: 'var(--color-text-primary)', lineHeight: 1.6 }}>
+                            <div style={{ padding: '12px 14px', background: 'var(--color-bg-soft)', border: '1.5px solid var(--color-border-muted)', borderRadius: 10, fontSize: 14, color: 'var(--color-text-primary)', lineHeight: 1.6 }}>
                                 {q.textAnswer}
                             </div>
                         </div>
@@ -173,7 +173,7 @@ function QuestionCard({ q, index, expanded, onToggle }) {
 
                     {/* Essay note */}
                     {isEssay && (
-                        <div style={{ padding: '10px 14px', background: '#EFF6FF', border: '1.5px solid #BFDBFE', borderRadius: 10, fontSize: 13, color: '#1E40AF', marginBottom: 16, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                        <div style={{ padding: '10px 14px', background: 'var(--color-info-soft)', border: '1.5px solid var(--color-info)', borderRadius: 10, fontSize: 13, color: 'var(--color-info)', marginBottom: 16, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
                             <PenLine size={15} style={{ flexShrink: 0, marginTop: 1 }} />
                             <span>✍️ Essay questions are manually graded. Your marks will be updated by your instructor.</span>
                         </div>
@@ -193,7 +193,7 @@ function QuestionCard({ q, index, expanded, onToggle }) {
                                             const correctOrder = correctUuids.indexOf(id);
                                             const match = studentOrder === correctOrder;
                                             return (
-                                                <div key={id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 10px', borderRadius: 8, background: match ? '#ECFDF5' : '#FEF2F2', border: `1px solid ${match ? '#A7F3D0' : '#FECACA'}`, marginBottom: 6, fontSize: 13, color: match ? '#065F46' : '#991B1B' }}>
+                                                <div key={id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 10px', borderRadius: 8, background: match ? 'var(--color-success-soft)' : 'var(--color-danger-soft)', border: `1px solid ${match ? 'var(--color-success)' : 'var(--color-danger)'}`, marginBottom: 6, fontSize: 13, color: match ? 'var(--color-success)' : 'var(--color-danger)' }}>
                                                     <span style={{ fontWeight: 700, fontSize: 11, width: 18, textAlign: 'center' }}>{i + 1}.</span>
                                                     {opt?.optionText || id}
                                                 </div>
@@ -220,9 +220,9 @@ function QuestionCard({ q, index, expanded, onToggle }) {
                                 const isMatch = studentMatch?.matchPairVal === correctMatch?.matchPairVal;
                                 return (
                                     <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 6 }}>
-                                        <div style={{ padding: '7px 10px', borderRadius: 8, background: '#F8FAFC', border: '1px solid #E5E7EB', fontSize: 13 }}>{opt.matchPairKey || opt.optionText}</div>
-                                        <div style={{ padding: '7px 10px', borderRadius: 8, background: isMatch ? '#ECFDF5' : '#FEF2F2', border: `1px solid ${isMatch ? '#A7F3D0' : '#FECACA'}`, fontSize: 13, color: isMatch ? '#065F46' : '#991B1B' }}>{studentMatch?.matchPairVal || '—'}</div>
-                                        <div style={{ padding: '7px 10px', borderRadius: 8, background: '#ECFDF5', border: '1px solid #A7F3D0', fontSize: 13, color: '#065F46' }}>{correctMatch?.matchPairVal || '—'}</div>
+                                        <div style={{ padding: '7px 10px', borderRadius: 8, background: 'var(--color-bg-soft)', border: '1px solid var(--color-border-muted)', fontSize: 13 }}>{opt.matchPairKey || opt.optionText}</div>
+                                        <div style={{ padding: '7px 10px', borderRadius: 8, background: isMatch ? 'var(--color-success-soft)' : 'var(--color-danger-soft)', border: `1px solid ${isMatch ? 'var(--color-success)' : 'var(--color-danger)'}`, fontSize: 13, color: isMatch ? 'var(--color-success)' : 'var(--color-danger)' }}>{studentMatch?.matchPairVal || '—'}</div>
+                                        <div style={{ padding: '7px 10px', borderRadius: 8, background: 'var(--color-success-soft)', border: '1px solid var(--color-success)', fontSize: 13, color: 'var(--color-success)' }}>{correctMatch?.matchPairVal || '—'}</div>
                                     </div>
                                 );
                             })}
@@ -233,7 +233,7 @@ function QuestionCard({ q, index, expanded, onToggle }) {
                     {q.explanation && (
                         <div style={{ marginTop: 8 }}>
                             <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>💡 Explanation</div>
-                            <div style={{ padding: '12px 16px', background: '#EFF6FF', border: '1px solid #BFDBFE', borderLeft: '3px solid var(--color-info)', borderRadius: '0 10px 10px 0', fontSize: 14, color: '#1E40AF', lineHeight: 1.7 }}>
+                            <div style={{ padding: '12px 16px', background: 'var(--color-info-soft)', border: '1px solid var(--color-info)', borderLeft: '3px solid var(--color-info)', borderRadius: '0 10px 10px 0', fontSize: 14, color: 'var(--color-info)', lineHeight: 1.7 }}>
                                 {q.explanation}
                             </div>
                         </div>
@@ -282,8 +282,8 @@ export default function AttemptReview() {
     if (isError) {
         return (
             <div style={{ minHeight: '100vh', background: 'var(--color-bg-page)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-                <div style={{ background: '#fff', borderRadius: 20, border: '1px solid var(--color-border)', padding: '40px 32px', maxWidth: 420, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, boxShadow: 'var(--shadow-md)' }}>
-                    <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#FEF2F2', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ background: 'var(--color-bg-card)', borderRadius: 20, border: '1px solid var(--color-border)', padding: '40px 32px', maxWidth: 420, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, boxShadow: 'var(--shadow-md)' }}>
+                    <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'var(--color-danger-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <Lock size={28} style={{ color: 'var(--color-danger)' }} />
                     </div>
                     <h2 style={{ fontSize: 20, fontWeight: 700, color: 'var(--color-text-primary)' }}>Review Not Available</h2>
@@ -308,10 +308,10 @@ export default function AttemptReview() {
             <style>{`@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}`}</style>
 
             {/* ── Header ── */}
-            <div style={{ background: '#fff', borderBottom: '1px solid var(--color-border)', padding: '16px 20px', position: 'sticky', top: 0, zIndex: 50, boxShadow: 'var(--shadow-sm)' }}>
+            <div style={{ background: 'var(--color-bg-card)', borderBottom: '1px solid var(--color-border)', padding: '16px 20px', position: 'sticky', top: 0, zIndex: 50, boxShadow: 'var(--shadow-sm)' }}>
                 <div style={{ maxWidth: 860, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <button onClick={() => navigate(`/student/results/${attemptUuid}`)} style={{ width: 36, height: 36, borderRadius: 10, border: '1.5px solid var(--color-border)', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--color-text-secondary)', flexShrink: 0 }}>
+                        <button onClick={() => navigate(`/student/results/${attemptUuid}`)} style={{ width: 36, height: 36, borderRadius: 10, border: '1.5px solid var(--color-border)', background: 'var(--color-bg-card)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--color-text-secondary)', flexShrink: 0 }}>
                             <ArrowLeft size={16} />
                         </button>
                         <div>
@@ -321,9 +321,9 @@ export default function AttemptReview() {
                     </div>
                     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                         {[
-                            { color: 'var(--color-success)', bg: '#ECFDF5', label: 'Correct', val: correctCount },
-                            { color: 'var(--color-danger)', bg: '#FEF2F2', label: 'Wrong', val: wrongCount },
-                            { color: '#6B7280', bg: '#F3F4F6', label: 'Skipped', val: skippedCount },
+                            { color: 'var(--color-success)', bg: 'var(--color-success-soft)', label: 'Correct', val: correctCount },
+                            { color: 'var(--color-danger)', bg: 'var(--color-danger-soft)', label: 'Wrong', val: wrongCount },
+                            { color: 'var(--color-text-secondary)', bg: 'var(--color-bg-muted)', label: 'Skipped', val: skippedCount },
                         ].map(({ color, bg, label, val }) => (
                             <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 11px', borderRadius: 20, background: bg, fontSize: 12, fontWeight: 700, color }}>
                                 {val} {label}
@@ -352,7 +352,7 @@ export default function AttemptReview() {
 
                 {/* ── Question Cards ── */}
                 {filteredQuestions.length === 0 ? (
-                    <div style={{ background: '#fff', borderRadius: 16, border: '1px solid var(--color-border)' }}>
+                    <div style={{ background: 'var(--color-bg-card)', borderRadius: 16, border: '1px solid var(--color-border)' }}>
                         <EmptyState
                             icon={emptyConfig[filter].icon}
                             title={emptyConfig[filter].title}
@@ -376,7 +376,7 @@ export default function AttemptReview() {
             </div>
 
             {/* ── Bottom Nav ── */}
-            <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: '#fff', borderTop: '1px solid var(--color-border)', padding: '12px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 -4px 12px rgba(0,0,0,0.06)', zIndex: 40 }}>
+            <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'var(--color-bg-card)', borderTop: '1px solid var(--color-border)', padding: '12px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 -4px 12px rgba(0,0,0,0.06)', zIndex: 40 }}>
                 <Button variant="outline" icon={<ArrowLeft size={15} />} onClick={() => navigate(`/student/results/${attemptUuid}`)}>
                     Back to Results
                 </Button>
