@@ -26,12 +26,12 @@ export default function Select({
                     name={name}
                     disabled={disabled}
                     className={`
-                        w-full h-10 rounded-lg border bg-[var(--color-bg-card)] pl-3 pr-10 text-sm text-[var(--color-text-primary)]
+                        w-full h-10 rounded-lg border-2 border-[var(--color-border)] bg-[var(--color-bg-card)] pl-3 pr-10 text-sm text-[var(--color-text-primary)]
             appearance-none cursor-pointer
             transition-all duration-150
                         focus:outline-none focus:ring-2 focus:ring-[color:var(--color-primary)]/20 focus:border-[var(--color-primary)]
                         disabled:bg-[var(--color-bg-soft)] disabled:text-[var(--color-text-muted)] disabled:cursor-not-allowed
-                        ${error ? 'border-[var(--color-danger)] focus:border-[var(--color-danger)] focus:ring-[color:var(--color-danger)]/20' : 'border-[color:var(--color-border)]/30'}
+                        ${error ? 'border-[var(--color-danger)] focus:border-[var(--color-danger)] focus:ring-[color:var(--color-danger)]/20' : ''}
             ${className}
           `}
                     {...(register || {})}

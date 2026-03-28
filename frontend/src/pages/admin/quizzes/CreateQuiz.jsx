@@ -34,8 +34,11 @@ const quizSchema = z.object({
     categoryUuid: z.string().optional().default(''),
     maxAttempts: z.coerce.number().min(1, 'Max attempts must be at least 1').max(100, 'Max attempts cannot exceed 100').optional().or(z.literal('')),
     cooldownHours: z.coerce.number().min(0).max(720, 'Cooldown cannot exceed 720 hours').optional().or(z.literal('')),
+    questionsToServe: z.coerce.number().min(1, 'Questions to serve must be at least 1').optional().or(z.literal('')),
     shuffleQuestions: z.boolean().default(false),
+    shuffleOptions: z.boolean().default(false),
     showCorrectAnswers: z.boolean().default(false),
+    showLeaderboard: z.boolean().default(false),
     accessCode: z.string().max(20).optional().default(''),
     startsAt: z.string().optional().default(''),
     expiresAt: z.string().optional().default(''),
@@ -115,8 +118,8 @@ export default function CreateQuiz() {
         defaultValues: {
             title: '', description: '', difficulty: '', quizType: '',
             passMarks: '', timeLimitSeconds: '', categoryUuid: '',
-            maxAttempts: '', cooldownHours: '',
-            shuffleQuestions: false, showCorrectAnswers: false,
+            maxAttempts: '', cooldownHours: '', questionsToServe: '',
+            shuffleQuestions: false, shuffleOptions: false, showCorrectAnswers: false, showLeaderboard: false,
             accessCode: '', startsAt: '', expiresAt: '',
         },
     });
@@ -222,8 +225,11 @@ export default function CreateQuiz() {
             tagUuids: selectedTagUuids.length ? selectedTagUuids : undefined,
             maxAttempts: data.maxAttempts !== '' ? Number(data.maxAttempts) : undefined,
             cooldownHours: data.cooldownHours !== '' ? Number(data.cooldownHours) : undefined,
+            questionsToServe: data.questionsToServe !== '' ? Number(data.questionsToServe) : undefined,
             shuffleQuestions: data.shuffleQuestions,
+            shuffleOptions: data.shuffleOptions,
             showCorrectAnswers: data.showCorrectAnswers,
+            showLeaderboard: data.showLeaderboard,
             accessCode: data.accessCode || undefined,
             groupUuids: selectedGroupUuids,
             startsAt: data.startsAt ? new Date(data.startsAt).toISOString() : null,
@@ -651,6 +657,18 @@ export default function CreateQuiz() {
                                 />
                             </div>
 
+                            <div className="grid sm:grid-cols-2 gap-4">
+                                <Input
+                                    label="Questions to Serve"
+                                    name="questionsToServe"
+                                    type="number"
+                                    placeholder="e.g. 20"
+                                    hint="Number of questions served per attempt"
+                                    register={register('questionsToServe')}
+                                    error={errors.questionsToServe?.message}
+                                />
+                            </div>
+
                             <div className="pt-2 space-y-4">
                                 <Toggle
                                     checked={watchAll.shuffleQuestions}
@@ -659,10 +677,22 @@ export default function CreateQuiz() {
                                     description="Randomize question order for each attempt"
                                 />
                                 <Toggle
+                                    checked={watchAll.shuffleOptions}
+                                    onChange={(v) => setValue('shuffleOptions', v)}
+                                    label="Shuffle Options"
+                                    description="Randomize answer options for each question"
+                                />
+                                <Toggle
                                     checked={watchAll.showCorrectAnswers}
                                     onChange={(v) => setValue('showCorrectAnswers', v)}
                                     label="Show Correct Answers"
                                     description="Allow students to review correct answers after submission"
+                                />
+                                <Toggle
+                                    checked={watchAll.showLeaderboard}
+                                    onChange={(v) => setValue('showLeaderboard', v)}
+                                    label="Show Leaderboard"
+                                    description="Display leaderboard after quiz completion"
                                 />
                             </div>
                         </div>
