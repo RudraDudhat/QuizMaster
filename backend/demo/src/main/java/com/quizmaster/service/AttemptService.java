@@ -263,9 +263,13 @@ public class AttemptService {
         List<AttemptAnswer> answers = answerRepository.findByAttemptId(attempt.getId());
         int correctCount = (int) answers.stream().filter(a -> Boolean.TRUE.equals(a.getIsCorrect())).count();
         int skippedCount = (int) answers.stream().filter(a -> Boolean.TRUE.equals(a.getIsSkipped())).count();
-        int wrongCount = answers.size() - correctCount - skippedCount;
+        // Pending review = answer evaluated as null (essay awaiting manual grading)
+        int pendingReviewCount = (int) answers.stream()
+                .filter(a -> a.getIsCorrect() == null && !Boolean.TRUE.equals(a.getIsSkipped()))
+                .count();
+        int wrongCount = answers.size() - correctCount - skippedCount - pendingReviewCount;
 
-        return attemptMapper.toResultResponse(attempt, correctCount, wrongCount, skippedCount);
+        return attemptMapper.toResultResponse(attempt, correctCount, wrongCount, skippedCount, pendingReviewCount);
     }
 
     // ─── GET ATTEMPT REVIEW ─────────────────────────────
@@ -296,6 +300,123 @@ public class AttemptService {
         User student = findUserByEmail(studentEmail);
         return attemptRepository.findByStudentIdOrderByCreatedAtDesc(student.getId(), pageable)
                 .map(attemptMapper::toHistoryResponse);
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // ADMIN: ESSAY GRADING QUEUE
+    // ═══════════════════════════════════════════════════════
+
+    /** Admin queue: attempts that have at least one essay awaiting grading. */
+    @Transactional(readOnly = true)
+    public Page<com.quizmaster.dto.response.PendingReviewResponse> listPendingReviews(Pageable pageable) {
+        return attemptRepository.findAttemptsPendingReview(pageable)
+                .map(att -> {
+                    int pending = answerRepository.countPendingReviewByAttemptId(att.getId());
+                    int total = (int) answerRepository.findByAttemptId(att.getId()).size();
+                    return com.quizmaster.dto.response.PendingReviewResponse.builder()
+                            .attemptUuid(att.getUuid().toString())
+                            .quizUuid(att.getQuiz().getUuid().toString())
+                            .quizTitle(att.getQuiz().getTitle())
+                            .studentUuid(att.getStudent().getUuid().toString())
+                            .studentName(att.getStudent().getFullName())
+                            .studentEmail(att.getStudent().getEmail())
+                            .submittedAt(att.getSubmittedAt())
+                            .pendingCount(pending)
+                            .totalQuestions(total)
+                            .build();
+                });
+    }
+
+    /**
+     * Admin variant of getAttemptReview — bypasses the quiz.showCorrectAnswers
+     * gate and works for any attempt regardless of the student's email.
+     */
+    @Transactional(readOnly = true)
+    public AttemptReviewResponse getAttemptReviewAdmin(String attemptUuid) {
+        QuizAttempt attempt = attemptRepository.findByUuid(UUID.fromString(attemptUuid))
+                .orElseThrow(() -> new BadRequestException("Attempt not found"));
+        if (attempt.getStatus() == AttemptStatus.IN_PROGRESS) {
+            throw new BadRequestException("Attempt is still in progress");
+        }
+        List<AttemptAnswer> answers = answerRepository.findByAttemptId(attempt.getId());
+        return attemptMapper.toReviewResponse(attempt, answers, this::parseJsonUuidList);
+    }
+
+    /**
+     * Admin grades a single essay answer. Updates the answer + the attempt
+     * totals + the rank (since the score may have changed).
+     */
+    @Transactional
+    public void gradeEssayAnswer(String attemptUuid, String questionUuid,
+            com.quizmaster.dto.request.GradeEssayRequest req, String adminEmail) {
+        User admin = findUserByEmail(adminEmail);
+        QuizAttempt attempt = attemptRepository.findByUuid(UUID.fromString(attemptUuid))
+                .orElseThrow(() -> new BadRequestException("Attempt not found"));
+        if (attempt.getStatus() == AttemptStatus.IN_PROGRESS) {
+            throw new BadRequestException("Cannot grade an in-progress attempt");
+        }
+
+        // Find the answer for the given question (within this attempt)
+        AttemptAnswer answer = answerRepository.findByAttemptId(attempt.getId()).stream()
+                .filter(a -> a.getQuestion() != null
+                        && questionUuid.equals(a.getQuestion().getUuid().toString()))
+                .findFirst()
+                .orElseThrow(() -> new BadRequestException("Answer not found for that question"));
+
+        if (answer.getQuestion().getQuestionType() != com.quizmaster.enums.QuestionType.ESSAY) {
+            throw new BadRequestException("Only essay answers can be manually graded");
+        }
+
+        // Clamp marksAwarded to the question's configured max for this quiz.
+        BigDecimal max = answer.getQuizQuestion().getMarks();
+        BigDecimal awarded = req.getMarksAwarded();
+        if (awarded.compareTo(max) > 0) awarded = max;
+
+        answer.setMarksAwarded(awarded);
+        answer.setIsCorrect(req.getIsCorrect());
+        answer.setManualGradeNote(req.getNote());
+        answer.setGradedBy(admin);
+        answer.setGradedAt(Instant.now());
+        answerRepository.save(answer);
+
+        // Recompute attempt totals from scratch (positive / negative / total).
+        recomputeAttemptTotals(attempt);
+        attemptRepository.saveAndFlush(attempt);
+        attemptRepository.recomputeRanksForQuiz(attempt.getQuiz().getId());
+
+        notificationService.sendAutoSubmitNotification(
+                attempt.getStudent(),
+                attempt.getQuiz().getTitle(),
+                attempt.getUuid().toString(),
+                attempt.getMarksObtained(),
+                attempt.getTotalMarksPossible(),
+                attempt.getPercentage());
+    }
+
+    /**
+     * Recompute marksObtained / percentage / isPassed from the current set of
+     * answer rows. Used after a manual grade is saved.
+     */
+    private void recomputeAttemptTotals(QuizAttempt attempt) {
+        List<AttemptAnswer> answers = answerRepository.findByAttemptId(attempt.getId());
+        BigDecimal positive = BigDecimal.ZERO;
+        BigDecimal negative = BigDecimal.ZERO;
+        for (AttemptAnswer a : answers) {
+            BigDecimal m = a.getMarksAwarded() == null ? BigDecimal.ZERO : a.getMarksAwarded();
+            if (m.compareTo(BigDecimal.ZERO) >= 0) positive = positive.add(m);
+            else negative = negative.add(m.abs());
+        }
+        attempt.setPositiveMarks(positive);
+        attempt.setNegativeMarksDeducted(negative);
+        BigDecimal net = positive.subtract(negative);
+        if (net.compareTo(BigDecimal.ZERO) < 0) net = BigDecimal.ZERO;
+        attempt.setMarksObtained(net);
+        if (attempt.getTotalMarksPossible().compareTo(BigDecimal.ZERO) > 0) {
+            BigDecimal pct = net.multiply(new BigDecimal("100"))
+                    .divide(attempt.getTotalMarksPossible(), 2, RoundingMode.HALF_UP);
+            attempt.setPercentage(pct);
+            attempt.setIsPassed(net.compareTo(attempt.getQuiz().getPassMarks()) >= 0);
+        }
     }
 
     // ─── LOG AUDIT EVENT ────────────────────────────────

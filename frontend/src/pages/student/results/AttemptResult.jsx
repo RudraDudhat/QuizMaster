@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import {
     Trophy, BookOpen, CheckCircle2, XCircle, SkipForward,
     Plus, Minus, Clock, AlertCircle, X, ArrowRight,
-    RotateCcw, List, ChevronRight,
+    RotateCcw, List, ChevronRight, Hourglass,
 } from 'lucide-react';
 import { getAttemptResult } from '../../../api/attempt.api';
 import {
@@ -104,7 +104,9 @@ export default function AttemptResult() {
         );
     }
 
-    const isPassed = result?.isPassed;
+    const pendingReviewCount = result?.pendingReviewCount ?? 0;
+    const isPending = pendingReviewCount > 0;
+    const isPassed = !isPending && result?.isPassed;
     const pct = result?.percentage ?? 0;
     const totalQ = (result?.correctCount ?? 0) + (result?.wrongCount ?? 0) + (result?.skippedCount ?? 0);
     const scoreColor = pct >= 70 ? 'var(--color-success)' : pct >= 50 ? 'var(--color-warning)' : 'var(--color-danger)';
@@ -145,6 +147,38 @@ export default function AttemptResult() {
             <div style={{ maxWidth: 760, margin: '0 auto', padding: '32px 16px', display: 'flex', flexDirection: 'column', gap: 20 }}>
 
                 {/* ── Hero Card ── */}
+                {isPending ? (
+                    /* Pending-review hero: shown while at least one essay
+                       answer is still awaiting an admin's manual grading. We
+                       don't reveal pass/fail until everything is graded. */
+                    <div style={{ background: 'var(--color-bg-card)', borderRadius: 24, border: '3px solid var(--color-border)', boxShadow: '6px 6px 0 var(--color-border)', padding: 'clamp(28px,5vw,48px) clamp(20px,5vw,40px)', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+                        <div style={{ position: 'absolute', top: -50, right: -50, width: 180, height: 180, borderRadius: '50%', background: 'rgba(99,102,241,0.06)', pointerEvents: 'none' }} />
+                        <div style={{ position: 'absolute', bottom: -40, left: -40, width: 140, height: 140, borderRadius: '50%', background: 'rgba(99,102,241,0.04)', pointerEvents: 'none' }} />
+                        <div style={{ display: 'inline-flex', marginBottom: 24, animation: iconReady ? 'popIn 0.6s cubic-bezier(0.34,1.56,0.64,1)' : 'none', opacity: iconReady ? 1 : 0 }}>
+                            <div style={{ width: 88, height: 88, borderRadius: '50%', background: 'var(--color-primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 0 14px rgba(99,102,241,0.1)' }}>
+                                <Hourglass size={42} style={{ color: 'var(--color-primary)' }} aria-hidden="true" />
+                            </div>
+                        </div>
+                        <h1 style={{ fontSize: 'clamp(20px,4vw,28px)', fontWeight: 800, color: 'var(--color-primary)', marginBottom: 6 }}>
+                            Awaiting review ⏳
+                        </h1>
+                        <p style={{ fontSize: 15, color: 'var(--color-text-secondary)', fontWeight: 500, marginBottom: 24, maxWidth: 480, marginLeft: 'auto', marginRight: 'auto', lineHeight: 1.55 }}>
+                            {pendingReviewCount === 1
+                                ? 'Your essay answer is being graded by your instructor. The final score will appear here once review is complete.'
+                                : `${pendingReviewCount} of your essay answers are being graded by your instructor. The final score will appear here once review is complete.`}
+                        </p>
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '10px 18px', borderRadius: 999, background: 'var(--color-primary-light)', border: '2px solid var(--color-primary)', color: 'var(--color-primary)', fontWeight: 700, fontSize: 14 }}>
+                            <Hourglass size={16} aria-hidden="true" />
+                            {pendingReviewCount} pending review{pendingReviewCount === 1 ? '' : 's'}
+                        </div>
+                        <div style={{ marginTop: 24, fontSize: 13, color: 'var(--color-text-muted)' }}>
+                            Auto-graded score so far:{' '}
+                            <strong style={{ color: 'var(--color-text-primary)' }}>
+                                {formatScore(result?.marksObtained, result?.totalMarksPossible)} marks
+                            </strong>
+                        </div>
+                    </div>
+                ) : (
                 <div style={{ background: 'var(--color-bg-card)', borderRadius: 24, border: '3px solid var(--color-border)', boxShadow: '6px 6px 0 var(--color-border)', padding: 'clamp(28px,5vw,48px) clamp(20px,5vw,40px)', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
                     <div style={{ position: 'absolute', top: -50, right: -50, width: 180, height: 180, borderRadius: '50%', background: isPassed ? 'rgba(16,185,129,0.06)' : 'rgba(239,68,68,0.05)', pointerEvents: 'none' }} />
                     <div style={{ position: 'absolute', bottom: -40, left: -40, width: 140, height: 140, borderRadius: '50%', background: isPassed ? 'rgba(16,185,129,0.04)' : 'rgba(239,68,68,0.03)', pointerEvents: 'none' }} />
@@ -174,6 +208,7 @@ export default function AttemptResult() {
                         </div>
                     )}
                 </div>
+                )}
 
                 {/* ── Stats Grid ── */}
                 {/* Auto-fit with a min lets the grid collapse to 2 cols on phones, 3 on tablets+. */}

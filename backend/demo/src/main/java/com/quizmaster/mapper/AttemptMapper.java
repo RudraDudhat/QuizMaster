@@ -49,6 +49,7 @@ public interface AttemptMapper {
     @Mapping(target = "correctCount", source = "correctCount")
     @Mapping(target = "wrongCount", source = "wrongCount")
     @Mapping(target = "skippedCount", source = "skippedCount")
+    @Mapping(target = "pendingReviewCount", source = "pendingReviewCount")
     @Mapping(target = "marksObtained", source = "attempt.marksObtained")
     @Mapping(target = "totalMarksPossible", source = "attempt.totalMarksPossible")
     @Mapping(target = "percentage", source = "attempt.percentage")
@@ -58,7 +59,7 @@ public interface AttemptMapper {
     @Mapping(target = "rank", source = "attempt.rank")
     @Mapping(target = "positiveMarks", source = "attempt.positiveMarks")
     @Mapping(target = "negativeMarksDeducted", source = "attempt.negativeMarksDeducted")
-    AttemptResultResponse toResultResponse(QuizAttempt attempt, int correctCount, int wrongCount, int skippedCount);
+    AttemptResultResponse toResultResponse(QuizAttempt attempt, int correctCount, int wrongCount, int skippedCount, int pendingReviewCount);
 
     @AfterMapping
     default void computeResultTimeTaken(QuizAttempt attempt, @MappingTarget AttemptResultResponse response) {

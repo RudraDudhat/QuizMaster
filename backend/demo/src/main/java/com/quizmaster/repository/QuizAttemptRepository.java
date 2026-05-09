@@ -179,6 +179,18 @@ public interface QuizAttemptRepository extends JpaRepository<QuizAttempt, Long> 
             @Param("statuses") List<AttemptStatus> statuses,
             Pageable pageable);
 
+    /** Attempts with at least one ungraded essay answer (admin queue). */
+    @Query("""
+            SELECT DISTINCT a FROM QuizAttempt a
+            JOIN AttemptAnswer aa ON aa.attempt = a
+            WHERE a.status IN ('SUBMITTED', 'AUTO_SUBMITTED')
+              AND aa.question.questionType = com.quizmaster.enums.QuestionType.ESSAY
+              AND aa.isCorrect IS NULL
+              AND aa.isSkipped = false
+            ORDER BY a.submittedAt ASC
+            """)
+    Page<QuizAttempt> findAttemptsPendingReview(Pageable pageable);
+
     @Query("""
             SELECT
               CAST(u.uuid AS string)                                 AS studentUuid,

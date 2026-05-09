@@ -21,6 +21,26 @@ public interface AttemptAnswerRepository extends JpaRepository<AttemptAnswer, Lo
     @Query("SELECT COUNT(a) FROM AttemptAnswer a WHERE a.attempt.id = :attemptId AND a.isSkipped = false")
     int countAnsweredByAttemptId(Long attemptId);
 
+    /** Essay answers awaiting manual grading inside a single attempt. */
+    @Query("""
+            SELECT COUNT(a) FROM AttemptAnswer a
+            WHERE a.attempt.id = :attemptId
+              AND a.question.questionType = com.quizmaster.enums.QuestionType.ESSAY
+              AND a.isCorrect IS NULL
+              AND a.isSkipped = false
+            """)
+    int countPendingReviewByAttemptId(@Param("attemptId") Long attemptId);
+
+    /** Total essay answers across the platform that still need grading. */
+    @Query("""
+            SELECT COUNT(a) FROM AttemptAnswer a
+            WHERE a.question.questionType = com.quizmaster.enums.QuestionType.ESSAY
+              AND a.isCorrect IS NULL
+              AND a.isSkipped = false
+              AND a.attempt.status IN ('SUBMITTED', 'AUTO_SUBMITTED')
+            """)
+    long countAllPendingReviews();
+
     /**
      * Returns per-question accuracy stats for all attempts of a given quiz.
      * Each row: [questionId(Long), totalAnswers(Long), correctCount(Long), skippedCount(Long), hintUsedCount(Long), avgTimeSeconds(Double)]

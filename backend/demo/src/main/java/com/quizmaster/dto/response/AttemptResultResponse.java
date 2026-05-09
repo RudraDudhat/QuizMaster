@@ -32,4 +32,6 @@ public class AttemptResultResponse {
     private Integer correctCount;
     private Integer wrongCount;
     private Integer skippedCount;
+    /** Number of essay answers awaiting an admin's manual grading. */
+    private Integer pendingReviewCount;
 }

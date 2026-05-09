@@ -4,7 +4,7 @@ import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Menu, X, LayoutDashboard, FileText, HelpCircle,
-    Users, GraduationCap, BarChart3,
+    Users, GraduationCap, BarChart3, Hourglass,
     ChevronLeft, ChevronRight, LogOut, User, Settings as SettingsIcon,
 } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
@@ -17,6 +17,7 @@ const navItems = [
     { path: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { path: '/admin/quizzes', label: 'Quizzes', icon: FileText },
     { path: '/admin/questions', label: 'Question Bank', icon: HelpCircle },
+    { path: '/admin/grading', label: 'Grading', icon: Hourglass },
     { path: '/admin/groups', label: 'Groups', icon: Users },
     { path: '/admin/students', label: 'Students', icon: GraduationCap },
     { path: '/admin/analytics', label: 'Analytics', icon: BarChart3 },

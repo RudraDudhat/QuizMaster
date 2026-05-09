@@ -27,6 +27,8 @@ const StudentList = lazy(() => import('../pages/admin/students/StudentList'));
 const StudentDetail = lazy(() => import('../pages/admin/students/StudentDetail'));
 const Analytics = lazy(() => import('../pages/admin/analytics/Analytics'));
 const Settings = lazy(() => import('../pages/admin/settings/Settings'));
+const GradingQueue = lazy(() => import('../pages/admin/grading/GradingQueue'));
+const GradingReview = lazy(() => import('../pages/admin/grading/GradingReview'));
 
 // Pages — Student
 const StudentDashboard = lazy(() => import('../pages/student/Dashboard'));
@@ -147,6 +149,8 @@ export default function AppRouter() {
                         <Route path="/admin/groups" element={<GroupManagement />} />
                         <Route path="/admin/students" element={<StudentList />} />
                         <Route path="/admin/students/:userUuid" element={<StudentDetail />} />
+                        <Route path="/admin/grading" element={<GradingQueue />} />
+                        <Route path="/admin/grading/:attemptUuid" element={<GradingReview />} />
                         <Route path="/admin/analytics" element={<Analytics />} />
                         <Route path="/admin/settings" element={<Settings />} />
                     </Route>
