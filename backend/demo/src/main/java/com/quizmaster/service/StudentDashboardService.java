@@ -43,6 +43,7 @@ public class StudentDashboardService {
     private final QuizQuestionRepository quizQuestionRepository;
     private final QuizGroupAssignmentRepository quizGroupAssignmentRepository;
     private final StudentGroupMemberRepository studentGroupMemberRepository;
+    private final AttemptAnswerRepository attemptAnswerRepository;
     private final AttemptMapper attemptMapper;
 
     // ─── Public API ──────────────────────────────────────
@@ -112,7 +113,12 @@ public class StudentDashboardService {
                 .findByStudentIdAndStatusInOrderBySubmittedAtDesc(
                         studentId, COMPLETED_STATUSES, PageRequest.of(0, 5));
         List<AttemptHistoryResponse> recentAttempts = recentPage.getContent().stream()
-                .map(attemptMapper::toHistoryResponse)
+                .map(att -> {
+                    AttemptHistoryResponse res = attemptMapper.toHistoryResponse(att);
+                    res.setHasPendingReview(
+                            attemptAnswerRepository.countPendingReviewByAttemptId(att.getId()) > 0);
+                    return res;
+                })
                 .collect(Collectors.toList());
 
         // Upcoming quizzes — next 3 by expiresAt ASC, enriched

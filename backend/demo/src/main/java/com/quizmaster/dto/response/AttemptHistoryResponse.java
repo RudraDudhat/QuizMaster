@@ -25,4 +25,8 @@ public class AttemptHistoryResponse {
     private Instant startedAt;
     private Instant submittedAt;
     private Long timeTakenSeconds;
+    /** True when this attempt has at least one essay still awaiting an
+     *  admin's manual grading. Lists should display a "Pending review"
+     *  badge instead of pass/fail when this is true. */
+    private Boolean hasPendingReview;
 }

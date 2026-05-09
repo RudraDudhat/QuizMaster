@@ -76,6 +76,7 @@ public interface AttemptMapper {
     @Mapping(target = "quizTitle", source = "quiz.title")
     @Mapping(target = "status", expression = "java(attempt.getStatus().name())")
     @Mapping(target = "timeTakenSeconds", ignore = true) // computed in @AfterMapping
+    @Mapping(target = "hasPendingReview", ignore = true) // computed in service
     AttemptHistoryResponse toHistoryResponse(QuizAttempt attempt);
 
     @AfterMapping

@@ -305,7 +305,12 @@ public class AttemptService {
     public Page<AttemptHistoryResponse> getAttemptHistory(String studentEmail, Pageable pageable) {
         User student = findUserByEmail(studentEmail);
         return attemptRepository.findByStudentIdOrderByCreatedAtDesc(student.getId(), pageable)
-                .map(attemptMapper::toHistoryResponse);
+                .map(att -> {
+                    AttemptHistoryResponse res = attemptMapper.toHistoryResponse(att);
+                    res.setHasPendingReview(
+                            answerRepository.countPendingReviewByAttemptId(att.getId()) > 0);
+                    return res;
+                });
     }
 
     // ═══════════════════════════════════════════════════════
