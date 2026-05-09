@@ -55,19 +55,22 @@ export default function AttemptResult() {
     const location = useLocation();
     const navigate = useNavigate();
 
-    const resultData = location.state?.resultData;
     const autoSubmitted = location.state?.autoSubmitted ?? false;
     const [bannerVisible, setBannerVisible] = useState(autoSubmitted);
     const [iconReady, setIconReady] = useState(false);
 
+    // Always hit the full result endpoint — the submit-time response (passed
+    // via location.state on redirect) doesn't include pendingReviewCount,
+    // so relying on it would bypass the "awaiting review" gate. Refetch on
+    // mount so newly-graded essays are reflected immediately.
     const { data: response, isLoading, isError } = useQuery({
         queryKey: ['attempt-result', attemptUuid],
         queryFn: () => getAttemptResult(attemptUuid),
-        enabled: !resultData,
-        staleTime: 300_000,
+        staleTime: 0,
+        refetchOnWindowFocus: true,
     });
 
-    const result = resultData ?? response?.data;
+    const result = response?.data;
 
     useEffect(() => {
         const t = setTimeout(() => setIconReady(true), 100);
