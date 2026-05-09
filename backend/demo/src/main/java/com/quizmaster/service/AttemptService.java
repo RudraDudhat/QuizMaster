@@ -366,6 +366,16 @@ public class AttemptService {
                 continue;
 
             Question question = qq.getQuestion();
+
+            // Essays cannot be auto-graded. Leave is_correct = NULL and award
+            // 0 marks pending an admin's manual review — never deduct negative
+            // marks, otherwise students get penalised just for waiting.
+            if (question.getQuestionType() == QuestionType.ESSAY) {
+                answer.setIsCorrect(null);
+                answer.setMarksAwarded(BigDecimal.ZERO);
+                continue;
+            }
+
             boolean correct = evaluateAnswer(answer, question);
             answer.setIsCorrect(correct);
 
@@ -407,7 +417,8 @@ public class AttemptService {
             case MCQ_SINGLE -> evaluateSingleChoice(answer, question);
             case MCQ_MULTI -> evaluateMultipleChoice(answer, question);
             case TRUE_FALSE -> evaluateTrueFalse(answer, question);
-            case SHORT_ANSWER, FILL_IN_THE_BLANK -> evaluateTextAnswer(answer, question);
+            case SHORT_ANSWER -> evaluateShortAnswer(answer, question);
+            case FILL_IN_THE_BLANK -> evaluateFillInTheBlank(answer, question);
             case ORDERING -> evaluateOrdering(answer, question);
             case MATCH_THE_FOLLOWING -> evaluateMatching(answer, question);
             case CODE_SNIPPET, IMAGE_BASED -> evaluateSingleChoice(answer, question);
@@ -437,6 +448,18 @@ public class AttemptService {
     }
 
     private boolean evaluateTrueFalse(AttemptAnswer answer, Question question) {
+        // Preferred path: the frontend submits selectedOptionUuids alongside
+        // booleanAnswer, so just compare against the option flagged correct.
+        List<UUID> selected = parseJsonUuidList(answer.getSelectedOptionIds());
+        if (selected != null && selected.size() == 1) {
+            UUID picked = selected.get(0);
+            return question.getOptions().stream()
+                    .anyMatch(o -> picked.equals(o.getUuid()) && Boolean.TRUE.equals(o.getIsCorrect()));
+        }
+
+        // Fallback for older answers that only carry a boolean: derive the
+        // expected value from the correct option's text. Tolerate common
+        // affirmative/negative spellings instead of just "true"/"yes".
         if (answer.getBooleanAnswer() == null)
             return false;
         Optional<QuestionOption> correctOption = question.getOptions().stream()
@@ -445,17 +468,41 @@ public class AttemptService {
         if (correctOption.isEmpty())
             return false;
         String correctText = correctOption.get().getOptionText().trim().toLowerCase();
-        boolean expectedTrue = "true".equals(correctText) || "yes".equals(correctText);
+        boolean expectedTrue = correctText.equals("true") || correctText.equals("yes")
+                || correctText.equals("t") || correctText.equals("1");
         return answer.getBooleanAnswer() == expectedTrue;
     }
 
-    private boolean evaluateTextAnswer(AttemptAnswer answer, Question question) {
+    /**
+     * Short answer = "auto-graded with keywords" — admins list one or more
+     * acceptable keywords (synonyms / alternate phrasings). The student
+     * passes if their answer contains ANY one of them.
+     */
+    private boolean evaluateShortAnswer(AttemptAnswer answer, Question question) {
         if (answer.getTextAnswer() == null || answer.getTextAnswer().isBlank())
             return false;
         String studentAnswer = answer.getTextAnswer().trim().toLowerCase();
         return question.getOptions().stream()
                 .filter(o -> Boolean.TRUE.equals(o.getIsCorrect()))
                 .anyMatch(o -> studentAnswer.contains(o.getOptionText().trim().toLowerCase()));
+    }
+
+    /**
+     * Fill in the blank = inline blanks within a sentence. Each correct
+     * option represents one blank's expected value, so the student's text
+     * must contain ALL of them (in any order, case-insensitive).
+     */
+    private boolean evaluateFillInTheBlank(AttemptAnswer answer, Question question) {
+        if (answer.getTextAnswer() == null || answer.getTextAnswer().isBlank())
+            return false;
+        String studentAnswer = answer.getTextAnswer().trim().toLowerCase();
+        List<QuestionOption> correct = question.getOptions().stream()
+                .filter(o -> Boolean.TRUE.equals(o.getIsCorrect()))
+                .collect(Collectors.toList());
+        if (correct.isEmpty())
+            return false;
+        return correct.stream()
+                .allMatch(o -> studentAnswer.contains(o.getOptionText().trim().toLowerCase()));
     }
 
     private boolean evaluateOrdering(AttemptAnswer answer, Question question) {
