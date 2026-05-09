@@ -73,10 +73,10 @@ export default function Input({
                     {...rest}
                 />
                 {suffixIcon && (
-                    <span
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] pointer-events-none"
-                        aria-hidden="true"
-                    >
+                    // No `pointer-events-none` here — `suffixIcon` is often an
+                    // interactive element (eye toggle, clear button). Decorative
+                    // icons should be plain SVGs that don't need event handlers.
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] flex items-center">
                         {suffixIcon}
                     </span>
                 )}

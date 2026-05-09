@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import toast from 'react-hot-toast';
@@ -13,9 +13,9 @@ import {
 import { createQuiz } from '../../../api/quiz.api';
 import { updateQuizStatus } from '../../../api/quiz.api';
 import { getAllCategories } from '../../../api/category.api';
-import { getAllTags, createTag } from '../../../api/tag.api';
+import { getAllTags } from '../../../api/tag.api';
 import { getAllGroups } from '../../../api/group.api';
-import { formatDuration, getStatusColor } from '../../../utils/formatters';
+import { formatDuration } from '../../../utils/formatters';
 import Button from '../../../components/common/Button';
 import Badge from '../../../components/common/Badge';
 import Input from '../../../components/common/Input';
@@ -52,6 +52,7 @@ function Toggle({ checked, onChange, label, description }) {
 }
 
 /* ─── Section Heading ─── */
+// eslint-disable-next-line no-unused-vars -- `Icon` is the destructured rename used as <Icon /> in JSX
 function SectionHeading({ icon: Icon, title, subtitle }) {
     return (
         <div className="flex items-center gap-3 mb-5 pb-3 border-b border-gray-100">
@@ -72,7 +73,6 @@ const typeVariant = { PRACTICE: 'info', EXAM: 'default', SURVEY: 'warning' };
 
 export default function CreateQuiz() {
     const navigate = useNavigate();
-    const queryClient = useQueryClient();
 
     /* ─── form ─── */
     const {

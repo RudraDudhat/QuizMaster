@@ -63,6 +63,9 @@ export default function QuizQuestionManager() {
     });
 
     useEffect(() => {
+        // Sync server data into local state because drag-drop reordering
+        // mutates the array optimistically before the server returns.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         if (linkedResponse?.data) setLinkedQuestions(linkedResponse.data);
     }, [linkedResponse]);
 

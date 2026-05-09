@@ -214,7 +214,8 @@ export default function AttemptHistory() {
                     <select
                         value={statusFilter}
                         onChange={e => setStatusFilter(e.target.value)}
-                        style={{ height: 40, padding: '0 12px', border: '1.5px solid var(--color-border)', borderRadius: 10, fontSize: 14, outline: 'none', background: 'var(--color-bg-card)', color: 'var(--color-text-primary)', cursor: 'pointer', flex: '0 0 180px' }}
+                        aria-label="Filter by status"
+                        style={{ height: 40, padding: '0 12px', border: '1.5px solid var(--color-border)', borderRadius: 10, fontSize: 14, outline: 'none', background: 'var(--color-bg-card)', color: 'var(--color-text-primary)', cursor: 'pointer', flex: '1 1 160px', minWidth: 140 }}
                     >
                         {STATUS_OPTIONS.map(o => (
                             <option key={o.value} value={o.value}>{o.label}</option>

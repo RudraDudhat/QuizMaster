@@ -368,12 +368,28 @@ export default function QuizTaking() {
                     20%{transform:translateX(-3px)} 40%{transform:translateX(3px)}
                     60%{transform:translateX(-2px)} 80%{transform:translateX(2px)}
                 }
+
+                /* Mobile-friendly tweaks for the in-quiz UI */
+                @media (max-width: 640px) {
+                    /* Tighter top-bar padding so timer + Submit always fit */
+                    .qt-topbar { padding: 0 10px !important; gap: 8px !important; }
+                    .qt-topbar .qt-savestate-text { display: none; }
+                    .qt-question-area { padding: 16px !important; }
+                    /* Navigator becomes a full-screen overlay */
+                    .qt-navigator {
+                        position: fixed !important;
+                        top: 56px; right: 0; bottom: 0; left: 0;
+                        width: 100% !important;
+                        z-index: 60;
+                        border-left: none !important;
+                    }
+                }
             `}</style>
 
             <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: 'var(--color-bg-page)', overflow: 'hidden' }}>
 
                 {/* ══ TOP BAR ══ */}
-                <div style={css.topBar}>
+                <div className="qt-topbar" style={css.topBar}>
                     {/* Left */}
                     <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
                         <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 220 }}>
@@ -400,11 +416,11 @@ export default function QuizTaking() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                         {autoSaving ? (
                             <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: 'var(--color-text-secondary)' }}>
-                                <Spinner size="sm" /> Saving...
+                                <Spinner size="sm" /> <span className="qt-savestate-text">Saving...</span>
                             </div>
                         ) : lastSaved ? (
                             <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: 'var(--color-success)' }}>
-                                <CheckCircle size={13} /> Saved
+                                <CheckCircle size={13} /> <span className="qt-savestate-text">Saved</span>
                             </div>
                         ) : null}
 
@@ -426,7 +442,7 @@ export default function QuizTaking() {
                 <div style={{ flex: 1, display: 'flex', marginTop: 56, overflow: 'hidden' }}>
 
                     {/* QUESTION AREA */}
-                    <div style={{ flex: 1, overflowY: 'auto', padding: '24px', minWidth: 0 }}>
+                    <div className="qt-question-area" style={{ flex: 1, overflowY: 'auto', padding: '24px', minWidth: 0 }}>
                         <div style={{ maxWidth: 760, margin: '0 auto' }}>
 
                             {/* Question header */}
@@ -593,7 +609,7 @@ export default function QuizTaking() {
 
                     {/* ══ NAVIGATOR PANEL ══ */}
                     {showNavigator && (
-                        <div style={{ width: 300, background: 'var(--color-bg-card)', borderLeft: '1px solid var(--color-border-soft)', overflowY: 'auto', padding: '20px', flexShrink: 0, boxShadow: '-4px 0 12px rgba(0,0,0,0.06)' }}>
+                        <div className="qt-navigator" style={{ width: 300, background: 'var(--color-bg-card)', borderLeft: '1px solid var(--color-border-soft)', overflowY: 'auto', padding: '20px', flexShrink: 0, boxShadow: '-4px 0 12px rgba(0,0,0,0.06)' }}>
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
                                 <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700 }}>Question Navigator</h3>
                                 <button onClick={() => setShowNavigator(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-subtle)' }}>

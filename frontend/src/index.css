@@ -249,3 +249,21 @@ body.modal-open {
     white-space: nowrap;
     border: 0;
 }
+
+/* ─── Page-level responsive helpers ───────────────── */
+
+/* QuizDetail: stack the two-column layout on tablet and below; the
+   sticky sidebar drops below the main content on small screens so the
+   action card stays reachable. */
+@media (max-width: 768px) {
+
+    .quiz-detail-layout {
+        flex-direction: column !important;
+    }
+
+    .quiz-detail-sidebar {
+        flex: 1 1 auto !important;
+        position: static !important;
+        width: 100%;
+    }
+}

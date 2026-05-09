@@ -113,8 +113,14 @@ export default function Login() {
                                 placeholder="Enter your password"
                                 prefixIcon={<Lock size={18} />}
                                 suffixIcon={
-                                    <button type="button" tabIndex={-1} onClick={() => setShowPw((p) => !p)} className="cursor-pointer text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]">
-                                        {showPw ? <EyeOff size={18} /> : <Eye size={18} />}
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPw((p) => !p)}
+                                        aria-label={showPw ? 'Hide password' : 'Show password'}
+                                        aria-pressed={showPw}
+                                        className="cursor-pointer text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] p-0.5 -mr-0.5"
+                                    >
+                                        {showPw ? <EyeOff size={18} aria-hidden="true" /> : <Eye size={18} aria-hidden="true" />}
                                     </button>
                                 }
                                 register={register('password')}

@@ -212,7 +212,7 @@ export default function QuizDetail() {
             </div>
 
             {/* MAIN LAYOUT */}
-            <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
+            <div className="quiz-detail-layout" style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
 
                 {/* ── LEFT — Quiz Details ── */}
                 <div style={{ flex: '1 1 60%', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -312,7 +312,7 @@ export default function QuizDetail() {
                 </div>
 
                 {/* ── RIGHT — Start Card (sticky) ── */}
-                <div style={{ flex: '0 0 320px', minWidth: 280, position: 'sticky', top: 88 }}>
+                <div className="quiz-detail-sidebar" style={{ flex: '0 0 320px', minWidth: 280, position: 'sticky', top: 88 }}>
                     <Card padding="lg" shadow="md">
 
                         {/* Status section */}

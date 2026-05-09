@@ -77,12 +77,16 @@ export default function StudentLayout({ children }) {
 
             {/* Main Content */}
             <main id="main-content" tabIndex={-1} className="pt-16 outline-none">
-                <div className="max-w-5xl mx-auto p-6">
-                    <div className="mb-6 flex items-center justify-between">
-                        <h1 className="text-2xl sm:text-3xl font-extrabold text-[var(--color-text-primary)]">
-                            Hello, {user?.fullName?.split(' ')[0] || 'Student'}! 👋
-                        </h1>
-                    </div>
+                <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
+                    {/* Welcome banner only on the dashboard — every other page has its
+                        own page-level h1, so showing this would create a double header. */}
+                    {location.pathname === '/student/dashboard' && (
+                        <div className="mb-6 flex items-center justify-between">
+                            <h1 className="text-2xl sm:text-3xl font-extrabold text-[var(--color-text-primary)]">
+                                Hello, {user?.fullName?.split(' ')[0] || 'Student'}! 👋
+                            </h1>
+                        </div>
+                    )}
                     <motion.div
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}

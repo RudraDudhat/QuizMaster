@@ -176,7 +176,8 @@ export default function AttemptResult() {
                 </div>
 
                 {/* ── Stats Grid ── */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12 }}>
+                {/* Auto-fit with a min lets the grid collapse to 2 cols on phones, 3 on tablets+. */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12 }}>
                     {stats.map((s, i) => (
                         <div key={i} style={{ animation: `fadeUp 0.4s ease ${i * 70}ms both`, background: 'var(--color-bg-card)', borderRadius: 16, border: '3px solid var(--color-border)', boxShadow: '4px 4px 0 var(--color-border)', padding: '16px 14px' }}>
                             <div style={{ width: 36, height: 36, borderRadius: 10, background: s.iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: s.iconColor, marginBottom: 10 }}>

@@ -42,7 +42,12 @@ function ShimmerRow() {
 /* ═══════════════════════════════════════════════ */
 export default function NotificationBell() {
     const [open, setOpen] = useState(false);
-    const [isMobile, setIsMobile] = useState(false);
+    // Seed the initial value lazily so we don't call setState synchronously
+    // inside the effect below (the modern react-hooks rule flags that).
+    const [isMobile, setIsMobile] = useState(() =>
+        typeof window !== 'undefined' &&
+        window.matchMedia?.('(max-width: 639px)').matches
+    );
     const dropdownRef = useRef(null);
     const navigate = useNavigate();
     const user = useAuthStore((s) => s.user);
@@ -63,7 +68,6 @@ export default function NotificationBell() {
     useEffect(() => {
         const mq = window.matchMedia('(max-width: 639px)');
         const onChange = (e) => setIsMobile(e.matches);
-        setIsMobile(mq.matches);
         mq.addEventListener('change', onChange);
         return () => mq.removeEventListener('change', onChange);
     }, []);

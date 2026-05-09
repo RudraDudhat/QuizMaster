@@ -32,6 +32,7 @@ const iconBgs = {
     rose: 'bg-[var(--color-danger-soft)] text-[var(--color-danger)]',
 };
 
+// eslint-disable-next-line no-unused-vars -- `Icon` is the destructured rename used as <Icon /> in JSX
 function StatCard({ icon: Icon, label, value, trend, color = 'indigo', toneClass = '' }) {
     return (
         <Card padding="md" className={`flex items-start gap-4 ${toneClass}`}>

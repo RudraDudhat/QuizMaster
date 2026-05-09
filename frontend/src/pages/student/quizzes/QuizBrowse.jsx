@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Search, BookOpen, Filter } from 'lucide-react';
@@ -65,11 +65,11 @@ function SkeletonCard() {
 // ─── Quiz Card ────────────────────────────────────────────
 function QuizCard({ quiz }) {
     const navigate = useNavigate();
-    // Date.now() is impure; cache time-relative values once per mount.
-    const hoursLeft = useMemo(() => {
-        if (!quiz.expiresAt) return null;
-        return (new Date(quiz.expiresAt) - Date.now()) / 3_600_000;
-    }, [quiz.expiresAt]);
+    // Date.now() is impure during render; cache once via a lazy state initialiser.
+    const [nowMs] = useState(() => Date.now());
+    const hoursLeft = quiz.expiresAt
+        ? (new Date(quiz.expiresAt) - nowMs) / 3_600_000
+        : null;
     const canStart  = !['MAX_ATTEMPTS_REACHED', 'EXPIRED', 'UPCOMING'].includes(quiz.quizStatus);
     const headerGradient =
         quiz.difficulty === 'EASY'

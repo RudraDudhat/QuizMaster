@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { BookOpen, CheckCircle, TrendingUp, Award, ChevronRight } from 'lucide-react';
@@ -109,9 +109,9 @@ export default function StudentDashboard() {
     const streak = dashboard?.currentStreak ?? 0;
     const isOnFire = streak >= 7;
 
-    // Capture "now" once per data refresh — Date.now() in the upcoming-quizzes
-    // map below is otherwise an impure call during render.
-    const nowMs = useMemo(() => Date.now(), [dashboard]);
+    // Capture "now" once per mount via a lazy state initialiser — Date.now()
+    // in render (or in useMemo) violates the React purity rule.
+    const [nowMs] = useState(() => Date.now());
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>

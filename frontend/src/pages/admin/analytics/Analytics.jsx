@@ -68,6 +68,7 @@ function PassRateBar({ value }) {
 }
 
 // ─── Stat card ───────────────────────────────────────────
+// eslint-disable-next-line no-unused-vars -- `Icon` is the destructured rename used as <Icon /> in JSX
 function StatCard({ icon: Icon, label, value, iconBg, iconColor, loading, toneClass = '' }) {
     if (loading) {
         return (
@@ -500,6 +501,7 @@ export default function Analytics() {
                                 {[
                                     { label: 'Highest Score', val: quizAnalytics?.highestScore, Icon: TrendingUp,   bg: 'var(--color-success-soft)', color: successColor },
                                     { label: 'Lowest Score',  val: quizAnalytics?.lowestScore,  Icon: TrendingDown, bg: 'var(--color-danger-soft)', color: dangerColor  },
+                                    // eslint-disable-next-line no-unused-vars -- `Icon` is destructured-renamed; used as <Icon /> in JSX below
                                 ].map(({ label, val, Icon, bg, color }) => (
                                     <Card key={label} padding="md" shadow="sm" className={label === 'Highest Score' ? 'bg-[var(--color-block-green)]' : 'bg-[var(--color-block-red)]'}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>

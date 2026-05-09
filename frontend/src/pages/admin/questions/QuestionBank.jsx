@@ -2,7 +2,6 @@ import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
-import { z } from 'zod';
 import toast from 'react-hot-toast';
 import {
     Search, Plus, MoreVertical, Edit3, Trash2, Eye, Upload,
@@ -229,7 +228,7 @@ export default function QuestionBank() {
                     </div>
                     <p className="text-sm text-[var(--color-text-secondary)] mt-0.5">{totalElements} questions total</p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                     <Button variant="outline" icon={<Upload size={16} />}
                         onClick={() => setModalState({ mode: 'import', question: null })}>
                         Bulk Import CSV
@@ -964,7 +963,7 @@ function QuestionFormModal({ modalState, closeModal, createMut, updateMut, tags,
                         )}
 
                         {/* MATCH_THE_FOLLOWING */}
-                        {questionType === 'MATCH_THE_FOLLOWING' && <MatchPairsSection control={control} register={register} watch={watch} setValue={setValue} />}
+                        {questionType === 'MATCH_THE_FOLLOWING' && <MatchPairsSection control={control} register={register} />}
                     </div>
                     </fieldset>
                 </form>
@@ -974,7 +973,7 @@ function QuestionFormModal({ modalState, closeModal, createMut, updateMut, tags,
 }
 
 /* ─── Match Pairs Sub-component ─── */
-function MatchPairsSection({ control, register, watch, setValue }) {
+function MatchPairsSection({ control, register }) {
     const { fields, append, remove } = useFieldArray({ control, name: 'matchPairs' });
 
     useEffect(() => {
@@ -1163,6 +1162,11 @@ function ImportModal({ modalState, closeModal, importMut }) {
     const fileInputRef = useRef(null);
 
     useEffect(() => {
+        // Reset transient form state whenever the modal closes. The new
+        // react-hooks/set-state-in-effect rule flags this, but the alternative
+        // (lifting reset into the parent's close handler) is more invasive
+        // for a modal owned by a sibling component.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         if (!isOpen) { setFile(null); setImportResult(null); }
     }, [isOpen]);
 
