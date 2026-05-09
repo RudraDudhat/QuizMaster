@@ -40,26 +40,51 @@ function hashName(name) {
     return Math.abs(hash) % bgColors.length;
 }
 
-export default function Avatar({ src, name, size = 'md', online = false }) {
+/**
+ * Avatar component.
+ *
+ * `decorative=true` (default) marks the avatar as aria-hidden so screen
+ * readers don't announce initials when the user's name is already
+ * rendered next to it. Set `decorative=false` for standalone avatars
+ * with no nearby name text.
+ */
+export default function Avatar({
+    src,
+    name,
+    size = 'md',
+    online = false,
+    decorative = true,
+}) {
     const initials = getInitials(name);
     const bg = bgColors[hashName(name)];
+    const ariaHidden = decorative ? 'true' : undefined;
+    const role = decorative ? undefined : 'img';
+    const ariaLabel = decorative ? undefined : name || 'Avatar';
 
     return (
-        <div className={`relative inline-flex items-center justify-center rounded-full flex-shrink-0 ${sizeClasses[size]}`}>
+        <div
+            className={`relative inline-flex items-center justify-center rounded-full flex-shrink-0 ${sizeClasses[size]}`}
+            role={role}
+            aria-label={ariaLabel}
+            aria-hidden={ariaHidden}
+        >
             {src ? (
                 <img
                     src={src}
-                    alt={name || 'Avatar'}
+                    alt={decorative ? '' : name || 'Avatar'}
                     className={`rounded-full object-cover ${sizeClasses[size]}`}
                 />
             ) : (
-                <span className={`flex items-center justify-center rounded-full text-[var(--color-text-inverse)] font-semibold ${sizeClasses[size]} ${bg}`}>
+                <span
+                    className={`flex items-center justify-center rounded-full text-[var(--color-text-inverse)] font-semibold ${sizeClasses[size]} ${bg}`}
+                >
                     {initials}
                 </span>
             )}
             {online && (
                 <span
                     className={`absolute bottom-0 right-0 rounded-full bg-[var(--color-success)] border-[var(--color-bg-card)] ${onlineDotSize[size]}`}
+                    aria-label={decorative ? undefined : 'Online'}
                 />
             )}
         </div>

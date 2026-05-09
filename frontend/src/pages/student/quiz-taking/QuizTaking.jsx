@@ -4,13 +4,14 @@ import toast from 'react-hot-toast';
 import {
     Clock, Grid3X3, Send, ChevronLeft, ChevronRight,
     Lightbulb, X, AlertTriangle, CheckCircle,
-    Save, GripVertical,
+    Save,
 } from 'lucide-react';
 import { saveAnswer, submitAttempt, logAuditEvent } from '../../../api/attempt.api';
 import { truncateText } from '../../../utils/formatters';
 import Modal from '../../../components/common/Modal';
 import Button from '../../../components/common/Button';
 import Spinner from '../../../components/common/Spinner';
+import QuestionRenderer from '../../../components/quiz-taking/QuestionRenderer';
 
 // ─── Helpers ──────────────────────────────────────────────
 function formatTimeLeft(secs) {
@@ -46,6 +47,9 @@ function getDifficultyColor(d) {
 }
 
 // ─── Styles ───────────────────────────────────────────────
+// Question-type rendering (option buttons, drag/drop, etc.) lives in
+// components/quiz-taking/QuestionRenderer.jsx — only top-bar and the
+// navigator-grid styles remain here.
 const css = {
     topBar: {
         position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
@@ -53,36 +57,6 @@ const css = {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '0 20px', gap: 12,
     },
-    optionBtn: (selected) => ({
-        width: '100%', display: 'flex', alignItems: 'flex-start', gap: 14,
-        padding: '14px 18px', borderRadius: 14, cursor: 'pointer',
-        border: '2px solid var(--color-border)',
-        background: selected ? 'var(--color-primary)' : 'var(--color-bg-card)',
-        color: selected ? 'var(--color-text-inverse)' : 'var(--color-text-primary)',
-        boxShadow: selected ? '3px 3px 0 var(--color-border)' : '2px 2px 0 var(--color-border)',
-        textAlign: 'left', transition: 'all 0.15s', outline: 'none',
-        marginBottom: 10,
-    }),
-    radioCircle: (selected) => ({
-        width: 20, height: 20, borderRadius: '50%', flexShrink: 0, marginTop: 1,
-        border: selected ? '6px solid var(--color-bg-card)' : '2px solid var(--color-border)',
-        background: 'var(--color-bg-card)', transition: 'all 0.15s',
-    }),
-    checkBox: (selected) => ({
-        width: 20, height: 20, borderRadius: 5, flexShrink: 0, marginTop: 1,
-        border: '2px solid var(--color-border)',
-        background: selected ? 'var(--color-primary)' : 'var(--color-bg-card)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        transition: 'all 0.15s', color: 'var(--color-text-inverse)', fontSize: 12, fontWeight: 700,
-    }),
-    tfBtn: (selected) => ({
-        flex: 1, padding: '18px 24px', borderRadius: 12, cursor: 'pointer',
-        border: '2px solid var(--color-border)',
-        background: selected ? 'var(--color-primary)' : 'var(--color-bg-card)',
-        color: selected ? 'var(--color-text-inverse)' : 'var(--color-text-primary)',
-        fontSize: 17, fontWeight: 700, transition: 'all 0.18s', textAlign: 'center',
-        boxShadow: selected ? '3px 3px 0 var(--color-border)' : '2px 2px 0 var(--color-border)',
-    }),
     navBtn: (state) => {
         const colors = {
             current:         { bg: 'var(--color-primary)', color: 'var(--color-text-inverse)', border: 'var(--color-primary)' },
@@ -99,254 +73,11 @@ const css = {
             transition: 'all 0.15s',
         };
     },
-    draggableItem: (isDragging) => ({
-        display: 'flex', alignItems: 'center', gap: 12,
-        padding: '12px 16px', borderRadius: 12, marginBottom: 8,
-        border: '2px solid var(--color-border)', background: isDragging ? 'var(--color-primary-light)' : 'var(--color-bg-card)',
-        opacity: isDragging ? 0.7 : 1, cursor: 'grab',
-        transition: 'all 0.15s',
-    }),
 };
 
 // ─── MCQ Single ───────────────────────────────────────────
-// BUG FIX: use opt.uuid instead of opt.id; selectedOptionUuids not selectedOptionIds
-function MCQSingle({ question, ans, setAns }) {
-    const opts = question.options ?? [];
-    const sel  = ans?.selectedOptionUuids ?? [];
-    return (
-        <div>
-            {opts.map(opt => {
-                const selected = sel.includes(opt.uuid);
-                return (
-                    <button key={opt.uuid} style={css.optionBtn(selected)}
-                        onClick={() => setAns(cur => ({ ...cur, selectedOptionUuids: [opt.uuid] }))}>
-                        <div style={css.radioCircle(selected)} />
-                        <div style={{ flex: 1 }}>
-                            <span style={{ fontSize: 15, lineHeight: 1.5, color: selected ? 'var(--color-text-inverse)' : 'var(--color-text-primary)' }}>
-                                {opt.optionText}
-                            </span>
-                            {opt.mediaUrl && <img src={opt.mediaUrl} alt="" style={{ marginTop: 8, maxWidth: 240, borderRadius: 8 }} />}
-                        </div>
-                    </button>
-                );
-            })}
-        </div>
-    );
-}
-
-// ─── MCQ Multi ────────────────────────────────────────────
-function MCQMulti({ question, ans, setAns }) {
-    const opts = question.options ?? [];
-    const sel  = ans?.selectedOptionUuids ?? [];
-    const toggle = (uuid) => {
-        const newSel = sel.includes(uuid) ? sel.filter(x => x !== uuid) : [...sel, uuid];
-        setAns(cur => ({ ...cur, selectedOptionUuids: newSel }));
-    };
-    return (
-        <div>
-            <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', marginBottom: 12, fontStyle: 'italic' }}>
-                Select all that apply
-            </p>
-            {opts.map(opt => {
-                const selected = sel.includes(opt.uuid);
-                return (
-                    <button key={opt.uuid} style={css.optionBtn(selected)} onClick={() => toggle(opt.uuid)}>
-                        <div style={css.checkBox(selected)}>{selected && '✓'}</div>
-                        <div style={{ flex: 1 }}>
-                            <span style={{ fontSize: 15, lineHeight: 1.5, color: selected ? 'var(--color-text-inverse)' : 'var(--color-text-primary)' }}>
-                                {opt.optionText}
-                            </span>
-                            {opt.mediaUrl && <img src={opt.mediaUrl} alt="" style={{ marginTop: 8, maxWidth: 240, borderRadius: 8 }} />}
-                        </div>
-                    </button>
-                );
-            })}
-        </div>
-    );
-}
-
-// ─── True / False ─────────────────────────────────────────
-function TrueFalse({ question, ans, setAns }) {
-    const opts     = question.options ?? [];
-    const trueOpt  = opts.find(o => String(o.optionText).toLowerCase() === 'true')  || opts[0];
-    const falseOpt = opts.find(o => String(o.optionText).toLowerCase() === 'false') || opts[1];
-    const val      = ans?.booleanAnswer;
-    const selectTF = (bool, opt) => {
-        setAns(cur => ({
-            ...cur,
-            booleanAnswer: bool,
-            selectedOptionUuids: opt?.uuid ? [opt.uuid] : [],
-        }));
-    };
-    return (
-        <div style={{ display: 'flex', gap: 16, marginTop: 8 }}>
-            <button style={css.tfBtn(val === true)}  onClick={() => selectTF(true,  trueOpt)}>✓ True</button>
-            <button style={css.tfBtn(val === false)} onClick={() => selectTF(false, falseOpt)}>✗ False</button>
-        </div>
-    );
-}
-
-// ─── Text Answer ──────────────────────────────────────────
-function TextAnswer({ ans, setAns, rows = 3, essay = false }) {
-    return (
-        <div>
-            <textarea
-                rows={rows}
-                value={ans?.textAnswer ?? ''}
-                onChange={e => setAns(cur => ({ ...cur, textAnswer: e.target.value }))}
-                placeholder={essay ? 'Write your essay answer here...' : 'Type your answer here...'}
-                style={{
-                    width: '100%', padding: '12px 14px', border: '2px solid var(--color-border)',
-                    borderRadius: 12, fontSize: 15, fontFamily: 'inherit', resize: 'vertical',
-                    outline: 'none', transition: 'border-color 0.15s', lineHeight: 1.6,
-                    background: 'var(--color-bg-card)',
-                }}
-                onFocus={e => e.target.style.borderColor = 'var(--color-primary)'}
-                onBlur={e  => e.target.style.borderColor = 'var(--color-border)'}
-            />
-            {essay && (
-                <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', marginTop: 8, fontStyle: 'italic' }}>
-                    📝 Essay answers are manually graded by your instructor.
-                </p>
-            )}
-        </div>
-    );
-}
-
-// ─── Ordering ─────────────────────────────────────────────
-function OrderingQuestion({ question, ans, setAns }) {
-    const [items, setItems] = useState(() => {
-        const opts = [...(question.options ?? [])].sort((a, b) => (a.optionOrder ?? 0) - (b.optionOrder ?? 0));
-        if (ans?.orderedOptionUuids?.length) {
-            const idxMap = Object.fromEntries(ans.orderedOptionUuids.map((uuid, i) => [uuid, i]));
-            return [...opts].sort((a, b) => (idxMap[a.uuid] ?? 999) - (idxMap[b.uuid] ?? 999));
-        }
-        return opts;
-    });
-    const [dragging, setDragging] = useState(null);
-
-    const handleDragStart = (i) => setDragging(i);
-    const handleDragOver  = (e, i) => {
-        e.preventDefault();
-        if (dragging === null || dragging === i) return;
-        const newItems = [...items];
-        const [moved] = newItems.splice(dragging, 1);
-        newItems.splice(i, 0, moved);
-        setDragging(i);
-        setItems(newItems);
-        setAns(cur => ({ ...cur, orderedOptionUuids: newItems.map(x => x.uuid) }));
-    };
-    const handleDragEnd = () => setDragging(null);
-
-    return (
-        <div>
-            <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', marginBottom: 12, fontStyle: 'italic' }}>
-                Drag items to arrange in the correct order
-            </p>
-            {items.map((opt, i) => (
-                <div key={opt.uuid}
-                    draggable
-                    onDragStart={() => handleDragStart(i)}
-                    onDragOver={e => handleDragOver(e, i)}
-                    onDragEnd={handleDragEnd}
-                    style={css.draggableItem(dragging === i)}
-                >
-                    <GripVertical size={16} style={{ color: 'var(--color-text-muted)', flexShrink: 0 }} />
-                    <div style={{ width: 26, height: 26, borderRadius: '50%', background: 'var(--color-primary-light)', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 12, flexShrink: 0 }}>
-                        {i + 1}
-                    </div>
-                    <span style={{ flex: 1, fontSize: 15 }}>{opt.optionText}</span>
-                </div>
-            ))}
-        </div>
-    );
-}
-
-// ─── Match the Following ──────────────────────────────────
-function MatchQuestion({ question, ans, setAns }) {
-    const opts       = question.options ?? [];
-    const leftItems  = opts.filter(o => o.matchPairKey);
-    const rightItems = opts.filter(o => o.matchPairVal);
-    const pairs      = ans?.matchPairs ?? {};
-
-    // fallback: if no matchPairKey, split options in half
-    const lefts  = leftItems.length  ? leftItems  : opts.slice(0, Math.ceil(opts.length / 2));
-    const rights = rightItems.length ? rightItems : opts.slice(Math.ceil(opts.length / 2));
-
-    const rightOptions = [
-        { value: '', label: '— Select match —' },
-        ...rights.map(o => ({ value: String(o.uuid), label: o.matchPairVal || o.optionText })),
-    ];
-
-    const colorsArr = ['var(--color-primary)', 'var(--color-success)', 'var(--color-warning)', 'var(--color-danger)', 'var(--color-info)', 'var(--color-accent-yellow)'];
-
-    return (
-        <div>
-            <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', marginBottom: 16, fontStyle: 'italic' }}>
-                Match each item on the left with the correct answer
-            </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {lefts.map((left, i) => {
-                    const c = colorsArr[i % colorsArr.length];
-                    return (
-                        <div key={left.uuid} style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-                            <div style={{ flex: '1 1 200px', display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', background: 'var(--color-bg-muted)', borderRadius: 10, border: '2px solid var(--color-border-soft)' }}>
-                                <div style={{ width: 10, height: 10, borderRadius: '50%', background: c, flexShrink: 0 }} />
-                                <span style={{ fontSize: 14, fontWeight: 500 }}>{left.matchPairKey || left.optionText}</span>
-                            </div>
-                            <div style={{ color: 'var(--color-text-muted)', fontWeight: 700, fontSize: 18 }}>→</div>
-                            <div style={{ flex: '1 1 200px', position: 'relative' }}>
-                                <select
-                                    value={String(pairs[left.uuid] ?? '')}
-                                    onChange={e => {
-                                        const val = e.target.value || undefined;
-                                        const newPairs = { ...pairs };
-                                        if (val) newPairs[left.uuid] = val;
-                                        else delete newPairs[left.uuid];
-                                        setAns(cur => ({ ...cur, matchPairs: newPairs }));
-                                    }}
-                                    style={{ width: '100%', height: 44, borderRadius: 10, border: `2px solid ${pairs[left.uuid] ? c : 'var(--color-border-soft)'}`, padding: '0 36px 0 12px', fontSize: 14, outline: 'none', background: 'var(--color-bg-card)', appearance: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
-                                >
-                                    {rightOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                                </select>
-                                <span style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--color-text-muted)' }}>▼</span>
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
-        </div>
-    );
-}
-
-// ─── Answer section dispatcher ────────────────────────────
-function renderAnswerSection(question, ans, setAns) {
-    if (!question) return null;
-    const type = String(question.questionType ?? '');
-    switch (type) {
-        case 'MCQ_SINGLE':          return <MCQSingle question={question} ans={ans} setAns={setAns} />;
-        case 'MCQ_MULTI':           return <MCQMulti  question={question} ans={ans} setAns={setAns} />;
-        case 'TRUE_FALSE':          return <TrueFalse question={question} ans={ans} setAns={setAns} />;
-        case 'SHORT_ANSWER':
-        case 'FILL_IN_THE_BLANK':   return <TextAnswer ans={ans} setAns={setAns} rows={3} />;
-        case 'ESSAY':               return <TextAnswer ans={ans} setAns={setAns} rows={8} essay />;
-        case 'ORDERING':            return <OrderingQuestion question={question} ans={ans} setAns={setAns} />;
-        case 'MATCH_THE_FOLLOWING': return <MatchQuestion question={question} ans={ans} setAns={setAns} />;
-        case 'CODE_SNIPPET':
-            return <MCQSingle question={question} ans={ans} setAns={setAns} />;
-        case 'IMAGE_BASED':
-            return (
-                <div>
-                    {question.mediaUrl && (
-                        <img src={question.mediaUrl} alt="Question" style={{ maxWidth: '100%', borderRadius: 12, marginBottom: 16, border: '1px solid var(--color-border-soft)' }} />
-                    )}
-                    <MCQSingle question={question} ans={ans} setAns={setAns} />
-                </div>
-            );
-        default:
-            return <TextAnswer ans={ans} setAns={setAns} rows={3} />;
-    }
-}
+// (Question-type renderers and the dispatcher live in
+//  components/quiz-taking/QuestionRenderer.jsx — imported above.)
 
 // ════════════════════════════════════════════════════════
 // MAIN COMPONENT
@@ -778,7 +509,11 @@ export default function QuizTaking() {
 
                             {/* Answer section */}
                             <div style={{ background: 'var(--color-bg-card)', borderRadius: 14, padding: '20px 24px', border: '1px solid var(--color-border-soft)', marginBottom: 24, boxShadow: 'var(--shadow-soft)' }}>
-                                {renderAnswerSection(currentQuestion, currentAns, setCurrentAns)}
+                                <QuestionRenderer
+                                    question={currentQuestion}
+                                    ans={currentAns}
+                                    setAns={setCurrentAns}
+                                />
                             </div>
 
                             {/* Navigation row */}

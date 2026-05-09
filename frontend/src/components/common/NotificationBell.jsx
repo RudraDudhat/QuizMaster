@@ -79,6 +79,19 @@ export default function NotificationBell() {
         return () => document.removeEventListener('mousedown', handleClick);
     }, []);
 
+    /* ── ESC closes the panel ── */
+    useEffect(() => {
+        if (!open) return;
+        const onKey = (e) => {
+            if (e.key === 'Escape') {
+                setOpen(false);
+                document.getElementById('notification-bell-btn')?.focus();
+            }
+        };
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, [open]);
+
     const toggleOpen = () => {
         setOpen((prev) => {
             if (!prev) refresh();
@@ -109,12 +122,19 @@ export default function NotificationBell() {
                     ...styles.bellBtn,
                     background: open ? 'var(--color-primary-light)' : 'transparent',
                 }}
-                aria-label="Notifications"
+                aria-label={
+                    unreadCount > 0
+                        ? `Notifications, ${unreadCount} unread`
+                        : 'Notifications'
+                }
+                aria-haspopup="dialog"
+                aria-expanded={open}
+                aria-controls={open ? 'notification-dropdown' : undefined}
                 id="notification-bell-btn"
             >
-                <Bell size={20} />
+                <Bell size={20} aria-hidden="true" />
                 {unreadCount > 0 && (
-                    <span key={unreadCount} style={styles.badge}>
+                    <span key={unreadCount} style={styles.badge} aria-hidden="true">
                         {unreadCount > 99 ? '99+' : unreadCount}
                     </span>
                 )}
@@ -127,6 +147,8 @@ export default function NotificationBell() {
                         ...(isMobile ? styles.panelMobile : styles.panelDesktop),
                     }}
                     id="notification-dropdown"
+                    role="dialog"
+                    aria-label="Notifications"
                 >
                     {/* Header */}
                     <div style={styles.header}>

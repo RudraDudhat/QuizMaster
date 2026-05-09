@@ -3,8 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import toast from 'react-hot-toast';
+import { updateQuizSchema, quizFormDefaults } from '../../../schemas/quiz';
 import {
     ArrowLeft, Plus, X, Lock, Clock, Shuffle, Eye,
     Calendar, Tag, BookOpen, Zap, Save, Send,
@@ -23,32 +23,7 @@ import Select from '../../../components/common/Select';
 import Textarea from '../../../components/common/Textarea';
 import Card from '../../../components/ui/Card';
 
-/* ─── Zod schema (same as Create) ─── */
-const quizSchema = z.object({
-    title: z.string().min(3, 'Title must be at least 3 characters').max(255),
-    description: z.string().optional().default(''),
-    difficulty: z.enum(['EASY', 'MEDIUM', 'HARD'], { required_error: 'Select a difficulty' }),
-    quizType: z.enum(['PRACTICE', 'EXAM', 'SURVEY'], { required_error: 'Select a quiz type' }),
-    passMarks: z.coerce.number().min(0).optional().or(z.literal('')),
-    timeLimitSeconds: z.coerce.number().min(60, 'Must be at least 60 seconds').optional().or(z.literal('')),
-    categoryUuid: z.string().optional().default(''),
-    maxAttempts: z.coerce.number().min(0).optional().or(z.literal('')),
-    cooldownHours: z.coerce.number().min(0).optional().or(z.literal('')),
-    questionsToServe: z.coerce.number().min(1, 'Questions to serve must be at least 1').optional().or(z.literal('')),
-    shuffleQuestions: z.boolean().default(false),
-    shuffleOptions: z.boolean().default(false),
-    showCorrectAnswers: z.boolean().default(false),
-    showLeaderboard: z.boolean().default(false),
-    accessCode: z.string().max(20).optional().default(''),
-    startsAt: z.string().optional().default(''),
-    expiresAt: z.string().optional().default(''),
-}).refine(
-    (d) => {
-        if (d.startsAt && d.expiresAt) return new Date(d.expiresAt) > new Date(d.startsAt);
-        return true;
-    },
-    { message: 'Expiry must be after the start date', path: ['expiresAt'] }
-);
+/* Zod schema lives in src/schemas/quiz.js (shared with CreateQuiz) */
 
 /* ─── Toggle switch ─── */
 function Toggle({ checked, onChange, label, description }) {
@@ -142,14 +117,8 @@ export default function EditQuiz() {
         register, handleSubmit, watch, setValue, reset,
         formState: { errors },
     } = useForm({
-        resolver: zodResolver(quizSchema),
-        defaultValues: {
-            title: '', description: '', difficulty: '', quizType: '',
-            passMarks: '', timeLimitSeconds: '', categoryUuid: '',
-            maxAttempts: '', cooldownHours: '',
-            shuffleQuestions: false, showCorrectAnswers: false,
-            accessCode: '', startsAt: '', expiresAt: '',
-        },
+        resolver: zodResolver(updateQuizSchema),
+        defaultValues: quizFormDefaults,
     });
 
     const watchAll = watch();
