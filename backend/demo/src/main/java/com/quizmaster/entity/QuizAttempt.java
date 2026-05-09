@@ -22,6 +22,10 @@ public class QuizAttempt {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Version
+    @Column(nullable = false)
+    private Long version;
+
     @Column(nullable = false, updatable = false)
     private UUID uuid;
 
@@ -133,5 +137,7 @@ public class QuizAttempt {
             isFlaggedSuspicious = false;
         if (questionOrder == null)
             questionOrder = "";
+        if (version == null)
+            version = 0L;
     }
 }

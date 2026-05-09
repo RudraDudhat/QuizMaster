@@ -14,6 +14,16 @@ const useAuthStore = create((set, get) => ({
         set({ user, accessToken, isAuthenticated: true });
     },
 
+    // Used by the axios refresh interceptor — keeps store and storage in sync
+    // without overwriting the loaded user object.
+    updateTokens: (accessToken, refreshToken) => {
+        localStorage.setItem('accessToken', accessToken);
+        if (refreshToken) {
+            localStorage.setItem('refreshToken', refreshToken);
+        }
+        set({ accessToken });
+    },
+
     clearAuth: () => {
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');

@@ -3,8 +3,10 @@ package com.quizmaster.scheduler;
 import com.quizmaster.entity.QuizAttempt;
 import com.quizmaster.repository.QuizAttemptRepository;
 import com.quizmaster.service.AttemptService;
+import jakarta.persistence.OptimisticLockException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -40,6 +42,8 @@ public class AttemptAutoSubmitScheduler {
                         attempt.getStudent().getEmail(),
                         attempt.getMarksObtained(),
                         attempt.getTotalMarksPossible());
+            } catch (OptimisticLockingFailureException | OptimisticLockException e) {
+                log.info("Skipping attempt {} — concurrently submitted by user", attempt.getId());
             } catch (Exception e) {
                 log.error("Failed to auto-submit attempt {}: {}", attempt.getId(), e.getMessage(), e);
             }

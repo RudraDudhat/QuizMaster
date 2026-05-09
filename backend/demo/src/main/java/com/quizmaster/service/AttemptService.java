@@ -214,7 +214,8 @@ public class AttemptService {
         attempt.setStatus(AttemptStatus.SUBMITTED);
         attempt.setSubmittedAt(Instant.now());
         calculateRank(attempt);
-        attemptRepository.save(attempt);
+        attemptRepository.saveAndFlush(attempt);
+        attemptRepository.recomputeRanksForQuiz(attempt.getQuiz().getId());
 
         return attemptMapper.toSubmitResponse(attempt);
     }
@@ -231,7 +232,8 @@ public class AttemptService {
         attempt.setStatus(AttemptStatus.AUTO_SUBMITTED);
         attempt.setSubmittedAt(Instant.now());
         calculateRank(attempt);
-        attemptRepository.save(attempt);
+        attemptRepository.saveAndFlush(attempt);
+        attemptRepository.recomputeRanksForQuiz(attempt.getQuiz().getId());
 
         notificationService.sendAutoSubmitNotification(
                 attempt.getStudent(),
@@ -356,7 +358,6 @@ public class AttemptService {
             if (Boolean.TRUE.equals(answer.getIsSkipped())) {
                 answer.setIsCorrect(false);
                 answer.setMarksAwarded(BigDecimal.ZERO);
-                answerRepository.save(answer);
                 continue;
             }
 
@@ -383,7 +384,6 @@ public class AttemptService {
             }
 
             answer.setMarksAwarded(marks);
-            answerRepository.save(answer);
         }
 
         attempt.setPositiveMarks(totalPositive);
@@ -458,26 +458,6 @@ public class AttemptService {
                 .anyMatch(o -> studentAnswer.contains(o.getOptionText().trim().toLowerCase()));
     }
 
-    private boolean evaluateNumerical(AttemptAnswer answer, Question question) {
-        if (answer.getTextAnswer() == null || answer.getTextAnswer().isBlank())
-            return false;
-        try {
-            BigDecimal studentValue = new BigDecimal(answer.getTextAnswer().trim());
-            return question.getOptions().stream()
-                    .filter(o -> Boolean.TRUE.equals(o.getIsCorrect()))
-                    .anyMatch(o -> {
-                        try {
-                            BigDecimal correctValue = new BigDecimal(o.getOptionText().trim());
-                            return studentValue.compareTo(correctValue) == 0;
-                        } catch (NumberFormatException e) {
-                            return false;
-                        }
-                    });
-        } catch (NumberFormatException e) {
-            return false;
-        }
-    }
-
     private boolean evaluateOrdering(AttemptAnswer answer, Question question) {
         List<UUID> ids = parseJsonUuidList(answer.getOrderedOptionIds());
         if (ids == null)
@@ -499,7 +479,14 @@ public class AttemptService {
                 correctPairs.put(opt.getMatchPairKey(), opt.getMatchPairVal());
             }
         }
-        return studentPairs.size() == correctPairs.size();
+        if (studentPairs.size() != correctPairs.size())
+            return false;
+        for (Map.Entry<String, String> entry : correctPairs.entrySet()) {
+            String studentVal = studentPairs.get(entry.getKey());
+            if (studentVal == null || !studentVal.equals(entry.getValue()))
+                return false;
+        }
+        return true;
     }
 
     // ═══════════════════════════════════════════════════════
@@ -512,9 +499,22 @@ public class AttemptService {
     }
 
     private void calculateRank(QuizAttempt attempt) {
+        // Provisional rank for this attempt; full re-rank for all attempts
+        // (handles ties + bumps earlier attempts down) happens in
+        // recomputeQuizRanks() after the enclosing transaction commits.
         int betterCount = attemptRepository.countBetterAttempts(
                 attempt.getQuiz().getId(), attempt.getMarksObtained());
         attempt.setRank(betterCount + 1);
+    }
+
+    /**
+     * Recompute ranks for all submitted attempts of a quiz using a window
+     * function. Called in its own transaction after a submit/auto-submit
+     * commits, so the new attempt is included.
+     */
+    @Transactional
+    public void recomputeQuizRanks(Long quizId) {
+        attemptRepository.recomputeRanksForQuiz(quizId);
     }
 
     private void createSkippedAnswers(QuizAttempt attempt) {

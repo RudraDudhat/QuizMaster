@@ -1,4 +1,5 @@
 import axios from 'axios';
+import useAuthStore from '../store/authStore';
 
 const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
@@ -7,10 +8,11 @@ const axiosInstance = axios.create({
   },
 });
 
-// Request interceptor — attach access token
+// Request interceptor — attach access token from the auth store
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('accessToken');
+    const token =
+      useAuthStore.getState().accessToken ?? localStorage.getItem('accessToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -34,6 +36,14 @@ const processQueue = (error, token = null) => {
   failedQueue = [];
 };
 
+const handleAuthFailure = (error) => {
+  useAuthStore.getState().clearAuth();
+  if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
+    window.location.href = '/login';
+  }
+  return Promise.reject(error);
+};
+
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -43,9 +53,7 @@ axiosInstance.interceptors.response.use(
       const refreshToken = localStorage.getItem('refreshToken');
 
       if (!refreshToken) {
-        localStorage.clear();
-        window.location.href = '/login';
-        return Promise.reject(error);
+        return handleAuthFailure(error);
       }
 
       if (isRefreshing) {
@@ -68,19 +76,15 @@ axiosInstance.interceptors.response.use(
           { refreshToken }
         );
 
-        localStorage.setItem('accessToken', data.accessToken);
-        localStorage.setItem('refreshToken', data.refreshToken);
+        // Single source of truth: update the store, which mirrors to localStorage
+        useAuthStore.getState().updateTokens(data.accessToken, data.refreshToken);
 
-        axiosInstance.defaults.headers.common.Authorization = `Bearer ${data.accessToken}`;
         originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
-
         processQueue(null, data.accessToken);
         return axiosInstance(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError, null);
-        localStorage.clear();
-        window.location.href = '/login';
-        return Promise.reject(refreshError);
+        return handleAuthFailure(refreshError);
       } finally {
         isRefreshing = false;
       }

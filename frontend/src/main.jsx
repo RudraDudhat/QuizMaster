@@ -9,7 +9,13 @@ import AppRouter from './routes/AppRouter'
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 300000,
+      // Short default so newly created quizzes / updated state surface to
+      // students quickly. Pages that genuinely benefit from longer caching
+      // (categories, tags, settings) override this per-query.
+      staleTime: 30_000,
+      gcTime: 5 * 60_000,
+      refetchOnWindowFocus: false,
+      retry: 1,
     },
   },
 })
