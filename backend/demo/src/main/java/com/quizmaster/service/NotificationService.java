@@ -56,6 +56,8 @@ public class NotificationService {
 
     /**
      * Sends a notification specifically for auto-submitted quiz attempts.
+     * Only fired by the auto-submit scheduler when a deadline expires —
+     * NEVER from manual submit or grading flows.
      */
     @Transactional
     public void sendAutoSubmitNotification(User student, String quizTitle,
@@ -77,6 +79,35 @@ public class NotificationService {
                 title,
                 message,
                 "/quizzes/attempts/" + attemptUuid,
+                attemptUuid,
+                "QUIZ_ATTEMPT");
+    }
+
+    /**
+     * Notify the student that their quiz result is now ready — used after an
+     * admin manually grades essay answers and the attempt totals are
+     * recomputed.
+     */
+    @Transactional
+    public void sendResultReadyNotification(User student, String quizTitle,
+            String attemptUuid, BigDecimal marksObtained,
+            BigDecimal totalMarks, BigDecimal percentage) {
+        String title = "Result ready: " + quizTitle;
+        String message = String.format(
+                "Your instructor has finished grading your attempt for \"%s\". "
+                        + "Final score: %.2f / %.2f (%.1f%%). "
+                        + "Open your results to see the full breakdown.",
+                quizTitle,
+                marksObtained != null ? marksObtained : BigDecimal.ZERO,
+                totalMarks != null ? totalMarks : BigDecimal.ZERO,
+                percentage != null ? percentage : BigDecimal.ZERO);
+
+        sendNotification(
+                student,
+                NotificationType.QUIZ_RESULT_READY,
+                title,
+                message,
+                "/student/results/" + attemptUuid,
                 attemptUuid,
                 "QUIZ_ATTEMPT");
     }
