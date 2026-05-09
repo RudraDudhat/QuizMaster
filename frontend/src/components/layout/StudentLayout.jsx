@@ -1,4 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom';
+// eslint-disable-next-line no-unused-vars -- `motion` is used as <motion.div> in JSX
 import { motion } from 'framer-motion';
 import { Flame, Zap, LogOut, User } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
@@ -19,16 +20,28 @@ export default function StudentLayout({ children }) {
 
     return (
         <div className="min-h-screen bg-[var(--color-bg-page)]">
+            {/* Skip-link for keyboard users */}
+            <a
+                href="#main-content"
+                className="sr-only-not-focusable focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[80] focus:px-4 focus:py-2 focus:bg-[var(--color-primary)] focus:text-[var(--color-text-inverse)] focus:rounded-full focus:font-semibold focus:shadow-[3px_3px_0_var(--color-border)] focus:border-2 focus:border-[var(--color-border)]"
+            >
+                Skip to main content
+            </a>
             {/* Top Navbar */}
             <header className="fixed top-0 left-0 right-0 h-16 bg-[var(--color-bg-card)] border-b-2 border-[var(--color-border)] z-50 flex items-center justify-between px-4 lg:px-6">
-                <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/student/dashboard')}>
+                <button
+                    type="button"
+                    onClick={() => navigate('/student/dashboard')}
+                    aria-label="QuizMaster Pro — go to dashboard"
+                    className="flex items-center gap-2 rounded-full p-1 -m-1 hover:opacity-90 transition-opacity"
+                >
                     <div className="w-9 h-9 bg-[var(--color-primary)] rounded-xl border-2 border-[var(--color-border)] flex items-center justify-center shadow-[2px_2px_0_var(--color-border)]">
                         <span className="text-[var(--color-text-inverse)] text-sm font-extrabold">Q</span>
                     </div>
                     <span className="text-lg font-extrabold text-[var(--color-text-primary)] hidden sm:block">
                         QuizMaster <span className="text-[var(--color-primary)]">Pro</span>
                     </span>
-                </div>
+                </button>
 
                 <div className="flex items-center gap-3">
                     {/* XP Badge */}
@@ -63,7 +76,7 @@ export default function StudentLayout({ children }) {
             </header>
 
             {/* Main Content */}
-            <main className="pt-16">
+            <main id="main-content" tabIndex={-1} className="pt-16 outline-none">
                 <div className="max-w-5xl mx-auto p-6">
                     <div className="mb-6 flex items-center justify-between">
                         <h1 className="text-2xl sm:text-3xl font-extrabold text-[var(--color-text-primary)]">

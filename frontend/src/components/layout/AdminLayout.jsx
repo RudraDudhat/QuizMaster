@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
+// eslint-disable-next-line no-unused-vars -- `motion` is used as <motion.div> in JSX
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Menu, X, LayoutDashboard, FileText, HelpCircle,
@@ -21,7 +22,7 @@ const navItems = [
     { path: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
 ];
 
-function SidebarContent({ collapsed, user, location: loc }) {
+function SidebarContent({ collapsed, user, location: loc, onNavigate }) {
     return (
         <>
             {!collapsed && (
@@ -35,7 +36,7 @@ function SidebarContent({ collapsed, user, location: loc }) {
                     </div>
                 </div>
             )}
-            <nav className="flex-1 px-3 py-3 space-y-1">
+            <nav className="flex-1 px-3 py-3 space-y-1" aria-label="Admin navigation">
                 {navItems.map((item) => {
                     const Icon = item.icon;
                     const isActive = loc.pathname === item.path || loc.pathname.startsWith(item.path + '/');
@@ -43,13 +44,15 @@ function SidebarContent({ collapsed, user, location: loc }) {
                         <NavLink
                             key={item.path}
                             to={item.path}
+                            onClick={onNavigate}
                             className={`flex items-center gap-3 px-3 py-2.5 rounded-full text-sm font-semibold transition-all duration-150 ${isActive
                                     ? 'bg-[var(--color-primary)] text-[var(--color-text-inverse)] border-2 border-[var(--color-border)] shadow-[3px_3px_0_var(--color-border)]'
                                     : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-primary-soft)] hover:text-[var(--color-text-primary)]'
                                 } ${collapsed ? 'justify-center' : ''}`}
                             title={collapsed ? item.label : undefined}
+                            aria-current={isActive ? 'page' : undefined}
                         >
-                            <Icon size={20} className="flex-shrink-0" />
+                            <Icon size={20} className="flex-shrink-0" aria-hidden="true" />
                             {!collapsed && <span>{item.label}</span>}
                         </NavLink>
                     );
@@ -72,12 +75,29 @@ export default function AdminLayout({ children }) {
         navigate('/login');
     };
 
+    // Lock body scroll when the mobile drawer is open
+    useEffect(() => {
+        if (mobileOpen) {
+            document.body.classList.add('modal-open');
+            return () => document.body.classList.remove('modal-open');
+        }
+    }, [mobileOpen]);
+
+    const closeMobile = () => setMobileOpen(false);
+
     const currentSection = navItems.find(
         (item) => location.pathname === item.path || location.pathname.startsWith(item.path + '/')
     );
 
     return (
         <div className="min-h-screen bg-[var(--color-bg-page)]">
+            {/* Skip-link for keyboard users */}
+            <a
+                href="#main-content"
+                className="sr-only-not-focusable focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[80] focus:px-4 focus:py-2 focus:bg-[var(--color-primary)] focus:text-[var(--color-text-inverse)] focus:rounded-full focus:font-semibold focus:shadow-[3px_3px_0_var(--color-border)] focus:border-2 focus:border-[var(--color-border)]"
+            >
+                Skip to main content
+            </a>
             {/* Top Navbar */}
             <header className="fixed top-0 left-0 right-0 h-16 bg-[var(--color-bg-card)] border-b-2 border-[var(--color-border)] z-50 flex items-center justify-between px-4 lg:px-6">
                 <div className="flex items-center gap-3">
@@ -122,7 +142,7 @@ export default function AdminLayout({ children }) {
                 className={`fixed top-16 left-0 bottom-0 bg-[var(--color-bg-card)] border-r-2 border-[var(--color-border)] z-40 hidden md:flex flex-col transition-all duration-300 ease-in-out ${collapsed ? 'w-[68px]' : 'w-60'
                     }`}
             >
-                <SidebarContent collapsed={collapsed} user={user} location={location} />
+                <SidebarContent collapsed={collapsed} user={user} location={location} onNavigate={closeMobile} />
                 <div className="px-3 pt-2 pb-3 border-t-2 border-[var(--color-border)] flex flex-col gap-2">
                     <NavLink
                         to="/admin/settings"
@@ -173,7 +193,7 @@ export default function AdminLayout({ children }) {
                                     <X size={20} />
                                 </button>
                             </div>
-                            <SidebarContent collapsed={false} user={user} location={location} />
+                            <SidebarContent collapsed={false} user={user} location={location} onNavigate={closeMobile} />
                         </motion.aside>
                     </>
                 )}
@@ -181,7 +201,9 @@ export default function AdminLayout({ children }) {
 
             {/* Main Content */}
             <main
-                className={`transition-all duration-300 ease-in-out pt-16 ${collapsed ? 'md:ml-[68px]' : 'md:ml-60'
+                id="main-content"
+                tabIndex={-1}
+                className={`transition-all duration-300 ease-in-out pt-16 outline-none ${collapsed ? 'md:ml-[68px]' : 'md:ml-60'
                     }`}
             >
                 {/* Breadcrumb */}

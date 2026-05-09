@@ -1,3 +1,5 @@
+import { useId } from 'react';
+
 export default function Input({
     label,
     name,
@@ -10,29 +12,52 @@ export default function Input({
     prefixIcon,
     suffixIcon,
     hint,
+    id,
     className = '',
     ...rest
 }) {
+    const reactId = useId();
+    const inputId = id ?? name ?? reactId;
+    const errorId = `${inputId}-error`;
+    const hintId = `${inputId}-hint`;
+    const describedBy = error ? errorId : hint ? hintId : undefined;
+
     return (
         <div className="w-full">
             {label && (
-                <label htmlFor={name} className="block text-sm font-semibold text-[var(--color-text-primary)] mb-1.5">
+                <label
+                    htmlFor={inputId}
+                    className="block text-sm font-semibold text-[var(--color-text-primary)] mb-1.5"
+                >
                     {label}
-                    {required && <span className="text-[var(--color-danger)] ml-0.5">*</span>}
+                    {required && (
+                        <span
+                            className="text-[var(--color-danger)] ml-0.5"
+                            aria-hidden="true"
+                        >
+                            *
+                        </span>
+                    )}
                 </label>
             )}
             <div className="relative">
                 {prefixIcon && (
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] pointer-events-none">
+                    <span
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] pointer-events-none"
+                        aria-hidden="true"
+                    >
                         {prefixIcon}
                     </span>
                 )}
                 <input
-                    id={name}
+                    id={inputId}
                     name={name}
                     type={type}
                     placeholder={placeholder}
                     disabled={disabled}
+                    aria-invalid={error ? true : undefined}
+                    aria-describedby={describedBy}
+                    aria-required={required || undefined}
                     className={`
             w-full h-11 rounded-xl border-2 border-[var(--color-border)] bg-[var(--color-bg-card)] text-sm text-[var(--color-text-primary)]
             placeholder:text-[var(--color-text-muted)]
@@ -48,13 +73,28 @@ export default function Input({
                     {...rest}
                 />
                 {suffixIcon && (
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] pointer-events-none">
+                    <span
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] pointer-events-none"
+                        aria-hidden="true"
+                    >
                         {suffixIcon}
                     </span>
                 )}
             </div>
-                {error && <p className="mt-1.5 text-xs text-[var(--color-danger)] font-semibold">{error}</p>}
-                {!error && hint && <p className="mt-1.5 text-xs text-[var(--color-text-muted)]">{hint}</p>}
+            {error && (
+                <p
+                    id={errorId}
+                    className="mt-1.5 text-xs text-[var(--color-danger)] font-semibold"
+                    role="alert"
+                >
+                    {error}
+                </p>
+            )}
+            {!error && hint && (
+                <p id={hintId} className="mt-1.5 text-xs text-[var(--color-text-muted)]">
+                    {hint}
+                </p>
+            )}
         </div>
     );
 }

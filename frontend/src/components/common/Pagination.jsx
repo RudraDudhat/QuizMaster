@@ -22,37 +22,52 @@ export default function Pagination({ currentPage, totalPages, onPageChange, tota
     const pages = getPageNumbers(currentPage, totalPages);
 
     return (
-        <div className="flex items-center justify-between pt-4">
+        <nav
+            aria-label="Pagination"
+            className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-4"
+        >
             {totalElements != null ? (
                 <p className="text-sm text-[var(--color-text-secondary)]">
-                    Showing <span className="font-medium text-[var(--color-text-primary)]">{totalElements}</span> results
+                    Showing{' '}
+                    <span className="font-medium text-[var(--color-text-primary)]">
+                        {totalElements}
+                    </span>{' '}
+                    results
                 </p>
             ) : (
                 <div />
             )}
 
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 self-center sm:self-auto">
                 <button
                     onClick={() => onPageChange(currentPage - 1)}
                     disabled={currentPage === 0}
+                    aria-label="Previous page"
                     className="inline-flex items-center justify-center w-9 h-9 rounded-lg text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-muted)] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent transition-colors"
                 >
-                    <ChevronLeft size={16} />
+                    <ChevronLeft size={16} aria-hidden="true" />
                 </button>
 
                 {pages.map((page, idx) =>
                     page === '...' ? (
-                        <span key={`ellipsis-${idx}`} className="w-9 h-9 flex items-center justify-center text-sm text-[var(--color-text-muted)]">
+                        <span
+                            key={`ellipsis-${idx}`}
+                            className="w-9 h-9 flex items-center justify-center text-sm text-[var(--color-text-muted)]"
+                            aria-hidden="true"
+                        >
                             …
                         </span>
                     ) : (
                         <button
                             key={page}
                             onClick={() => onPageChange(page)}
-                            className={`w-9 h-9 rounded-lg text-sm font-medium transition-colors ${page === currentPage
+                            aria-label={`Page ${page + 1}`}
+                            aria-current={page === currentPage ? 'page' : undefined}
+                            className={`w-9 h-9 rounded-lg text-sm font-medium transition-colors ${
+                                page === currentPage
                                     ? 'bg-[var(--color-primary)] text-[var(--color-text-inverse)] shadow-sm'
                                     : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-muted)]'
-                                }`}
+                            }`}
                         >
                             {page + 1}
                         </button>
@@ -62,11 +77,12 @@ export default function Pagination({ currentPage, totalPages, onPageChange, tota
                 <button
                     onClick={() => onPageChange(currentPage + 1)}
                     disabled={currentPage === totalPages - 1}
+                    aria-label="Next page"
                     className="inline-flex items-center justify-center w-9 h-9 rounded-lg text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-muted)] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent transition-colors"
                 >
-                    <ChevronRight size={16} />
+                    <ChevronRight size={16} aria-hidden="true" />
                 </button>
             </div>
-        </div>
+        </nav>
     );
 }

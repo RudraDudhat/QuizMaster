@@ -39,10 +39,10 @@ export default function Button({
             type={type}
             onClick={onClick}
             disabled={isDisabled}
+            aria-busy={loading || undefined}
             className={`
         inline-flex items-center justify-center font-semibold rounded-full
         transition-all duration-150 cursor-pointer select-none
-        focus:outline-none focus:ring-2 focus:ring-[color:var(--color-primary)] focus:ring-opacity-30 focus:ring-offset-2
         ${variantClasses[variant]}
         ${sizeClasses[size]}
         ${fullWidth ? 'w-full' : ''}
@@ -54,7 +54,7 @@ export default function Button({
             {loading ? (
                 <Spinner size="sm" />
             ) : icon ? (
-                <span className="flex-shrink-0">{icon}</span>
+                <span className="flex-shrink-0" aria-hidden="true">{icon}</span>
             ) : null}
             {children}
         </button>
