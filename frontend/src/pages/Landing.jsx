@@ -216,7 +216,38 @@ export default function Landing() {
                         <SparkleIcon className="absolute -top-6 -left-6" />
                         <SparkleIcon className="absolute -bottom-6 -right-6" color="var(--color-primary)" />
                         <div className="relative bg-[var(--color-bg-card)] border-2 border-[var(--color-border)] rounded-[24px] shadow-[6px_6px_0_var(--color-border)] p-6">
-                            <div className="h-64 rounded-[18px] bg-gradient-to-br from-[var(--color-primary-grad-1)] via-[var(--color-primary-grad-2)] to-[var(--color-primary-grad-3)] border-2 border-[var(--color-border)]" />
+                            {/* Mock quiz-card preview */}
+                            <div className="rounded-[18px] bg-gradient-to-br from-[var(--color-primary-grad-1)] via-[var(--color-primary-grad-2)] to-[var(--color-primary-grad-3)] border-2 border-[var(--color-border)] p-5">
+                                <div className="flex items-center justify-between mb-4">
+                                    <span className="text-[11px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full bg-[var(--color-bg-card)] border-2 border-[var(--color-border)]">
+                                        Question 3 of 10
+                                    </span>
+                                    <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full bg-[var(--color-warning)] text-[var(--color-text-primary)] border-2 border-[var(--color-border)]">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-text-primary)]" />
+                                        00:42
+                                    </span>
+                                </div>
+                                <p className="text-[15px] font-bold text-[var(--color-text-primary)] mb-4 leading-snug">
+                                    Which data structure uses LIFO order?
+                                </p>
+                                <div className="space-y-2">
+                                    {[
+                                        { letter: 'A', label: 'Queue', selected: false },
+                                        { letter: 'B', label: 'Stack', selected: true },
+                                        { letter: 'C', label: 'Linked List', selected: false },
+                                    ].map(({ letter, label, selected }) => (
+                                        <div
+                                            key={letter}
+                                            className={`flex items-center gap-3 px-3 py-2 rounded-lg border-2 border-[var(--color-border)] ${selected ? 'bg-[var(--color-primary)] text-[var(--color-text-inverse)] shadow-[2px_2px_0_var(--color-border)]' : 'bg-[var(--color-bg-card)] text-[var(--color-text-primary)]'}`}
+                                        >
+                                            <span className={`w-6 h-6 rounded-md flex items-center justify-center text-[11px] font-extrabold border-2 border-[var(--color-border)] ${selected ? 'bg-[var(--color-bg-card)] text-[var(--color-text-primary)]' : 'bg-[var(--color-bg-subtle)]'}`}>
+                                                {letter}
+                                            </span>
+                                            <span className="text-sm font-semibold">{label}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
                             <span className="absolute -left-6 top-16 rotate-[-12deg] text-xs font-bold text-[var(--color-text-primary)] bg-[var(--color-bg-card)] border-2 border-[var(--color-border)] px-2 py-1 rounded-full shadow-[2px_2px_0_var(--color-border)]">
                                 QuizMaster
                             </span>
@@ -269,7 +300,49 @@ export default function Landing() {
                     <div className="relative">
                         <SparkleIcon className="absolute -top-4 -left-4" />
                         <div className="bg-[var(--color-bg-card)] border-2 border-[var(--color-border)] rounded-[24px] shadow-[6px_6px_0_var(--color-border)] p-6">
-                            <div className="h-64 rounded-[18px] bg-gradient-to-br from-[var(--color-primary-grad-1)] to-[var(--color-primary-grad-3)] border-2 border-[var(--color-border)]" />
+                            {/* Mock dashboard preview */}
+                            <div className="rounded-[18px] bg-gradient-to-br from-[var(--color-primary-grad-1)] to-[var(--color-primary-grad-3)] border-2 border-[var(--color-border)] p-4">
+                                {/* Stat row */}
+                                <div className="grid grid-cols-3 gap-2 mb-3">
+                                    {[
+                                        { v: '128', l: 'Quizzes', bg: 'bg-[var(--color-block-mint)]' },
+                                        { v: '92%', l: 'Pass rate', bg: 'bg-[var(--color-block-cream)]' },
+                                        { v: '4.8★', l: 'Rating', bg: 'bg-[var(--color-block-blue)]' },
+                                    ].map((s) => (
+                                        <div
+                                            key={s.l}
+                                            className={`${s.bg} rounded-lg border-2 border-[var(--color-border)] px-2 py-2 text-center`}
+                                        >
+                                            <div className="text-base font-extrabold text-[var(--color-text-primary)] leading-tight">
+                                                {s.v}
+                                            </div>
+                                            <div className="text-[10px] font-semibold text-[var(--color-text-secondary)] uppercase tracking-wide">
+                                                {s.l}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                                {/* Bar chart */}
+                                <div className="bg-[var(--color-bg-card)] rounded-lg border-2 border-[var(--color-border)] p-3">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <span className="text-[11px] font-extrabold uppercase tracking-wide text-[var(--color-text-primary)]">
+                                            Score distribution
+                                        </span>
+                                        <span className="text-[10px] font-bold text-[var(--color-success)]">
+                                            ▲ 12%
+                                        </span>
+                                    </div>
+                                    <div className="flex items-end gap-1.5 h-20">
+                                        {[40, 65, 45, 80, 95, 70, 88].map((h, i) => (
+                                            <div
+                                                key={i}
+                                                className="flex-1 rounded-sm border-2 border-[var(--color-border)] bg-[var(--color-primary)]"
+                                                style={{ height: `${h}%` }}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
                             <FloatingBadge className="absolute top-4 right-4" text="Free+" />
                         </div>
                     </div>
@@ -317,7 +390,61 @@ export default function Landing() {
                     <div className="relative">
                         <SparkleIcon className="absolute -top-5 -right-5" color="var(--color-accent-yellow)" />
                         <div className="bg-[var(--color-bg-card)] border-2 border-[var(--color-border)] rounded-[24px] shadow-[6px_6px_0_var(--color-border)] p-6">
-                            <div className="h-64 rounded-[18px] bg-gradient-to-br from-[var(--color-warm-grad-1)] via-[var(--color-warm-grad-2)] to-[var(--color-warm-grad-3)] border-2 border-[var(--color-border)]" />
+                            {/* Mock quiz-builder preview */}
+                            <div className="rounded-[18px] bg-gradient-to-br from-[var(--color-warm-grad-1)] via-[var(--color-warm-grad-2)] to-[var(--color-warm-grad-3)] border-2 border-[var(--color-border)] p-4">
+                                {/* Title input row */}
+                                <div className="bg-[var(--color-bg-card)] rounded-lg border-2 border-[var(--color-border)] px-3 py-2 mb-2">
+                                    <div className="text-[10px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wide mb-1">
+                                        Quiz title
+                                    </div>
+                                    <div className="text-sm font-extrabold text-[var(--color-text-primary)]">
+                                        JavaScript Fundamentals
+                                    </div>
+                                </div>
+                                {/* Pills row */}
+                                <div className="flex flex-wrap gap-1.5 mb-2">
+                                    {[
+                                        { l: 'Medium', c: 'bg-[var(--color-warning-soft)] text-[var(--color-warning)]' },
+                                        { l: '20 questions', c: 'bg-[var(--color-info-soft)] text-[var(--color-info)]' },
+                                        { l: '15 min', c: 'bg-[var(--color-block-mint)] text-[var(--color-success)]' },
+                                    ].map((p) => (
+                                        <span
+                                            key={p.l}
+                                            className={`text-[10px] font-bold px-2 py-1 rounded-full border-2 border-[var(--color-border)] ${p.c}`}
+                                        >
+                                            {p.l}
+                                        </span>
+                                    ))}
+                                </div>
+                                {/* Question list */}
+                                <div className="bg-[var(--color-bg-card)] rounded-lg border-2 border-[var(--color-border)] p-2 space-y-1.5">
+                                    {[
+                                        { n: 1, t: 'What is hoisting?', type: 'MCQ' },
+                                        { n: 2, t: 'Explain closures', type: 'Essay' },
+                                        { n: 3, t: 'var vs let vs const?', type: 'MCQ' },
+                                    ].map((q) => (
+                                        <div
+                                            key={q.n}
+                                            className="flex items-center justify-between bg-[var(--color-bg-subtle)] rounded-md px-2 py-1.5 border border-[var(--color-border-soft)]"
+                                        >
+                                            <div className="flex items-center gap-2 min-w-0">
+                                                <span className="w-5 h-5 rounded-md bg-[var(--color-primary)] text-[var(--color-text-inverse)] text-[10px] font-extrabold flex items-center justify-center flex-shrink-0">
+                                                    {q.n}
+                                                </span>
+                                                <span className="text-xs font-semibold text-[var(--color-text-primary)] truncate">
+                                                    {q.t}
+                                                </span>
+                                            </div>
+                                            <span className="text-[9px] font-bold text-[var(--color-text-secondary)] uppercase ml-2 flex-shrink-0">
+                                                {q.type}
+                                            </span>
+                                        </div>
+                                    ))}
+                                    <div className="flex items-center justify-center gap-1 pt-1 text-[11px] font-bold text-[var(--color-primary)]">
+                                        <span className="text-base leading-none">+</span> Add question
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

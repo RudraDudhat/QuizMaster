@@ -6,14 +6,22 @@
 
 :root {
     /* ─── Brand & accents ───────────────────────────── */
-    --color-primary: #14B8A6;
-    --color-primary-hover: #0F766E;
-    --color-primary-light: #E6FFFA;
-    --color-primary-soft: #F0FDFA;
-    --color-primary-deep: #0B5A52;
+    --color-primary: #6366F1;          /* indigo-500 */
+    --color-primary-hover: #4F46E5;    /* indigo-600 */
+    --color-primary-light: #EEF2FF;    /* very pale indigo */
+    --color-primary-soft: #E0E7FF;     /* soft indigo bg */
+    --color-primary-deep: #3730A3;     /* indigo-800 */
     --color-secondary: #1F2937;
     --color-info: #3B82F6;
     --color-info-soft: #EFF6FF;
+
+    /* ─── Landing-page gradient stops (cool / warm) ── */
+    --color-primary-grad-1: #EEF2FF;   /* soft indigo edge */
+    --color-primary-grad-2: #C7D2FE;   /* mid indigo */
+    --color-primary-grad-3: #818CF8;   /* indigo accent */
+    --color-warm-grad-1: #FFEDD5;      /* warm peach */
+    --color-warm-grad-2: #FED7AA;
+    --color-warm-grad-3: #FB923C;      /* warm orange accent */
 
     /* ─── Surfaces ──────────────────────────────────── */
     --color-bg-page: #FAFAFA;
