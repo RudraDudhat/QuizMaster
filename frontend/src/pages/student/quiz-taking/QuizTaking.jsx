@@ -100,6 +100,7 @@ export default function QuizTaking() {
     const [saveNextLoading,    setSaveNextLoading]    = useState(false);
     const [autoSaving,         setAutoSaving]         = useState(false);
     const [lastSaved,          setLastSaved]          = useState(null);
+    // eslint-disable-next-line no-unused-vars -- only the setter is used; count is consumed inside the updater callback
     const [tabSwitchCount,     setTabSwitchCount]     = useState(0);
     const [warningModal,       setWarningModal]       = useState({ open: false, message: '' });
 
@@ -127,22 +128,6 @@ export default function QuizTaking() {
     currentIdxRef.current   = currentIndex;
     questionsRef.current    = questions;
     attemptRef.current      = attemptUuid;
-
-    // ── Invalid session guard ─────────────────────────────
-    if (!attemptData) {
-        return (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', gap: 16, background: 'var(--color-bg-page)' }}>
-                <div style={{ width: 64, height: 64, background: 'var(--color-danger-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <AlertTriangle size={32} style={{ color: 'var(--color-danger)' }} />
-                </div>
-                <h2 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>Invalid attempt session</h2>
-                <p style={{ color: 'var(--color-text-secondary)', fontSize: 14, margin: 0 }}>
-                    Please start the quiz from the quiz detail page.
-                </p>
-                <Button onClick={() => navigate('/student/quizzes')}>Go to Quizzes</Button>
-            </div>
-        );
-    }
 
     // ── Save current answer ───────────────────────────────
     // BUG FIX: send quizQuestionUuid + selectedOptionUuids (not quizQuestionId/selectedOptionIds)
@@ -267,6 +252,25 @@ export default function QuizTaking() {
             window.removeEventListener('beforeunload', noBefore);
         };
     }, []);
+
+    // ── Invalid session guard ─────────────────────────────
+    // Must come AFTER all hooks to satisfy the rules-of-hooks. The hooks
+    // above tolerate missing attemptData (refs default to safe values,
+    // questions[] is empty, timeLeft is null).
+    if (!attemptData) {
+        return (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', gap: 16, background: 'var(--color-bg-page)' }}>
+                <div style={{ width: 64, height: 64, background: 'var(--color-danger-soft)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <AlertTriangle size={32} style={{ color: 'var(--color-danger)' }} aria-hidden="true" />
+                </div>
+                <h2 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>Invalid attempt session</h2>
+                <p style={{ color: 'var(--color-text-secondary)', fontSize: 14, margin: 0 }}>
+                    Please start the quiz from the quiz detail page.
+                </p>
+                <Button onClick={() => navigate('/student/quizzes')}>Go to Quizzes</Button>
+            </div>
+        );
+    }
 
     // ── Answer setter for current question only ───────────
     // BUG FIX: setCurrentAns now closes over the CURRENT qKey via a fresh function each render

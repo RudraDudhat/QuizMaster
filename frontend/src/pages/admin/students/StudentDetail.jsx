@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -96,9 +96,10 @@ export default function StudentDetail() {
 
     const [reason, setReason] = useState('');
 
-    useEffect(() => {
-        if (!suspendModal.open) setReason('');
-    }, [suspendModal.open]);
+    const closeSuspendModal = () => {
+        setSuspendModal({ open: false });
+        setReason('');
+    };
 
     const { data: response, isLoading, isError, refetch } = useQuery({
         queryKey: ['student-detail', userUuid],
@@ -125,7 +126,7 @@ export default function StudentDetail() {
         onSuccess: () => {
             toast.success(student?.isActive ? 'Student suspended' : 'Student reinstated');
             refetch();
-            setSuspendModal({ open: false });
+            closeSuspendModal();
         },
         onError: () => {
             toast.error('Failed to update student status');
@@ -597,12 +598,12 @@ export default function StudentDetail() {
 
             <Modal
                 isOpen={suspendModal.open}
-                onClose={() => setSuspendModal({ open: false })}
+                onClose={() => closeSuspendModal()}
                 title={student?.isActive ? 'Suspend Student' : 'Reinstate Student'}
                 size="sm"
                 footer={
                     <>
-                        <Button variant="outline" onClick={() => setSuspendModal({ open: false })}>
+                        <Button variant="outline" onClick={() => closeSuspendModal()}>
                             Cancel
                         </Button>
                         {student?.isActive ? (

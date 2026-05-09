@@ -126,11 +126,17 @@ export default function QuizQuestionManager() {
     });
 
     /* ─── Drag & Drop ─── */
+    // Refs for synchronous reads inside event handlers; state mirrors for
+    // anything the render output needs (refs can't be read during render).
     const dragIdx = useRef(null);
     const dragOverIdx = useRef(null);
+    const [draggingIdx, setDraggingIdx] = useState(null);
     const [dragOverIndex, setDragOverIndex] = useState(null);
 
-    const handleDragStart = (idx) => { dragIdx.current = idx; };
+    const handleDragStart = (idx) => {
+        dragIdx.current = idx;
+        setDraggingIdx(idx);
+    };
     const handleDragOver = (e, idx) => {
         e.preventDefault();
         dragOverIdx.current = idx;
@@ -146,6 +152,7 @@ export default function QuizQuestionManager() {
         }
         dragIdx.current = null;
         dragOverIdx.current = null;
+        setDraggingIdx(null);
         setDragOverIndex(null);
     };
 
@@ -212,7 +219,7 @@ export default function QuizQuestionManager() {
                                     onDragEnd={handleDragEnd}
                                     className={`group flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-all duration-150 cursor-grab active:cursor-grabbing
                                         ${dragOverIndex === idx ? 'border-primary border-dashed bg-primary-light/50' : 'border-gray-100 hover:border-gray-200 bg-white hover:bg-gray-50/50'}
-                                        ${dragIdx.current === idx ? 'opacity-40' : ''}
+                                        ${draggingIdx === idx ? 'opacity-40' : ''}
                                     `}
                                 >
                                     {/* Drag handle */}

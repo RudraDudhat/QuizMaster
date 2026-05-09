@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { createQuiz } from '../../../api/quiz.api';
 import { updateQuizStatus } from '../../../api/quiz.api';
-import { getAllCategories, createCategory } from '../../../api/category.api';
+import { getAllCategories } from '../../../api/category.api';
 import { getAllTags, createTag } from '../../../api/tag.api';
 import { getAllGroups } from '../../../api/group.api';
 import { formatDuration, getStatusColor } from '../../../utils/formatters';
@@ -69,10 +69,6 @@ function SectionHeading({ icon: Icon, title, subtitle }) {
 /* ─── difficulty colors ─── */
 const difficultyVariant = { EASY: 'success', MEDIUM: 'warning', HARD: 'danger' };
 const typeVariant = { PRACTICE: 'info', EXAM: 'default', SURVEY: 'warning' };
-
-function normalizeCategoryName(name) {
-    return name.trim().toLowerCase().replace(/\s+/g, ' ');
-}
 
 export default function CreateQuiz() {
     const navigate = useNavigate();
@@ -160,21 +156,6 @@ export default function CreateQuiz() {
         mutationFn: ({ uuid }) => updateQuizStatus(uuid, 'PUBLISHED'),
     });
 
-    const createCatMut = useMutation({
-        mutationFn: (payload) => createCategory(payload),
-        onSuccess: () => {
-            toast.success('Category created');
-            queryClient.invalidateQueries({ queryKey: ['categories'] });
-        },
-        onError: (err) => {
-            if (err?.response?.status === 500) {
-                toast.error('Category already exists. Please use a different name.');
-                return;
-            }
-            toast.error(err.response?.data?.message || 'Failed to create category');
-        },
-    });
-
     /* ─── submit handlers ─── */
     function buildPayload(data) {
         return {
@@ -219,11 +200,6 @@ export default function CreateQuiz() {
         : null;
 
     const selectedCategory = categories.find((c) => String(c.uuid) === watchAll.categoryUuid);
-
-    function hasCategoryNameConflict(name) {
-        const normalizedName = normalizeCategoryName(name);
-        return categories.some((category) => normalizeCategoryName(category.name) === normalizedName);
-    }
 
     function toggleTag(id) {
         setSelectedTagUuids((prev) =>

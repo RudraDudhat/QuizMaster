@@ -52,6 +52,7 @@ function Toggle({ checked, onChange, label, description }) {
 }
 
 /* ─── Section Heading ─── */
+// eslint-disable-next-line no-unused-vars -- `Icon` is the destructured rename used as <Icon /> in JSX
 function SectionHeading({ icon: Icon, title, subtitle }) {
     return (
         <div className="flex items-center gap-3 mb-5 pb-3 border-b border-gray-100">

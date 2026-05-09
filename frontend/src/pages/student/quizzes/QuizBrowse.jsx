@@ -1,20 +1,14 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Search, BookOpen, Filter } from 'lucide-react';
 import { getAvailableQuizzes } from '../../../api/attempt.api';
-import { formatPercentage, formatDuration, formatDate, truncateText } from '../../../utils/formatters';
+import { formatPercentage, formatDuration, formatDate } from '../../../utils/formatters';
 import { DIFFICULTY_LEVELS } from '../../../utils/constants';
 import Badge from '../../../components/common/Badge';
 import Button from '../../../components/common/Button';
 import EmptyState from '../../../components/common/EmptyState';
 import Pagination from '../../../components/common/Pagination';
-
-// ─── Difficulty top strip color ───────────────────────────
-const diffColor = (d) =>
-    d === 'EASY' ? 'var(--color-success)' :
-    d === 'HARD' ? 'var(--color-danger)' :
-    'var(--color-warning)';
 
 // ─── Difficulty badge variant ─────────────────────────────
 const diffVariant = (d) => d === 'EASY' ? 'success' : d === 'HARD' ? 'danger' : 'warning';
@@ -71,8 +65,11 @@ function SkeletonCard() {
 // ─── Quiz Card ────────────────────────────────────────────
 function QuizCard({ quiz }) {
     const navigate = useNavigate();
-    const expiresMs = quiz.expiresAt ? new Date(quiz.expiresAt) - Date.now() : null;
-    const hoursLeft = expiresMs !== null ? expiresMs / 3_600_000 : null;
+    // Date.now() is impure; cache time-relative values once per mount.
+    const hoursLeft = useMemo(() => {
+        if (!quiz.expiresAt) return null;
+        return (new Date(quiz.expiresAt) - Date.now()) / 3_600_000;
+    }, [quiz.expiresAt]);
     const canStart  = !['MAX_ATTEMPTS_REACHED', 'EXPIRED', 'UPCOMING'].includes(quiz.quizStatus);
     const headerGradient =
         quiz.difficulty === 'EASY'
@@ -190,7 +187,6 @@ function QuizCard({ quiz }) {
 
 // ════════════════════════════════════════════════════════
 export default function QuizBrowse() {
-    const navigate = useNavigate();
     const [page, setPage]               = useState(0);
     const [diffFilter, setDiffFilter]   = useState('');
     const [typeFilter, setTypeFilter]   = useState('');

@@ -8,7 +8,7 @@ import {
 import { getAttemptHistory } from '../../../api/attempt.api';
 import {
     formatScore, formatPercentage, formatDuration,
-    formatDate, formatDateTime, getStatusColor, truncateText,
+    formatDate, getStatusColor, truncateText,
 } from '../../../utils/formatters';
 import Table from '../../../components/ui/Table';
 import Dropdown from '../../../components/ui/Dropdown';

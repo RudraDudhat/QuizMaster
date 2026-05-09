@@ -51,7 +51,12 @@ function QuestionCard({ q, index, expanded, onToggle }) {
                 </div>
 
                 {/* Status indicator */}
-                <div style={{ flexShrink: 0, width: 26, height: 26, borderRadius: '50%', background: statusBg, color: statusColor, display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 4 }}>
+                <div
+                    role="img"
+                    aria-label={statusLabel}
+                    title={statusLabel}
+                    style={{ flexShrink: 0, width: 26, height: 26, borderRadius: '50%', background: statusBg, color: statusColor, display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 4 }}
+                >
                     {statusIcon}
                 </div>
 

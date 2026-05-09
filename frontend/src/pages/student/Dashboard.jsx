@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { BookOpen, CheckCircle, TrendingUp, Award, ChevronRight } from 'lucide-react';
@@ -51,6 +51,7 @@ function RingChart({ value = 0 }) {
 }
 
 // ─── Stat card ────────────────────────────────────────────
+// eslint-disable-next-line no-unused-vars -- `Icon` is the destructured rename used as <Icon /> in JSX
 function StatCard({ icon: Icon, label, value, iconBg, iconColor, sub, loading, toneClass = '' }) {
     if (loading) return (
         <Card padding="md" shadow="sm">
@@ -107,6 +108,10 @@ export default function StudentDashboard() {
 
     const streak = dashboard?.currentStreak ?? 0;
     const isOnFire = streak >= 7;
+
+    // Capture "now" once per data refresh — Date.now() in the upcoming-quizzes
+    // map below is otherwise an impure call during render.
+    const nowMs = useMemo(() => Date.now(), [dashboard]);
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
@@ -279,7 +284,7 @@ export default function StudentDashboard() {
                         />
                     ) : (
                         (dashboard.upcomingQuizzes).slice(0, 3).map((quiz, i, arr) => {
-                            const expiresMs  = quiz.expiresAt ? new Date(quiz.expiresAt) - Date.now() : null;
+                            const expiresMs  = quiz.expiresAt ? new Date(quiz.expiresAt) - nowMs : null;
                             const soonExpiry = expiresMs !== null && expiresMs < 86_400_000;
                             return (
                                 <div key={quiz.uuid ?? i} style={{ padding: '12px 0', borderBottom: i < arr.length - 1 ? '1px solid var(--color-border-soft)' : 'none' }}>

@@ -64,11 +64,10 @@ export default function StudentList() {
         return () => clearTimeout(t);
     }, [searchInput]);
 
-    useEffect(() => {
-        if (!suspendModal.open) {
-            setReason('');
-        }
-    }, [suspendModal.open]);
+    const closeSuspendModal = () => {
+        setSuspendModal({ open: false, userUuid: null, fullName: '', isActive: true });
+        setReason('');
+    };
 
     const { data: response, isLoading, refetch } = useQuery({
         queryKey: ['admin-students', page, keyword],
@@ -106,7 +105,7 @@ export default function StudentList() {
                     : `${result?.data?.fullName} suspended successfully`
             );
             refetch();
-            setSuspendModal({ open: false, userUuid: null, fullName: '', isActive: true });
+            closeSuspendModal();
         },
         onError: (error) => {
             toast.error(error?.response?.data?.message || 'Failed to update student status');
@@ -404,14 +403,14 @@ export default function StudentList() {
 
             <Modal
                 isOpen={suspendModal.open}
-                onClose={() => setSuspendModal({ open: false, userUuid: null, fullName: '', isActive: true })}
+                onClose={() => closeSuspendModal()}
                 title={modalTitle}
                 size="sm"
                 footer={
                     <>
                         <Button
                             variant="outline"
-                            onClick={() => setSuspendModal({ open: false, userUuid: null, fullName: '', isActive: true })}
+                            onClick={() => closeSuspendModal()}
                         >
                             Cancel
                         </Button>

@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import { getAttemptResult } from '../../../api/attempt.api';
 import {
-    formatPercentage, formatScore, formatDuration,
+    formatScore, formatDuration,
     formatDateTime, getStatusColor,
 } from '../../../utils/formatters';
 import Badge from '../../../components/common/Badge';
