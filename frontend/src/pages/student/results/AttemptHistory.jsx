@@ -55,8 +55,11 @@ export default function AttemptHistory() {
         .filter(a => statusFilter ? a.status === statusFilter : true)
         .filter(a => search ? a.quizTitle?.toLowerCase().includes(search.toLowerCase()) : true);
 
-    const passedCount = filteredAttempts.filter(a => a.isPassed).length;
-    const failedCount = filteredAttempts.filter(a => !a.isPassed).length;
+    // Exclude pending-review attempts from pass/fail counters — their result
+    // isn't decided yet so counting them as failed would be misleading.
+    const passedCount = filteredAttempts.filter(a => !a.hasPendingReview && a.isPassed).length;
+    const failedCount = filteredAttempts.filter(a => !a.hasPendingReview && !a.isPassed).length;
+    const pendingCount = filteredAttempts.filter(a => a.hasPendingReview).length;
     const hasFilters = statusFilter || search;
 
     const columns = [
@@ -101,9 +104,14 @@ export default function AttemptHistory() {
             key: 'result',
             label: 'Result',
             align: 'center',
-            render: (row) => row.isPassed
-                ? <Badge variant="success">✅ Passed</Badge>
-                : <Badge variant="danger">❌ Failed</Badge>,
+            render: (row) => {
+                if (row.hasPendingReview) {
+                    return <Badge variant="primary">⏳ Pending review</Badge>;
+                }
+                return row.isPassed
+                    ? <Badge variant="success">✅ Passed</Badge>
+                    : <Badge variant="danger">❌ Failed</Badge>;
+            },
         },
         {
             key: 'status',
@@ -182,10 +190,15 @@ export default function AttemptHistory() {
                             </p>
                         </div>
                     </div>
-                    <div style={{ display: 'flex', gap: 8 }}>
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 12px', borderRadius: 20, background: 'var(--color-success-soft)', fontSize: 12, fontWeight: 700, color: 'var(--color-success)' }}>
                             <CheckCircle2 size={13} /> {passedCount} Passed
                         </div>
+                        {pendingCount > 0 && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 12px', borderRadius: 20, background: 'var(--color-primary-light)', fontSize: 12, fontWeight: 700, color: 'var(--color-primary)' }}>
+                                ⏳ {pendingCount} Pending
+                            </div>
+                        )}
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 12px', borderRadius: 20, background: 'var(--color-danger-soft)', fontSize: 12, fontWeight: 700, color: 'var(--color-danger)' }}>
                             <XCircle size={13} /> {failedCount} Failed
                         </div>
