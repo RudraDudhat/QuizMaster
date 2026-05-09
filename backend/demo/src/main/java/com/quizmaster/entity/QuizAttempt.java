@@ -23,7 +23,9 @@ public class QuizAttempt {
     private Long id;
 
     @Version
-    @Column(nullable = false)
+    // Use a SQL default so adding this column to a populated table backfills
+    // existing rows to 0 instead of failing with a NOT NULL violation.
+    @Column(nullable = false, columnDefinition = "BIGINT NOT NULL DEFAULT 0")
     private Long version;
 
     @Column(nullable = false, updatable = false)

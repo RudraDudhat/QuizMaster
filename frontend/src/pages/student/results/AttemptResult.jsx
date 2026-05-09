@@ -109,6 +109,67 @@ export default function AttemptResult() {
     const isPassed = !isPending && result?.isPassed;
     const pct = result?.percentage ?? 0;
     const totalQ = (result?.correctCount ?? 0) + (result?.wrongCount ?? 0) + (result?.skippedCount ?? 0);
+
+    // Pending screen: while any essay is awaiting an admin's grade we hide
+    // ALL result detail (score, breakdown, performance bars) and only show
+    // the "awaiting review" notice. Keeps students from acting on partial
+    // numbers and prevents the "Keep Trying / 0%" failure state from being
+    // shown when essays haven't been graded yet.
+    if (isPending) {
+        return (
+            <div style={{ minHeight: '100vh', background: 'var(--color-bg-page)', paddingBottom: 48 }}>
+                <style>{`
+                    @keyframes popIn{0%{opacity:0;transform:scale(0.3)}70%{transform:scale(1.1)}100%{opacity:1;transform:scale(1)}}
+                `}</style>
+                {bannerVisible && (
+                    <div style={{ background: 'var(--color-warning-soft)', borderBottom: '1px solid var(--color-warning)', padding: '12px 20px', display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <Clock size={18} style={{ color: 'var(--color-warning)', flexShrink: 0 }} aria-hidden="true" />
+                        <span style={{ fontSize: 14, color: 'var(--color-warning)', flex: 1 }}>
+                            ⏱️ Your quiz was automatically submitted because the time limit was reached.
+                        </span>
+                        <button onClick={() => setBannerVisible(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-warning)', display: 'flex', alignItems: 'center', padding: 4 }} aria-label="Dismiss">
+                            <X size={16} />
+                        </button>
+                    </div>
+                )}
+                <div style={{ maxWidth: 640, margin: '0 auto', padding: '48px 16px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+                    <div style={{ background: 'var(--color-bg-card)', borderRadius: 24, border: '3px solid var(--color-border)', boxShadow: '6px 6px 0 var(--color-border)', padding: 'clamp(32px,6vw,56px) clamp(20px,5vw,40px)', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+                        <div style={{ position: 'absolute', top: -50, right: -50, width: 180, height: 180, borderRadius: '50%', background: 'rgba(99,102,241,0.06)', pointerEvents: 'none' }} />
+                        <div style={{ position: 'absolute', bottom: -40, left: -40, width: 140, height: 140, borderRadius: '50%', background: 'rgba(99,102,241,0.04)', pointerEvents: 'none' }} />
+                        <div style={{ display: 'inline-flex', marginBottom: 24, animation: iconReady ? 'popIn 0.6s cubic-bezier(0.34,1.56,0.64,1)' : 'none', opacity: iconReady ? 1 : 0 }}>
+                            <div style={{ width: 88, height: 88, borderRadius: '50%', background: 'var(--color-primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 0 14px rgba(99,102,241,0.1)' }}>
+                                <Hourglass size={42} style={{ color: 'var(--color-primary)' }} aria-hidden="true" />
+                            </div>
+                        </div>
+                        <h1 style={{ fontSize: 'clamp(22px,4.5vw,30px)', fontWeight: 800, color: 'var(--color-primary)', marginBottom: 8 }}>
+                            Awaiting instructor review
+                        </h1>
+                        <p style={{ fontSize: 15, color: 'var(--color-text-secondary)', fontWeight: 500, marginBottom: 24, maxWidth: 460, marginLeft: 'auto', marginRight: 'auto', lineHeight: 1.6 }}>
+                            {pendingReviewCount === 1
+                                ? "Your essay answer is being graded. Your final score and a full breakdown will appear here once your instructor finishes the review."
+                                : `${pendingReviewCount} of your essay answers are being graded. Your final score and a full breakdown will appear here once your instructor finishes the review.`}
+                        </p>
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '10px 18px', borderRadius: 999, background: 'var(--color-primary-light)', border: '2px solid var(--color-primary)', color: 'var(--color-primary)', fontWeight: 700, fontSize: 14 }}>
+                            <Hourglass size={16} aria-hidden="true" />
+                            {pendingReviewCount} pending review{pendingReviewCount === 1 ? '' : 's'}
+                        </div>
+                    </div>
+
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'center' }}>
+                        <Button variant="outline" icon={<RotateCcw size={15} />} onClick={() => window.location.reload()}>
+                            Check again
+                        </Button>
+                        <Button variant="outline" icon={<ArrowRight size={15} />} onClick={() => navigate('/student/quizzes')}>
+                            Browse other quizzes
+                        </Button>
+                        <Button variant="ghost" icon={<ChevronRight size={15} />} onClick={() => navigate('/student/history')}>
+                            My history
+                        </Button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
     const scoreColor = pct >= 70 ? 'var(--color-success)' : pct >= 50 ? 'var(--color-warning)' : 'var(--color-danger)';
     const passLinePct = result?.passMarks && result?.totalMarksPossible
         ? (result.passMarks / result.totalMarksPossible) * 100 : null;
@@ -147,38 +208,6 @@ export default function AttemptResult() {
             <div style={{ maxWidth: 760, margin: '0 auto', padding: '32px 16px', display: 'flex', flexDirection: 'column', gap: 20 }}>
 
                 {/* ── Hero Card ── */}
-                {isPending ? (
-                    /* Pending-review hero: shown while at least one essay
-                       answer is still awaiting an admin's manual grading. We
-                       don't reveal pass/fail until everything is graded. */
-                    <div style={{ background: 'var(--color-bg-card)', borderRadius: 24, border: '3px solid var(--color-border)', boxShadow: '6px 6px 0 var(--color-border)', padding: 'clamp(28px,5vw,48px) clamp(20px,5vw,40px)', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
-                        <div style={{ position: 'absolute', top: -50, right: -50, width: 180, height: 180, borderRadius: '50%', background: 'rgba(99,102,241,0.06)', pointerEvents: 'none' }} />
-                        <div style={{ position: 'absolute', bottom: -40, left: -40, width: 140, height: 140, borderRadius: '50%', background: 'rgba(99,102,241,0.04)', pointerEvents: 'none' }} />
-                        <div style={{ display: 'inline-flex', marginBottom: 24, animation: iconReady ? 'popIn 0.6s cubic-bezier(0.34,1.56,0.64,1)' : 'none', opacity: iconReady ? 1 : 0 }}>
-                            <div style={{ width: 88, height: 88, borderRadius: '50%', background: 'var(--color-primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 0 14px rgba(99,102,241,0.1)' }}>
-                                <Hourglass size={42} style={{ color: 'var(--color-primary)' }} aria-hidden="true" />
-                            </div>
-                        </div>
-                        <h1 style={{ fontSize: 'clamp(20px,4vw,28px)', fontWeight: 800, color: 'var(--color-primary)', marginBottom: 6 }}>
-                            Awaiting review ⏳
-                        </h1>
-                        <p style={{ fontSize: 15, color: 'var(--color-text-secondary)', fontWeight: 500, marginBottom: 24, maxWidth: 480, marginLeft: 'auto', marginRight: 'auto', lineHeight: 1.55 }}>
-                            {pendingReviewCount === 1
-                                ? 'Your essay answer is being graded by your instructor. The final score will appear here once review is complete.'
-                                : `${pendingReviewCount} of your essay answers are being graded by your instructor. The final score will appear here once review is complete.`}
-                        </p>
-                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '10px 18px', borderRadius: 999, background: 'var(--color-primary-light)', border: '2px solid var(--color-primary)', color: 'var(--color-primary)', fontWeight: 700, fontSize: 14 }}>
-                            <Hourglass size={16} aria-hidden="true" />
-                            {pendingReviewCount} pending review{pendingReviewCount === 1 ? '' : 's'}
-                        </div>
-                        <div style={{ marginTop: 24, fontSize: 13, color: 'var(--color-text-muted)' }}>
-                            Auto-graded score so far:{' '}
-                            <strong style={{ color: 'var(--color-text-primary)' }}>
-                                {formatScore(result?.marksObtained, result?.totalMarksPossible)} marks
-                            </strong>
-                        </div>
-                    </div>
-                ) : (
                 <div style={{ background: 'var(--color-bg-card)', borderRadius: 24, border: '3px solid var(--color-border)', boxShadow: '6px 6px 0 var(--color-border)', padding: 'clamp(28px,5vw,48px) clamp(20px,5vw,40px)', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
                     <div style={{ position: 'absolute', top: -50, right: -50, width: 180, height: 180, borderRadius: '50%', background: isPassed ? 'rgba(16,185,129,0.06)' : 'rgba(239,68,68,0.05)', pointerEvents: 'none' }} />
                     <div style={{ position: 'absolute', bottom: -40, left: -40, width: 140, height: 140, borderRadius: '50%', background: isPassed ? 'rgba(16,185,129,0.04)' : 'rgba(239,68,68,0.03)', pointerEvents: 'none' }} />
@@ -208,7 +237,6 @@ export default function AttemptResult() {
                         </div>
                     )}
                 </div>
-                )}
 
                 {/* ── Stats Grid ── */}
                 {/* Auto-fit with a min lets the grid collapse to 2 cols on phones, 3 on tablets+. */}
