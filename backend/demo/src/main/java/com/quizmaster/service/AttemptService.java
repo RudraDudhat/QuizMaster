@@ -210,6 +210,12 @@ public class AttemptService {
             throw new BadRequestException("Attempt already submitted or expired");
         }
 
+        // Materialise an answer row for every quiz question, even ones the
+        // student never visited. Without this, scoreAttempt only iterates
+        // the rows that exist — so a skipped essay (or any unanswered Q)
+        // counts toward total_marks_possible but never gets evaluated,
+        // leaving the breakdown incomplete and pendingReviewCount wrong.
+        createSkippedAnswers(attempt);
         scoreAttempt(attempt);
         attempt.setStatus(AttemptStatus.SUBMITTED);
         attempt.setSubmittedAt(Instant.now());
