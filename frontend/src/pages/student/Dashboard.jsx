@@ -239,7 +239,31 @@ export default function StudentDashboard() {
                                         <span style={{ fontSize: 11, color: 'var(--color-text-secondary)' }}>#{a.attemptNumber}</span>
                                     </div>
                                 </div>
-                                
+                                {/* Score / Result — pending review takes precedence */}
+                                {a.hasPendingReview ? (
+                                    <div style={{ flexShrink: 0, textAlign: 'right' }}>
+                                        <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-primary)', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                                            ⏳ Pending review
+                                        </div>
+                                        <div style={{ fontSize: 11, color: 'var(--color-text-secondary)', marginTop: 2 }}>
+                                            Awaiting grade
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <div style={{ fontSize: 18, fontWeight: 800, color: scoreColor(a.percentage ?? 0), flexShrink: 0 }}>
+                                            {(a.percentage ?? 0).toFixed(0)}%
+                                        </div>
+                                        <div style={{ flexShrink: 0, textAlign: 'right', minWidth: 64 }}>
+                                            <div style={{ fontSize: 12, fontWeight: 600, color: a.isPassed ? 'var(--color-success)' : 'var(--color-danger)' }}>
+                                                {a.isPassed ? '✅ Passed' : '❌ Failed'}
+                                            </div>
+                                            <div style={{ fontSize: 11, color: 'var(--color-text-secondary)', marginTop: 2 }}>
+                                                {formatDuration(a.timeTakenSeconds)}
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         ))
                     )}
