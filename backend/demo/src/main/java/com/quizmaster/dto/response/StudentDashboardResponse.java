@@ -38,4 +38,7 @@ public class StudentDashboardResponse {
 
     /** Next 3 available quizzes sorted by expiresAt ASC */
     private List<AvailableQuizResponse> upcomingQuizzes;
+
+    /** Groups (classes) this student is a member of. */
+    private List<MyGroupSummary> myGroups;
 }

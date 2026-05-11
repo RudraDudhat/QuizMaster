@@ -131,6 +131,21 @@ public class StudentDashboardService {
                 .map(quiz -> buildQuizResponse(quiz, studentId, now))
                 .collect(Collectors.toList());
 
+        // Groups the student belongs to, with member + quiz counts. Cap at 6
+        // for the dashboard; the full list lives on a dedicated groups page.
+        List<com.quizmaster.dto.response.MyGroupSummary> myGroups =
+                studentGroupMemberRepository.findByUserId(studentId).stream()
+                        .map(m -> m.getGroup())
+                        .filter(g -> g.getDeletedAt() == null)
+                        .limit(6)
+                        .map(g -> com.quizmaster.dto.response.MyGroupSummary.builder()
+                                .groupUuid(g.getUuid())
+                                .name(g.getName())
+                                .memberCount(studentGroupMemberRepository.countByGroupId(g.getId()))
+                                .quizCount(quizGroupAssignmentRepository.countQuizzesByGroupId(g.getId()))
+                                .build())
+                        .collect(Collectors.toList());
+
         return StudentDashboardResponse.builder()
                 .totalQuizzesTaken(totalQuizzesTaken)
                 .totalQuizzesPassed(totalQuizzesPassed)
@@ -141,6 +156,7 @@ public class StudentDashboardService {
                 .xpPoints(student.getXpPoints())
                 .recentAttempts(recentAttempts)
                 .upcomingQuizzes(upcomingQuizzes)
+                .myGroups(myGroups)
                 .build();
     }
 
