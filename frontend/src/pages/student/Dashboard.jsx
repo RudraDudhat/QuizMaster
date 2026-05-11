@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { BookOpen, CheckCircle, TrendingUp, Award, ChevronRight } from 'lucide-react';
+import { BookOpen, CheckCircle, TrendingUp, Award, ChevronRight, Users } from 'lucide-react';
 import useAuth from '../../hooks/useAuth';
 import { getStudentDashboard } from '../../api/attempt.api';
 import { formatPercentage, formatDuration, formatDate, truncateText, getStatusColor } from '../../utils/formatters';
@@ -191,6 +191,109 @@ export default function StudentDashboard() {
                         }
                     </div>
                 </div>
+            </Card>
+
+            {/* ── YOUR GROUPS ── */}
+            <Card padding="lg" shadow="sm" className="bg-[var(--color-block-mint)]">
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, flexWrap: 'wrap', gap: 8 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <Users size={18} aria-hidden="true" style={{ color: 'var(--color-primary)' }} />
+                        <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>Your groups</h3>
+                    </div>
+                    {(dashboard?.myGroups?.length ?? 0) > 0 && (
+                        <span style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>
+                            {dashboard.myGroups.length} group{dashboard.myGroups.length === 1 ? '' : 's'}
+                        </span>
+                    )}
+                </div>
+
+                {isLoading ? (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 10 }}>
+                        {[1, 2, 3].map((i) => (
+                            <div key={i} className="skeleton" style={{ height: 64, borderRadius: 12 }} />
+                        ))}
+                    </div>
+                ) : (dashboard?.myGroups ?? []).length === 0 ? (
+                    <div style={{
+                        padding: '20px 16px',
+                        borderRadius: 12,
+                        border: '2px dashed var(--color-border-soft)',
+                        background: 'var(--color-bg-card)',
+                        textAlign: 'center',
+                    }}>
+                        <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', margin: '0 0 4px' }}>
+                            You're not in any groups yet
+                        </p>
+                        <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', margin: 0 }}>
+                            An admin will add you to a class to assign group-specific quizzes.
+                        </p>
+                    </div>
+                ) : (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 10 }}>
+                        {dashboard.myGroups.slice(0, 6).map((g) => (
+                            <button
+                                key={g.groupUuid}
+                                onClick={() => navigate(`/student/quizzes?group=${encodeURIComponent(g.groupUuid)}`)}
+                                title={`Browse quizzes assigned to ${g.name}`}
+                                style={{
+                                    textAlign: 'left',
+                                    padding: '12px 14px',
+                                    borderRadius: 12,
+                                    border: '2px solid var(--color-border)',
+                                    background: 'var(--color-bg-card)',
+                                    boxShadow: '2px 2px 0 var(--color-border)',
+                                    cursor: 'pointer',
+                                    transition: 'transform 0.15s, box-shadow 0.15s',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 12,
+                                    minWidth: 0,
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.transform = 'translate(-1px, -1px)';
+                                    e.currentTarget.style.boxShadow = '3px 3px 0 var(--color-border)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.transform = 'translate(0, 0)';
+                                    e.currentTarget.style.boxShadow = '2px 2px 0 var(--color-border)';
+                                }}
+                            >
+                                <div style={{
+                                    width: 38,
+                                    height: 38,
+                                    borderRadius: 10,
+                                    background: 'var(--color-primary-light)',
+                                    color: 'var(--color-primary)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    flexShrink: 0,
+                                    border: '2px solid var(--color-border)',
+                                }}>
+                                    <Users size={16} aria-hidden="true" />
+                                </div>
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                    <div style={{
+                                        fontWeight: 700,
+                                        fontSize: 14,
+                                        color: 'var(--color-text-primary)',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        whiteSpace: 'nowrap',
+                                    }}>
+                                        {g.name}
+                                    </div>
+                                    <div style={{ fontSize: 11, color: 'var(--color-text-secondary)', marginTop: 2 }}>
+                                        {(g.memberCount ?? 0)} member{g.memberCount === 1 ? '' : 's'}
+                                        {(g.quizCount ?? 0) > 0 && (
+                                            <> &middot; {g.quizCount} quiz{g.quizCount === 1 ? '' : 'zes'}</>
+                                        )}
+                                    </div>
+                                </div>
+                            </button>
+                        ))}
+                    </div>
+                )}
             </Card>
 
             {/* ── TWO COLUMN: Recent + Upcoming ── */}

@@ -63,4 +63,8 @@ public class AvailableQuizResponse {
 
     /** true if student has any passing attempt; null if no attempts yet */
     private Boolean isPassed;
+
+    /** Group UUIDs this quiz is assigned to (empty = open to all). Used by
+     *  the student dashboard's group-filter shortcut. */
+    private java.util.List<String> assignedGroupUuids;
 }

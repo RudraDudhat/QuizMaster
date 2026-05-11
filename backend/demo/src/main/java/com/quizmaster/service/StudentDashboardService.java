@@ -224,6 +224,7 @@ public class StudentDashboardService {
                 .studentBestScore(studentBestScore)
                 .studentBestPercentage(studentBestPercentage)
                 .isPassed(isPassed)
+                .assignedGroupUuids(quizGroupAssignmentRepository.findGroupUuidsByQuizId(quizId))
                 .build();
     }
 

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Search, BookOpen, Filter } from 'lucide-react';
 import { getAvailableQuizzes } from '../../../api/attempt.api';
@@ -187,6 +187,9 @@ function QuizCard({ quiz }) {
 
 // ════════════════════════════════════════════════════════
 export default function QuizBrowse() {
+    const [searchParams, setSearchParams] = useSearchParams();
+    const groupUuid = searchParams.get('group') ?? '';
+
     const [page, setPage]               = useState(0);
     const [diffFilter, setDiffFilter]   = useState('');
     const [typeFilter, setTypeFilter]   = useState('');
@@ -207,10 +210,19 @@ export default function QuizBrowse() {
         .filter(q => diffFilter   ? q.difficulty === diffFilter     : true)
         .filter(q => typeFilter   ? q.quizType   === typeFilter     : true)
         .filter(q => statusFilter ? q.quizStatus === statusFilter   : true)
-        .filter(q => search       ? q.title.toLowerCase().includes(search.toLowerCase()) : true);
+        .filter(q => search       ? q.title.toLowerCase().includes(search.toLowerCase()) : true)
+        .filter(q => groupUuid    ? (q.assignedGroupUuids ?? []).includes(groupUuid) : true);
 
-    const anyFilter = diffFilter || typeFilter || statusFilter || search;
-    const clearAll  = () => { setSearch(''); setDiffFilter(''); setTypeFilter(''); setStatusFilter(''); };
+    const anyFilter = diffFilter || typeFilter || statusFilter || search || groupUuid;
+    const clearAll  = () => {
+        setSearch(''); setDiffFilter(''); setTypeFilter(''); setStatusFilter('');
+        setSearchParams({}); // also drop ?group=
+    };
+    const clearGroup = () => {
+        const next = new URLSearchParams(searchParams);
+        next.delete('group');
+        setSearchParams(next);
+    };
 
     const inputStyle = {
         height: 40, border: '2px solid var(--color-border)', borderRadius: 9999,
@@ -226,6 +238,29 @@ export default function QuizBrowse() {
                 <div>
                     <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--color-text-primary)', margin: 0 }}>Available Quizzes</h1>
                     <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', marginTop: 4 }}>{totalElements} quizzes available</p>
+                    {groupUuid && (
+                        <button
+                            onClick={clearGroup}
+                            title="Clear group filter"
+                            style={{
+                                marginTop: 8,
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 6,
+                                padding: '4px 10px 4px 12px',
+                                borderRadius: 999,
+                                background: 'var(--color-primary-light)',
+                                border: '2px solid var(--color-primary)',
+                                color: 'var(--color-primary)',
+                                fontSize: 12,
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                            }}
+                        >
+                            Filtered by group
+                            <span aria-hidden="true" style={{ fontSize: 14, lineHeight: 1 }}>×</span>
+                        </button>
+                    )}
                 </div>
                 <div style={{ fontSize: 12, color: 'var(--color-text-secondary)', alignSelf: 'flex-end' }}>
                     Showing {filteredQuizzes.length} of {quizzes.length}

@@ -19,4 +19,13 @@ public interface QuizGroupAssignmentRepository
               AND a.quiz.deletedAt IS NULL
             """)
     int countQuizzesByGroupId(@org.springframework.data.repository.query.Param("groupId") Long groupId);
+
+    /** All group UUIDs a quiz is assigned to (empty = open to everyone). */
+    @org.springframework.data.jpa.repository.Query("""
+            SELECT a.group.uuid FROM QuizGroupAssignment a
+            WHERE a.quiz.id = :quizId
+              AND a.group.deletedAt IS NULL
+            """)
+    java.util.List<String> findGroupUuidsByQuizId(
+            @org.springframework.data.repository.query.Param("quizId") Long quizId);
 }
