@@ -153,7 +153,10 @@ export default function Modal({
                         )}
 
                         {/* Body */}
-                        <div className="px-6 py-5 max-h-[calc(100vh-220px)] overflow-y-auto">
+                        <div
+                            data-lenis-prevent
+                            className="px-6 py-5 max-h-[calc(100vh-220px)] overflow-y-auto overscroll-contain"
+                        >
                             {children}
                         </div>
 

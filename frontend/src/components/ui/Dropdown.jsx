@@ -89,12 +89,13 @@ export default function Dropdown({ trigger, items = [], align = 'right' }) {
                         id={menuId}
                         ref={menuRef}
                         role="menu"
+                        data-lenis-prevent
                         initial={{ opacity: 0, y: 4, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 4, scale: 0.95 }}
                         transition={{ duration: 0.15, ease: 'easeOut' }}
                         style={{ zIndex: 'var(--z-dropdown)' }}
-                        className={`absolute mt-2 w-52 bg-[var(--color-bg-card)] rounded-xl border border-[color:var(--color-border)]/20 shadow-lg py-1.5 max-h-72 overflow-y-auto ${align === 'right' ? 'right-0' : 'left-0'
+                        className={`absolute mt-2 w-52 bg-[var(--color-bg-card)] rounded-xl border border-[color:var(--color-border)]/20 shadow-lg py-1.5 max-h-72 overflow-y-auto overscroll-contain ${align === 'right' ? 'right-0' : 'left-0'
                             }`}
                     >
                         {items.map((item, idx) => {

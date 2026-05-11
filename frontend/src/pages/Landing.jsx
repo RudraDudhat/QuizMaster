@@ -4,7 +4,6 @@ import {
     BookOpen,
     ArrowRight,
     CheckCircle2,
-    Download,
     HelpCircle,
     Bookmark,
     MessageSquare,
@@ -84,39 +83,40 @@ const quizKinds = [
     },
 ];
 
-const pricingPlans = [
-    {
-        name: 'Regular',
-        price: '$0',
-        badge: 'Trial',
-        badgeClass: 'bg-[var(--color-success-soft)] text-[var(--color-success)]',
-        features: ['Unlimited quizzes', 'Basic analytics', 'Community support'],
-    },
-    {
-        name: 'Premium',
-        price: '$19',
-        features: ['Advanced analytics', 'Anti-cheat suite', 'Priority support'],
-    },
-    {
-        name: 'Business',
-        price: '$49',
-        features: ['Team workspaces', 'Custom branding', 'Dedicated success'],
-    },
-];
-
-const faqTabs = ['General', 'Quizzes', 'Templates', 'Account'];
+const faqTabs = ['General', 'For instructors', 'For students'];
 const faqItems = [
     {
-        question: 'How fast can I build a quiz?',
-        answer: 'Most quizzes take under 10 minutes using templates and smart question helpers.',
+        question: 'What question types are supported?',
+        answer:
+            'Multiple choice (single + multi-answer), true/false, short answer, essay, ' +
+            'fill in the blank, ordering, matching, code snippets, and image-based — ten types in total.',
     },
     {
-        question: 'Can I share quizzes with a class code?',
-        answer: 'Yes. Generate access codes and control attempts, timing, and retakes.',
+        question: 'How is grading handled?',
+        answer:
+            'Auto-grading runs the moment a student submits — for MCQ, true/false, ordering, ' +
+            'matching, fill-in-the-blank, and code/image questions. Essays are flagged for ' +
+            'manual review; the student sees an "Awaiting review" screen until the instructor grades it.',
     },
     {
-        question: 'Do you support auto-grading?',
-        answer: 'Auto-grading is available for MCQ, true/false, and fill-in-the-blank types.',
+        question: 'Can I restrict who takes a quiz?',
+        answer:
+            'Yes. Assign quizzes to specific student groups, set start / expiry windows, ' +
+            'cap maximum attempts, add a cooldown between attempts, or require an access code.',
+    },
+    {
+        question: 'What anti-cheat features are built in?',
+        answer:
+            'Per-attempt question and option shuffling, tab-switch tracking, fullscreen-exit ' +
+            'detection, server-side timer + score validation, suspicious-attempt flagging, and ' +
+            'full audit logs of every event during the attempt.',
+    },
+    {
+        question: 'Do students see their progress over time?',
+        answer:
+            'Each student gets a dashboard with pass rate, average / best scores, XP, daily ' +
+            'streaks, recent attempts, and the groups they belong to. Per-attempt review pages ' +
+            'show every question with the correct answer and explanation when enabled.',
     },
 ];
 
@@ -163,15 +163,15 @@ export default function Landing() {
                     </span>
                 </div>
                 <div className="hidden md:flex items-center gap-6 text-sm font-medium text-[var(--color-text-primary)]">
-                    {['Pricing', 'FAQ', 'Support', 'Contacts'].map((item) => (
+                    {['Features', 'FAQ', 'Support'].map((item) => (
                         <a key={item} href="#" className="hover:text-[var(--color-primary)] transition-colors">
                             {item}
                         </a>
                     ))}
                 </div>
                 <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm">
-                        Download <Download size={14} />
+                    <Button variant="outline" size="sm" onClick={() => navigate('/login')}>
+                        Sign In
                     </Button>
                     <Button size="sm" onClick={() => navigate('/register')}>
                         Get Started
@@ -185,14 +185,14 @@ export default function Landing() {
                     <div>
                         <Reveal>
                             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight">
-                                Best <span className="bg-[var(--color-primary)] text-[var(--color-text-inverse)] px-3 py-1 rounded-lg">AI Platform</span>
-                                <br /> To Convert Documents To Quiz Instantly
+                                Build <span className="bg-[var(--color-primary)] text-[var(--color-text-inverse)] px-3 py-1 rounded-lg">Better Quizzes</span>
+                                <br /> for Real Classrooms
                             </h1>
                         </Reveal>
                         <Reveal delay={120}>
                             <p className="text-lg text-[var(--color-text-secondary)] mt-6 max-w-xl">
-                                Build interactive quizzes in minutes with smart templates, instant grading, and
-                                playful student experiences.
+                                A complete quiz platform for instructors and students — 10 question types,
+                                instant grading, anti-cheat protections, and rich attempt analytics.
                             </p>
                         </Reveal>
                         <Reveal delay={200}>
@@ -201,7 +201,7 @@ export default function Landing() {
                                     Get Started <ArrowRight size={16} />
                                 </Button>
                                 <Button variant="outline" size="lg" onClick={scrollToFeatures}>
-                                    Download <Download size={16} />
+                                    See features <ArrowRight size={16} />
                                 </Button>
                             </div>
                         </Reveal>
@@ -375,11 +375,13 @@ export default function Landing() {
                             <div className="mb-4">
                                 <Squiggle />
                             </div>
-                            <h2 className="text-3xl sm:text-4xl font-extrabold">We suggest you best tool to make Quiz</h2>
+                            <h2 className="text-3xl sm:text-4xl font-extrabold">Everything you need to run a real assessment</h2>
                         </Reveal>
                         <Reveal delay={120}>
                             <p className="text-[var(--color-text-secondary)] mt-4">
-                                From idea to launch in minutes. Built-in grading, analytics, and sharing.
+                                Build a question bank once, reuse it across quizzes, assign to groups,
+                                set timers and access codes, and review every attempt with full audit
+                                logs. No spreadsheets, no surprises.
                             </p>
                         </Reveal>
                         <Reveal delay={200}>
@@ -451,49 +453,8 @@ export default function Landing() {
                 </div>
             </section>
 
-            {/* ─── PRICING ─── */}
-            <section className="py-16 px-5">
-                <div className="max-w-6xl mx-auto">
-                    <Reveal className="text-center mb-12">
-                        <div className="inline-flex items-center gap-3">
-                            <h2 className="text-3xl sm:text-4xl font-extrabold">Pricing</h2>
-                            <span className="text-2xl">〰️</span>
-                        </div>
-                    </Reveal>
-                    <div className="grid md:grid-cols-3 gap-6">
-                        {pricingPlans.map((plan, i) => (
-                            <Reveal key={plan.name} delay={i * 100}>
-                                <div className="bg-[var(--color-bg-card)] border-2 border-[var(--color-border)] rounded-[22px] shadow-[5px_5px_0_var(--color-border)] p-6 flex flex-col h-full">
-                                    <div className="flex items-center justify-between">
-                                        <h3 className="text-xl font-extrabold">{plan.name}</h3>
-                                        {plan.badge && (
-                                            <span className={`text-xs font-bold px-2 py-1 rounded-full ${plan.badgeClass}`}>
-                                                {plan.badge}
-                                            </span>
-                                        )}
-                                    </div>
-                                    <div className="text-3xl font-extrabold mt-4">
-                                        {plan.price}
-                                        <span className="text-sm text-[var(--color-text-muted)]">/mo</span>
-                                    </div>
-                                    <div className="mt-6 space-y-3">
-                                        {plan.features.map((item) => (
-                                            <div key={item} className="flex items-center gap-2 text-sm text-[var(--color-text-secondary)]">
-                                                <CheckCircle2 size={16} className="text-[var(--color-primary)]" />
-                                                {item}
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <Button fullWidth className="mt-6">Get Started</Button>
-                                </div>
-                            </Reveal>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
             {/* ─── FAQ ─── */}
-            <section className="py-16 px-5">
+            <section id="faq" className="py-16 px-5">
                 <div className="max-w-6xl mx-auto">
                     <div className="bg-[var(--color-bg-card)] border-2 border-[var(--color-border)] rounded-[24px] shadow-[6px_6px_0_var(--color-border)] p-8 relative overflow-hidden">
                         <div className="text-center">
@@ -555,14 +516,22 @@ export default function Landing() {
                     <div className="relative bg-[var(--color-block-black)] text-[var(--color-text-inverse)] rounded-[26px] border-2 border-[var(--color-border)] shadow-[6px_6px_0_var(--color-border)] px-6 py-12 text-center">
                         <SparkleIcon className="absolute -top-4 -left-4" color="var(--color-accent-yellow)" />
                         <SparkleIcon className="absolute -bottom-4 -right-4" color="var(--color-accent-yellow)" />
-                        <h2 className="text-3xl sm:text-4xl font-extrabold">Lets Make First Quiz</h2>
-                        <p className="text-[color:var(--color-text-inverse)]/90 mt-3">Generate a quiz instantly from your notes.</p>
+                        <h2 className="text-3xl sm:text-4xl font-extrabold">Build your first quiz today</h2>
+                        <p className="text-[color:var(--color-text-inverse)]/90 mt-3 max-w-md mx-auto">
+                            Create an account in 30 seconds. Free for instructors and students — no credit card needed.
+                        </p>
                         <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
-                            <input
-                                placeholder="Paste a topic or document link"
-                                className="w-full sm:w-96 h-12 px-4 rounded-full text-[var(--color-text-primary)] border-2 border-[var(--color-border)] focus:outline-none bg-[var(--color-block-white)]"
-                            />
-                            <Button variant="secondary">Generate</Button>
+                            <Button variant="secondary" size="lg" onClick={() => navigate('/register')}>
+                                Create your account <ArrowRight size={16} />
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="lg"
+                                className="!text-[var(--color-text-inverse)] !border-[color:var(--color-text-inverse)]/60 !bg-transparent"
+                                onClick={() => navigate('/login')}
+                            >
+                                I already have one
+                            </Button>
                         </div>
                     </div>
                 </div>
@@ -583,9 +552,9 @@ export default function Landing() {
                     <div>
                         <h4 className="font-extrabold text-[var(--color-text-primary)] mb-3">Product</h4>
                         <div className="space-y-2">
-                            <a href="#">Features</a>
-                            <a href="#">Pricing</a>
-                            <a href="#">Templates</a>
+                            <a href="#features">Features</a>
+                            <a href="#faq">FAQ</a>
+                            <a href="#">Changelog</a>
                         </div>
                     </div>
                     <div>

@@ -190,7 +190,10 @@ export default function NotificationBell() {
                     <div style={styles.divider} />
 
                     {/* Notifications List */}
-                    <div style={styles.listContainer}>
+                    <div
+                        data-lenis-prevent
+                        style={{ ...styles.listContainer, overscrollBehavior: 'contain' }}
+                    >
                         {listLoading ? (
                             <>
                                 <ShimmerRow /><ShimmerRow /><ShimmerRow /><ShimmerRow /><ShimmerRow />
