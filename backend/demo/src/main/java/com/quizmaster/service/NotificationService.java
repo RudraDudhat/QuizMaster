@@ -78,7 +78,9 @@ public class NotificationService {
                 NotificationType.QUIZ_AUTO_SUBMITTED,
                 title,
                 message,
-                "/quizzes/attempts/" + attemptUuid,
+                // Must match the frontend route exactly — otherwise the
+                // notification click lands on a "Page not found" screen.
+                "/student/results/" + attemptUuid,
                 attemptUuid,
                 "QUIZ_ATTEMPT");
     }

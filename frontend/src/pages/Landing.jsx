@@ -184,8 +184,16 @@ export default function Landing() {
                 <div className="max-w-6xl mx-auto grid lg:grid-cols-[1.1fr_0.9fr] gap-12 items-center">
                     <div>
                         <Reveal>
-                            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight">
-                                Build <span className="bg-[var(--color-primary)] text-[var(--color-text-inverse)] px-3 py-1 rounded-lg">Better Quizzes</span>
+                            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.15]">
+                                Build{' '}
+                                {/* box-decoration-clone gives each wrapped line
+                                   its own indigo pill background, instead of
+                                   one mega-rect that overlaps neighbouring
+                                   text. The leading-snug + inline-block keeps
+                                   spacing predictable on every breakpoint. */}
+                                <span className="inline bg-[var(--color-primary)] text-[var(--color-text-inverse)] px-3 py-1 rounded-lg [box-decoration-break:clone] [-webkit-box-decoration-break:clone] leading-snug">
+                                    Better Quizzes
+                                </span>
                                 <br /> for Real Classrooms
                             </h1>
                         </Reveal>

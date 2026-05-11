@@ -104,10 +104,34 @@ export default function NotificationBell() {
         });
     };
 
+    /**
+     * Map a notification's actionUrl onto the actual frontend route.
+     *
+     * Older notifications were written with backend-flavoured paths like
+     * "/quizzes/attempts/{uuid}" which don't exist client-side. Translate
+     * known patterns to the real route. Falls back to the original URL.
+     */
+    const resolveActionUrl = (notif) => {
+        const url = notif?.actionUrl;
+        if (!url) return null;
+
+        // /quizzes/attempts/<uuid> → student result page
+        const attemptMatch = url.match(/^\/quizzes\/attempts\/(.+)$/);
+        if (attemptMatch) return `/student/results/${attemptMatch[1]}`;
+
+        // Reference + UUID fallback when actionUrl is broken/blank but the
+        // notification still points at a quiz attempt.
+        if ((!url || url === '#') && notif?.referenceType === 'QUIZ_ATTEMPT' && notif?.referenceUuid) {
+            return `/student/results/${notif.referenceUuid}`;
+        }
+        return url;
+    };
+
     const handleRowClick = (notif) => {
         if (!notif.isRead) markOneRead(notif.uuid);
-        if (notif.actionUrl) {
-            navigate(notif.actionUrl);
+        const target = resolveActionUrl(notif);
+        if (target) {
+            navigate(target);
             setOpen(false);
         }
     };
