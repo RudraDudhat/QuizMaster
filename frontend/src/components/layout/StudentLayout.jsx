@@ -67,7 +67,7 @@ export default function StudentLayout({ children }) {
                             </div>
                         }
                         items={[
-                            { label: 'My Profile', icon: <User size={16} />, onClick: () => { } },
+                            { label: 'My Profile', icon: <User size={16} />, onClick: () => navigate('/student/profile') },
                             { divider: true },
                             { label: 'Logout', icon: <LogOut size={16} />, onClick: handleLogout, danger: true },
                         ]}

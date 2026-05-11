@@ -130,7 +130,7 @@ export default function AdminLayout({ children }) {
                             </div>
                         }
                         items={[
-                            { label: 'My Profile', icon: <User size={16} />, onClick: () => { } },
+                            { label: 'My Profile', icon: <User size={16} />, onClick: () => navigate('/admin/profile') },
                             { divider: true },
                             { label: 'Logout', icon: <LogOut size={16} />, onClick: handleLogout, danger: true },
                         ]}

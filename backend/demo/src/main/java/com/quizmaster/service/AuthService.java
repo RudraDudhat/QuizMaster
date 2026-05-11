@@ -166,6 +166,25 @@ public class AuthService {
     }
 
     /**
+     * Update the password for the currently authenticated user.
+     * Verifies the current password before changing.
+     */
+    @Transactional
+    public void changePassword(String userEmail, ChangePasswordRequest req) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new BadRequestException("User not found"));
+        if (user.getPasswordHash() == null
+                || !passwordEncoder.matches(req.getCurrentPassword(), user.getPasswordHash())) {
+            throw new BadRequestException("Current password is incorrect");
+        }
+        if (passwordEncoder.matches(req.getNewPassword(), user.getPasswordHash())) {
+            throw new BadRequestException("New password must be different from the current one");
+        }
+        user.setPasswordHash(passwordEncoder.encode(req.getNewPassword()));
+        userRepository.save(user);
+    }
+
+    /**
      * SHA-256 hash of a string — used to store refresh tokens securely.
      */
     public static String sha256(String input) {

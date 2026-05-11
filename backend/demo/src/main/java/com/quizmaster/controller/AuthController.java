@@ -92,15 +92,59 @@ public class AuthController {
         User user = userRepository.findByEmail(userDetails.getUsername())
                 .orElseThrow();
 
-        Map<String, Object> userInfo = Map.of(
-                "id", user.getId(),
-                "uuid", user.getUuid(),
-                "email", user.getEmail(),
-                "fullName", user.getFullName(),
-                "role", user.getRole().name(),
-                "isEmailVerified", user.getIsEmailVerified(),
-                "xpPoints", user.getXpPoints(),
-                "profilePictureUrl", user.getProfilePictureUrl() != null ? user.getProfilePictureUrl() : "");
+        Map<String, Object> userInfo = new java.util.HashMap<>();
+        userInfo.put("id", user.getId());
+        userInfo.put("uuid", user.getUuid());
+        userInfo.put("email", user.getEmail());
+        userInfo.put("fullName", user.getFullName());
+        userInfo.put("displayName", user.getDisplayName());
+        userInfo.put("bio", user.getBio());
+        userInfo.put("role", user.getRole().name());
+        userInfo.put("isEmailVerified", user.getIsEmailVerified());
+        userInfo.put("xpPoints", user.getXpPoints());
+        userInfo.put("streakDays", user.getStreakDays());
+        userInfo.put("lastLoginAt", user.getLastLoginAt());
+        userInfo.put("createdAt", user.getCreatedAt());
+        userInfo.put("profilePictureUrl", user.getProfilePictureUrl() != null ? user.getProfilePictureUrl() : "");
         return ResponseEntity.ok(ApiResponse.success("Current user", userInfo));
+    }
+
+    /**
+     * PUT /api/auth/me — update the current user's profile fields.
+     */
+    @PutMapping("/me")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> updateCurrentUser(
+            @RequestBody com.quizmaster.dto.request.UpdateProfileRequest body,
+            Authentication authentication) {
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
+
+        if (body.getFullName() != null && !body.getFullName().isBlank()) {
+            user.setFullName(body.getFullName().trim());
+        }
+        if (body.getDisplayName() != null) {
+            user.setDisplayName(body.getDisplayName().trim().isEmpty() ? null : body.getDisplayName().trim());
+        }
+        if (body.getBio() != null) {
+            user.setBio(body.getBio().trim().isEmpty() ? null : body.getBio().trim());
+        }
+        if (body.getProfilePictureUrl() != null) {
+            user.setProfilePictureUrl(body.getProfilePictureUrl().trim().isEmpty() ? null : body.getProfilePictureUrl().trim());
+        }
+        userRepository.save(user);
+
+        return getCurrentUser(authentication);
+    }
+
+    /**
+     * POST /api/auth/me/password — change the current user's password.
+     */
+    @PostMapping("/me/password")
+    public ResponseEntity<ApiResponse<Void>> changePassword(
+            @RequestBody @jakarta.validation.Valid com.quizmaster.dto.request.ChangePasswordRequest body,
+            Authentication authentication) {
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        authService.changePassword(userDetails.getUsername(), body);
+        return ResponseEntity.ok(ApiResponse.success("Password updated", null));
     }
 }

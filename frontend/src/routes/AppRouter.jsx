@@ -14,6 +14,7 @@ const Register = lazy(() => import('../pages/auth/Register'));
 const ForgotPassword = lazy(() => import('../pages/auth/ForgotPassword'));
 const ResetPassword = lazy(() => import('../pages/auth/ResetPassword'));
 const NotFound = lazy(() => import('../pages/NotFound'));
+const Profile = lazy(() => import('../pages/Profile'));
 
 // Pages — Admin
 const AdminDashboard = lazy(() => import('../pages/admin/Dashboard'));
@@ -153,6 +154,7 @@ export default function AppRouter() {
                         <Route path="/admin/grading/:attemptUuid" element={<GradingReview />} />
                         <Route path="/admin/analytics" element={<Analytics />} />
                         <Route path="/admin/settings" element={<Settings />} />
+                        <Route path="/admin/profile" element={<Profile />} />
                     </Route>
 
                     {/* ── Student ── */}
@@ -164,6 +166,7 @@ export default function AppRouter() {
                         <Route path="/student/results/:attemptUuid" element={<AttemptResult />} />
                         <Route path="/student/results/:attemptUuid/review" element={<AttemptReview />} />
                         <Route path="/student/history" element={<AttemptHistory />} />
+                        <Route path="/student/profile" element={<Profile />} />
                     </Route>
 
                     {/* ── Quiz Taking — full screen, no StudentLayout ── */}
