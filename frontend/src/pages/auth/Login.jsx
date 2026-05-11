@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 import { Mail, Lock, Eye, EyeOff, BookOpen, CheckCircle2 } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import { login as loginApi } from '../../api/auth.api';
+import { ROLES } from '../../utils/constants';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import { SparkleIcon } from '../../components/common/Decorations';
@@ -31,7 +32,7 @@ export default function Login() {
     useEffect(() => {
         if (isAuthenticated) {
             const r = user?.role;
-            if (r === 'ADMIN' || r === 'SUPER_ADMIN') navigate('/admin/dashboard', { replace: true });
+            if (r === ROLES.ADMIN || r === ROLES.SUPER_ADMIN) navigate('/admin/dashboard', { replace: true });
             else navigate('/student/dashboard', { replace: true });
         }
     }, [isAuthenticated, user, navigate]);
@@ -46,7 +47,7 @@ export default function Login() {
             setAuth(user, authData.accessToken, authData.refreshToken);
             toast.success(`Welcome back, ${authData.fullName}!`);
             const r = authData.role;
-            if (r === 'ADMIN' || r === 'SUPER_ADMIN') navigate('/admin/dashboard', { replace: true });
+            if (r === ROLES.ADMIN || r === ROLES.SUPER_ADMIN) navigate('/admin/dashboard', { replace: true });
             else navigate('/student/dashboard', { replace: true });
         } catch (err) {
             if (err.response?.status === 401) toast.error('Invalid email or password');

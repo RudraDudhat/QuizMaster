@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 import { Mail, Lock, Eye, EyeOff, User, BookOpen, CheckCircle2 } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import { register as registerApi } from '../../api/auth.api';
+import { ROLES } from '../../utils/constants';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import { SparkleIcon } from '../../components/common/Decorations';
@@ -77,7 +78,7 @@ export default function Register() {
     useEffect(() => {
         if (isAuthenticated) {
             const r = user?.role;
-            if (r === 'ADMIN' || r === 'SUPER_ADMIN') navigate('/admin/dashboard', { replace: true });
+            if (r === ROLES.ADMIN || r === ROLES.SUPER_ADMIN) navigate('/admin/dashboard', { replace: true });
             else navigate('/student/dashboard', { replace: true });
         }
     }, [isAuthenticated, user, navigate]);

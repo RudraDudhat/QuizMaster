@@ -1,12 +1,17 @@
 import api from './axiosInstance';
 
-export const getAllQuestions = async ({ page = 0, size = 20, type, difficulty, tagUuid, search } = {}) => {
+// Accepts an optional second arg for React Query's `signal` so rapid
+// filter changes can cancel in-flight requests via AbortController.
+export const getAllQuestions = async (
+    { page = 0, size = 20, type, difficulty, tagUuid, search } = {},
+    { signal } = {}
+) => {
     const params = { page, size };
     if (type) params.type = type;
     if (difficulty) params.difficulty = difficulty;
     if (tagUuid) params.tagUuid = tagUuid;
     if (search) params.search = search;
-    const { data } = await api.get('/admin/questions', { params });
+    const { data } = await api.get('/admin/questions', { params, signal });
     return data;
 };
 

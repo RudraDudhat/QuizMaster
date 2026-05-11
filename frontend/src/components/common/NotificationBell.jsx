@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import useNotifications from '../../hooks/useNotifications';
+import { ROLES } from '../../utils/constants';
 import { truncateText, formatTimeAgo } from '../../utils/formatters';
 
 /* ── Notification type → icon + colour mapping ── */
@@ -111,7 +112,8 @@ export default function NotificationBell() {
         }
     };
 
-    const viewAllPath = user?.role === 'ADMIN'
+    const viewAllPath =
+        user?.role === ROLES.ADMIN || user?.role === ROLES.SUPER_ADMIN
         ? '/admin/notifications'
         : '/student/notifications';
 

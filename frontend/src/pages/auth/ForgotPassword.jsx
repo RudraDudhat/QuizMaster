@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 import { Mail, BookOpen, CheckCircle2, MailCheck, ArrowLeft } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import { forgotPassword } from '../../api/auth.api';
+import { ROLES } from '../../utils/constants';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 
@@ -32,7 +33,7 @@ export default function ForgotPassword() {
     useEffect(() => {
         if (isAuthenticated) {
             const r = user?.role;
-            if (r === 'ADMIN' || r === 'SUPER_ADMIN') navigate('/admin/dashboard', { replace: true });
+            if (r === ROLES.ADMIN || r === ROLES.SUPER_ADMIN) navigate('/admin/dashboard', { replace: true });
             else navigate('/student/dashboard', { replace: true });
         }
     }, [isAuthenticated, user, navigate]);

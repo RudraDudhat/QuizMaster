@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Home, SearchX } from 'lucide-react';
 import useAuthStore from '../store/authStore';
+import { ROLES } from '../utils/constants';
 import Button from '../components/common/Button';
 
 export default function NotFound() {
@@ -10,7 +11,7 @@ export default function NotFound() {
     const homePath =
         !isAuthenticated
             ? '/'
-            : user?.role === 'STUDENT'
+            : user?.role === ROLES.STUDENT
                 ? '/student/dashboard'
                 : '/admin/dashboard';
 

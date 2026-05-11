@@ -71,14 +71,17 @@ export default function QuestionBank() {
     }, []);
 
     /* ─── Data fetching ─── */
+    // Pass React Query's AbortSignal into the API call so rapid filter
+    // changes cancel in-flight requests instead of racing — the answer
+    // that arrives last wins, not whichever one finishes first.
     const { data: response, isLoading, refetch } = useQuery({
         queryKey: ['admin-questions', page, search, typeFilter, diffFilter, tagFilter],
-        queryFn: () => getAllQuestions({
+        queryFn: ({ signal }) => getAllQuestions({
             page, size: 20, search: search || undefined,
             type: typeFilter || undefined,
             difficulty: diffFilter || undefined,
             tagUuid: tagFilter || undefined,
-        }),
+        }, { signal }),
         staleTime: 30_000,
         keepPreviousData: true,
     });

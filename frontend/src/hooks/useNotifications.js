@@ -36,21 +36,83 @@ export default function useNotifications() {
     const totalElements = listResponse?.data?.totalElements ?? 0;
     const hasMore = (listResponse?.data?.totalPages ?? 0) > 1;
 
-    // Mark one as read
+    // Mark one as read — optimistic: patch caches immediately so the UI
+    // feels instant. We avoid invalidate() since that triggers a refetch
+    // and a flash of the old state.
     const { mutate: markOneRead } = useMutation({
         mutationFn: (uuid) => markAsRead(uuid),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['notifications-unread-count'] });
-            queryClient.invalidateQueries({ queryKey: ['notifications-list'] });
+        onMutate: async (uuid) => {
+            await queryClient.cancelQueries({ queryKey: ['notifications-list'] });
+            await queryClient.cancelQueries({ queryKey: ['notifications-unread-count'] });
+
+            const prevList = queryClient.getQueryData(['notifications-list']);
+            const prevCount = queryClient.getQueryData(['notifications-unread-count']);
+
+            // Patch the list: flip isRead on the target notification
+            queryClient.setQueryData(['notifications-list'], (old) => {
+                if (!old?.data?.content) return old;
+                const wasUnread = old.data.content.some(
+                    (n) => n.uuid === uuid && !n.isRead
+                );
+                if (!wasUnread) return old;
+                return {
+                    ...old,
+                    data: {
+                        ...old.data,
+                        content: old.data.content.map((n) =>
+                            n.uuid === uuid ? { ...n, isRead: true } : n
+                        ),
+                    },
+                };
+            });
+
+            // Decrement unread count (clamped at 0)
+            queryClient.setQueryData(['notifications-unread-count'], (old) => {
+                if (!old?.data) return old;
+                return {
+                    ...old,
+                    data: { ...old.data, count: Math.max(0, (old.data.count ?? 0) - 1) },
+                };
+            });
+
+            return { prevList, prevCount };
+        },
+        onError: (_err, _uuid, ctx) => {
+            // Roll back on failure
+            if (ctx?.prevList) queryClient.setQueryData(['notifications-list'], ctx.prevList);
+            if (ctx?.prevCount) queryClient.setQueryData(['notifications-unread-count'], ctx.prevCount);
         },
     });
 
-    // Mark all as read
+    // Mark all as read — optimistic too
     const { mutate: markAllRead, isPending: markingAll } = useMutation({
         mutationFn: markAllAsRead,
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['notifications-unread-count'] });
-            queryClient.invalidateQueries({ queryKey: ['notifications-list'] });
+        onMutate: async () => {
+            await queryClient.cancelQueries({ queryKey: ['notifications-list'] });
+            await queryClient.cancelQueries({ queryKey: ['notifications-unread-count'] });
+            const prevList = queryClient.getQueryData(['notifications-list']);
+            const prevCount = queryClient.getQueryData(['notifications-unread-count']);
+
+            queryClient.setQueryData(['notifications-list'], (old) => {
+                if (!old?.data?.content) return old;
+                return {
+                    ...old,
+                    data: {
+                        ...old.data,
+                        content: old.data.content.map((n) => ({ ...n, isRead: true })),
+                    },
+                };
+            });
+            queryClient.setQueryData(['notifications-unread-count'], (old) => {
+                if (!old?.data) return old;
+                return { ...old, data: { ...old.data, count: 0 } };
+            });
+
+            return { prevList, prevCount };
+        },
+        onError: (_err, _vars, ctx) => {
+            if (ctx?.prevList) queryClient.setQueryData(['notifications-list'], ctx.prevList);
+            if (ctx?.prevCount) queryClient.setQueryData(['notifications-unread-count'], ctx.prevCount);
         },
     });
 

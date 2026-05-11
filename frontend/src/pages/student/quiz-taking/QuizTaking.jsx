@@ -89,9 +89,26 @@ export default function QuizTaking() {
     const attemptData     = location.state?.attemptData;
     const questions       = attemptData?.questions ?? [];
 
+    // ── Local persistence keys ───────────────────────────
+    // We mirror in-progress answers to localStorage so a refresh or crash
+    // mid-quiz doesn't wipe the student's work. Keyed by attemptUuid so
+    // multiple attempts don't collide.
+    const persistKey = `qt:answers:${attemptUuid}`;
+    const persistIdxKey = `qt:idx:${attemptUuid}`;
+
     // ── State ─────────────────────────────────────────────
-    const [currentIndex,       setCurrentIndex]      = useState(0);
-    const [answers,            setAnswers]            = useState({});
+    const [currentIndex, setCurrentIndex] = useState(() => {
+        try {
+            const raw = localStorage.getItem(persistIdxKey);
+            return raw ? Number.parseInt(raw, 10) || 0 : 0;
+        } catch { return 0; }
+    });
+    const [answers, setAnswers] = useState(() => {
+        try {
+            const raw = localStorage.getItem(persistKey);
+            return raw ? JSON.parse(raw) : {};
+        } catch { return {}; }
+    });
     const [questionTimeSpent,  setQuestionTimeSpent]  = useState(0);
     const [showHint,           setShowHint]           = useState(false);
     const [showNavigator,      setShowNavigator]      = useState(false);
@@ -165,30 +182,46 @@ export default function QuizTaking() {
     // ── Auto-submit when timer hits 0 ─────────────────────
     const handleAutoSubmit = useCallback(async () => {
         await saveCurrentAnswer(true);
+        const uuid = attemptRef.current;
+        const clearLocal = () => {
+            try { localStorage.removeItem(`qt:answers:${uuid}`); } catch { /* noop */ }
+            try { localStorage.removeItem(`qt:idx:${uuid}`); } catch { /* noop */ }
+        };
         try {
-            const result = await submitAttempt(attemptRef.current);
-            navigate(`/student/results/${attemptRef.current}`, {
+            const result = await submitAttempt(uuid);
+            clearLocal();
+            navigate(`/student/results/${uuid}`, {
                 state: { resultData: result.data, autoSubmitted: true },
             });
         } catch {
-            navigate(`/student/results/${attemptRef.current}`, {
+            clearLocal();
+            navigate(`/student/results/${uuid}`, {
                 state: { autoSubmitted: true },
             });
         }
     }, [navigate, saveCurrentAnswer]);
 
     // ── Global countdown ──────────────────────────────────
+    // Recompute from the server-issued deadline on every tick instead of
+    // decrementing by 1. Background tabs throttle setInterval, so the old
+    // approach drifted by tens of seconds — students could lose time while
+    // a tab was inactive. This stays in lockstep with wall-clock time.
     useEffect(() => {
-        if (timeLeft === null) return;
-        const id = setInterval(() => {
-            setTimeLeft(prev => {
-                if (prev <= 1) { clearInterval(id); handleAutoSubmit(); return 0; }
-                return prev - 1;
-            });
-        }, 1000);
+        if (!attemptData?.deadlineAt) return;
+        const deadlineMs = new Date(attemptData.deadlineAt).getTime();
+        const tick = () => {
+            const secs = Math.max(0, Math.floor((deadlineMs - Date.now()) / 1000));
+            setTimeLeft(secs);
+            if (secs <= 0) {
+                clearInterval(id);
+                handleAutoSubmit();
+            }
+        };
+        tick();
+        const id = setInterval(tick, 1000);
         return () => clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [attemptData?.deadlineAt]);
 
     // ── Per-question time spent ───────────────────────────
     useEffect(() => { setQuestionTimeSpent(0); }, [currentIndex]);
@@ -215,6 +248,17 @@ export default function QuizTaking() {
         const id = setInterval(() => saveCurrentAnswer(true), 30000);
         return () => clearInterval(id);
     }, [saveCurrentAnswer]);
+
+    // ── Local persistence — mirror to localStorage on every change ────
+    // Survives accidental refresh, browser crash, network drop. Cleared
+    // explicitly when the quiz is submitted.
+    useEffect(() => {
+        try { localStorage.setItem(persistKey, JSON.stringify(answers)); } catch { /* quota */ }
+    }, [answers, persistKey]);
+
+    useEffect(() => {
+        try { localStorage.setItem(persistIdxKey, String(currentIndex)); } catch { /* quota */ }
+    }, [currentIndex, persistIdxKey]);
 
     // ── Anti-cheat ────────────────────────────────────────
     useEffect(() => {
@@ -323,6 +367,10 @@ export default function QuizTaking() {
         await saveCurrentAnswer(false);
         try {
             const result = await submitAttempt(attemptUuid);
+            // Clear the local persistence so old answers don't replay on a
+            // later attempt of the same quiz.
+            try { localStorage.removeItem(persistKey); } catch { /* noop */ }
+            try { localStorage.removeItem(persistIdxKey); } catch { /* noop */ }
             navigate(`/student/results/${attemptUuid}`, { state: { resultData: result.data } });
         } catch {
             toast.error('Failed to submit. Please try again.');
