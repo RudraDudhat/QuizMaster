@@ -4,6 +4,7 @@ import com.quizmaster.security.CustomUserDetailsService;
 import com.quizmaster.security.JwtAuthenticationFilter;
 import com.quizmaster.security.OAuth2AuthenticationSuccessHandler;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -33,6 +34,10 @@ public class SecurityConfig {
         private final CustomUserDetailsService userDetailsService;
         private final OAuth2AuthenticationSuccessHandler oAuth2SuccessHandler;
         private final PasswordEncoder passwordEncoder;
+
+        /** Comma-separated list of allowed origins; configurable per environment. */
+        @Value("${app.cors.allowed-origins:http://localhost:5173,http://localhost:3000}")
+        private String corsAllowedOrigins;
 
         @Bean
         public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -79,7 +84,11 @@ public class SecurityConfig {
         @Bean
         public CorsConfigurationSource corsConfigurationSource() {
                 CorsConfiguration config = new CorsConfiguration();
-                config.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:3000"));
+                List<String> origins = java.util.Arrays.stream(corsAllowedOrigins.split(","))
+                                .map(String::trim)
+                                .filter(s -> !s.isEmpty())
+                                .toList();
+                config.setAllowedOrigins(origins);
                 config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
                 config.setAllowedHeaders(List.of("*"));
                 config.setAllowCredentials(true);

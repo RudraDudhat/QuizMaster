@@ -5,6 +5,7 @@ import com.quizmaster.dto.request.SaveAnswerRequest;
 import com.quizmaster.dto.request.StartAttemptRequest;
 import com.quizmaster.dto.response.*;
 import com.quizmaster.service.AttemptService;
+import com.quizmaster.util.HttpRequestUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -36,7 +37,9 @@ public class StudentQuizController {
             HttpServletRequest httpRequest,
             Authentication authentication) {
         String email = extractEmail(authentication);
-        String ipAddress = httpRequest.getRemoteAddr();
+        // Honour X-Forwarded-For so we log the real client IP when behind a
+        // reverse proxy / load balancer, not just the proxy's address.
+        String ipAddress = HttpRequestUtils.clientIp(httpRequest);
         String userAgent = httpRequest.getHeader("User-Agent");
         String accessCode = request != null ? request.getAccessCode() : null;
 
