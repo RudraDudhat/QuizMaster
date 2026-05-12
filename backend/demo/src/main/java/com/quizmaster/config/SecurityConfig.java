@@ -58,6 +58,10 @@ public class SecurityConfig {
                                                 .permitAll()
                                                 // OAuth2 endpoints
                                                 .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
+                                                // Liveness/readiness probes — kept public so load balancers
+                                                // and uptime monitors can hit them without credentials. The
+                                                // rest of /actuator/** still requires authentication.
+                                                .requestMatchers("/actuator/health", "/actuator/health/**", "/actuator/info").permitAll()
                                                 // Admin-only endpoints
                                                 .requestMatchers("/api/admin/**", "/api/v1/admin/**")
                                                 .hasAnyRole("ADMIN", "SUPER_ADMIN")
