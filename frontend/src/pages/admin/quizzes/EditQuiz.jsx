@@ -846,6 +846,16 @@ export default function EditQuiz() {
                                     />
                                 </div>
 
+                                <Input
+                                    label="Questions to Serve"
+                                    name="questionsToServe"
+                                    type="number"
+                                    placeholder="e.g. 20"
+                                    hint="Number of questions served per attempt (leave empty to serve all)"
+                                    register={register('questionsToServe')}
+                                    error={errors.questionsToServe?.message}
+                                />
+
                                 <div className="pt-2 space-y-4">
                                     <Toggle
                                         checked={watchAll.shuffleQuestions}
@@ -854,10 +864,22 @@ export default function EditQuiz() {
                                         description="Randomize question order for each attempt"
                                     />
                                     <Toggle
+                                        checked={watchAll.shuffleOptions}
+                                        onChange={(v) => setValue('shuffleOptions', v)}
+                                        label="Shuffle Options"
+                                        description="Randomize answer options for each question"
+                                    />
+                                    <Toggle
                                         checked={watchAll.showCorrectAnswers}
                                         onChange={(v) => setValue('showCorrectAnswers', v)}
                                         label="Show Correct Answers"
                                         description="Allow students to review correct answers after submission"
+                                    />
+                                    <Toggle
+                                        checked={watchAll.showLeaderboard}
+                                        onChange={(v) => setValue('showLeaderboard', v)}
+                                        label="Show Leaderboard"
+                                        description="Display leaderboard after quiz completion"
                                     />
                                 </div>
                             </div>
