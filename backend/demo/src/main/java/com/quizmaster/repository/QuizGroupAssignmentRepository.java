@@ -12,6 +12,8 @@ public interface QuizGroupAssignmentRepository
 
     boolean existsByQuizIdAndGroupId(Long quizId, Long groupId);
 
+    java.util.List<QuizGroupAssignment> findByQuizId(Long quizId);
+
     /** Count distinct quizzes currently assigned to a group. */
     @org.springframework.data.jpa.repository.Query("""
             SELECT COUNT(DISTINCT a.quiz.id) FROM QuizGroupAssignment a

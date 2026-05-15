@@ -114,6 +114,91 @@ public class NotificationService {
                 "QUIZ_ATTEMPT");
     }
 
+    /**
+     * Notify a student that a new quiz has been assigned to them. Used when
+     * an admin publishes a quiz that's been targeted at one of the student's
+     * groups, or when a student is added to a group that already has assigned
+     * quizzes.
+     */
+    @Transactional
+    public void sendQuizAssignedNotification(User student, String quizTitle,
+            String quizUuid, Instant expiresAt) {
+        String title = "New quiz: " + quizTitle;
+        String due = expiresAt == null
+                ? "No deadline."
+                : "Closes " + expiresAt.toString().substring(0, 10) + ".";
+        String message = String.format(
+                "You've been assigned a new quiz: \"%s\". %s Open it to read the rules and start when you're ready.",
+                quizTitle, due);
+
+        sendNotification(
+                student,
+                NotificationType.QUIZ_ASSIGNED,
+                title,
+                message,
+                "/student/quizzes/" + quizUuid,
+                quizUuid,
+                "QUIZ");
+    }
+
+    /**
+     * Notify a student that their essay answer has been individually graded
+     * — fired per essay, even if other essays on the same attempt are still
+     * pending. Used together with {@link #sendResultReadyNotification} which
+     * fires once the entire attempt becomes final.
+     */
+    @Transactional
+    public void sendEssayGradedNotification(User student, String quizTitle,
+            String attemptUuid, BigDecimal marksAwarded, BigDecimal maxMarks,
+            Boolean isApproved, String note) {
+        String verdict = Boolean.TRUE.equals(isApproved) ? "approved" : "marked";
+        String title = "Essay " + verdict + ": " + quizTitle;
+        StringBuilder message = new StringBuilder();
+        message.append(String.format(
+                "Your instructor %s an essay answer in \"%s\" — %.2f / %.2f marks.",
+                verdict,
+                quizTitle,
+                marksAwarded != null ? marksAwarded : BigDecimal.ZERO,
+                maxMarks != null ? maxMarks : BigDecimal.ZERO));
+        if (note != null && !note.isBlank()) {
+            message.append(" Feedback: ").append(note);
+        }
+
+        sendNotification(
+                student,
+                NotificationType.QUIZ_GRADED,
+                title,
+                message.toString(),
+                "/student/results/" + attemptUuid + "/review",
+                attemptUuid,
+                "QUIZ_ATTEMPT");
+    }
+
+    /**
+     * Notify a student that an assigned quiz is closing soon and they
+     * haven't completed it yet. Fired daily by {@code QuizExpiryScheduler}.
+     */
+    @Transactional
+    public void sendQuizExpiringNotification(User student, String quizTitle,
+            String quizUuid, long hoursLeft) {
+        String title = "Closing soon: " + quizTitle;
+        String message = String.format(
+                "\"%s\" closes in about %d hour%s and you haven't completed it yet. "
+                        + "Open the quiz to attempt it before the deadline.",
+                quizTitle,
+                hoursLeft,
+                hoursLeft == 1 ? "" : "s");
+
+        sendNotification(
+                student,
+                NotificationType.QUIZ_EXPIRING,
+                title,
+                message,
+                "/student/quizzes/" + quizUuid,
+                quizUuid,
+                "QUIZ");
+    }
+
     // ─── Public API methods ──────────────────────────────
 
     @Transactional(readOnly = true)

@@ -395,11 +395,25 @@ public class AttemptService {
         attemptRepository.saveAndFlush(attempt);
         attemptRepository.recomputeRanksForQuiz(attempt.getQuiz().getId());
 
-        // Only notify the student when ALL essays for this attempt have been
-        // graded — otherwise an attempt with multiple essays would spam them
-        // each time the admin saves a single grade. Use the dedicated
-        // "result ready" notification — never the auto-submit one, which is
-        // reserved for timer-expiry events.
+        // Per-essay grade notification (QUIZ_GRADED) — fired every time
+        // an essay is graded, regardless of whether other essays remain.
+        // The "Result ready" message below only fires once all essays are
+        // done, so the two together give the student real-time updates
+        // plus a clean final confirmation.
+        notificationService.sendEssayGradedNotification(
+                attempt.getStudent(),
+                attempt.getQuiz().getTitle(),
+                attempt.getUuid().toString(),
+                awarded,
+                max,
+                req.getIsCorrect(),
+                req.getNote());
+
+        // Only notify the student of FINAL result when ALL essays for this
+        // attempt have been graded — otherwise an attempt with multiple
+        // essays would get a "Result ready" each time. Uses the dedicated
+        // QUIZ_RESULT_READY type — never the auto-submit one (reserved for
+        // timer-expiry events).
         int stillPending = answerRepository.countPendingReviewByAttemptId(attempt.getId());
         if (stillPending == 0) {
             notificationService.sendResultReadyNotification(

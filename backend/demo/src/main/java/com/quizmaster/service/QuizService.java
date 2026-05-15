@@ -17,6 +17,7 @@ import com.quizmaster.mapper.QuizMapper;
 import com.quizmaster.repository.CategoryRepository;
 import com.quizmaster.repository.QuizGroupAssignmentRepository;
 import com.quizmaster.repository.QuizRepository;
+import com.quizmaster.repository.StudentGroupMemberRepository;
 import com.quizmaster.repository.StudentGroupRepository;
 import com.quizmaster.repository.TagRepository;
 import com.quizmaster.repository.UserRepository;
@@ -34,6 +35,7 @@ import jakarta.persistence.PersistenceContext;
 
 @Service
 @RequiredArgsConstructor
+@lombok.extern.slf4j.Slf4j
 public class QuizService {
 
     private final QuizRepository quizRepository;
@@ -42,6 +44,8 @@ public class QuizService {
     private final TagRepository tagRepository;
     private final StudentGroupRepository studentGroupRepository;
     private final QuizGroupAssignmentRepository quizGroupAssignmentRepository;
+    private final StudentGroupMemberRepository studentGroupMemberRepository;
+    private final NotificationService notificationService;
     private final QuizMapper quizMapper;
 
     @PersistenceContext
@@ -155,9 +159,50 @@ public class QuizService {
 
     private QuizResponse doUpdateStatus(Quiz quiz, QuizStatus newStatus) {
         validateStatusTransition(quiz.getStatus(), newStatus);
+        QuizStatus oldStatus = quiz.getStatus();
         quiz.setStatus(newStatus);
         quiz = quizRepository.save(quiz);
+
+        // Fire QUIZ_ASSIGNED notifications when the quiz transitions to
+        // PUBLISHED — every student in every assigned group gets notified.
+        // Done after the save so we don't notify on a state that fails to
+        // persist.
+        if (oldStatus != QuizStatus.PUBLISHED && newStatus == QuizStatus.PUBLISHED) {
+            notifyAssignedStudents(quiz);
+        }
         return toResponseWithGroups(quiz);
+    }
+
+    /**
+     * Fan-out QUIZ_ASSIGNED notifications to every student in every group
+     * the quiz is assigned to. Dedupes by user id so a student in multiple
+     * assigned groups only receives one notification per publish.
+     */
+    private void notifyAssignedStudents(Quiz quiz) {
+        try {
+            List<QuizGroupAssignment> assignments = quizGroupAssignmentRepository
+                    .findByQuizId(quiz.getId());
+            if (assignments.isEmpty()) return;
+
+            java.util.Set<Long> notified = new java.util.HashSet<>();
+            for (QuizGroupAssignment qga : assignments) {
+                StudentGroup group = qga.getGroup();
+                if (group == null) continue;
+                studentGroupMemberRepository.findByGroupId(group.getId()).forEach(member -> {
+                    User student = member.getUser();
+                    if (student == null || !notified.add(student.getId())) return;
+                    notificationService.sendQuizAssignedNotification(
+                            student,
+                            quiz.getTitle(),
+                            quiz.getUuid().toString(),
+                            quiz.getExpiresAt());
+                });
+            }
+        } catch (Exception e) {
+            // Never fail the publish because of a notification glitch.
+            log.warn("Failed to send QUIZ_ASSIGNED notifications for quiz {}: {}",
+                    quiz.getId(), e.getMessage());
+        }
     }
 
     // ─── SOFT DELETE ────────────────────────────────────

@@ -24,6 +24,12 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     Optional<Notification> findByUuidAndUserId(String uuid, Long userId);
 
+    /** Dedupe helper: have we already sent this type for this reference to this user? */
+    boolean existsByUserIdAndTypeAndReferenceUuid(
+            Long userId,
+            com.quizmaster.enums.NotificationType type,
+            String referenceUuid);
+
     @Modifying
     @Query("UPDATE Notification n SET n.isRead = true, n.readAt = :now " +
            "WHERE n.user.id = :userId AND n.isRead = false")

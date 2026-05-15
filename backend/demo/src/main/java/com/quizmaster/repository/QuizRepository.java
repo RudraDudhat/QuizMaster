@@ -25,6 +25,20 @@ public interface QuizRepository extends JpaRepository<Quiz, Long> {
 
     Page<Quiz> findByStatusAndDeletedAtIsNull(QuizStatus status, Pageable pageable);
 
+    /** Active quizzes whose expiresAt falls inside a window — used by the
+     *  QUIZ_EXPIRING reminder scheduler. */
+    @Query("""
+            SELECT q FROM Quiz q
+            WHERE q.status = :status
+              AND q.deletedAt IS NULL
+              AND q.expiresAt IS NOT NULL
+              AND q.expiresAt BETWEEN :from AND :to
+            """)
+    java.util.List<Quiz> findByStatusAndDeletedAtIsNullAndExpiresAtBetween(
+            @Param("status") QuizStatus status,
+            @Param("from") java.time.Instant from,
+            @Param("to") java.time.Instant to);
+
     Page<Quiz> findByCreatedByIdAndDeletedAtIsNull(Long userId, Pageable pageable);
 
     @Query("SELECT q FROM Quiz q LEFT JOIN FETCH q.tags LEFT JOIN FETCH q.category WHERE q.id = :id AND q.deletedAt IS NULL")
