@@ -58,6 +58,8 @@ public class QuizResponse {
     // Question pool
     private Integer questionPoolSize;
     private Integer questionsToServe;
+    /** Number of questions currently linked to this quiz (via QuizQuestion). */
+    private Long questionCount;
     private Boolean shuffleQuestions;
     private Boolean shuffleOptions;
     private Boolean allowBackNavigation;

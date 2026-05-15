@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import { getAllQuizzes, deleteQuiz, duplicateQuiz, updateQuizStatus } from '../../../api/quiz.api';
 import {
-    formatDate, formatDuration, formatScore,
+    formatDate, formatDuration,
     getStatusColor, truncateText,
 } from '../../../utils/formatters';
 import Button from '../../../components/common/Button';
@@ -161,14 +161,30 @@ export default function QuizList() {
         },
         {
             key: 'questionCount', label: 'Questions', align: 'center',
-            render: (q) => <span className="text-[var(--color-text-secondary)]">{q.questionCount} questions</span>,
+            render: (q) => {
+                const count = q.questionCount ?? 0;
+                return (
+                    <span className="text-[var(--color-text-secondary)]">
+                        {count} {count === 1 ? 'question' : 'questions'}
+                    </span>
+                );
+            },
         },
         {
             key: 'marks', label: 'Marks', align: 'center',
             render: (q) => (
                 <div className="text-center">
-                    <span className="text-[var(--color-text-primary)] font-semibold">{formatScore('-', q.totalMarks)}</span>
-                    <span className="block text-[11px] text-[var(--color-text-muted)] mt-0.5">{q.passMarks} to pass</span>
+                    {/* This is the admin overview, not a student attempt — show
+                        the quiz's total marks (denominator only). The
+                        student-side "X / total" lives on AttemptResult. */}
+                    <span className="text-[var(--color-text-primary)] font-semibold">
+                        {q.totalMarks != null ? q.totalMarks : '—'} marks
+                    </span>
+                    {q.passMarks != null && (
+                        <span className="block text-[11px] text-[var(--color-text-muted)] mt-0.5">
+                            {q.passMarks} to pass
+                        </span>
+                    )}
                 </div>
             ),
         },

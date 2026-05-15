@@ -45,6 +45,7 @@ public class QuizService {
     private final StudentGroupRepository studentGroupRepository;
     private final QuizGroupAssignmentRepository quizGroupAssignmentRepository;
     private final StudentGroupMemberRepository studentGroupMemberRepository;
+    private final com.quizmaster.repository.QuizQuestionRepository quizQuestionRepository;
     private final NotificationService notificationService;
     private final QuizMapper quizMapper;
 
@@ -328,6 +329,8 @@ public class QuizService {
                 .collect(Collectors.toSet());
 
         response.setAssignedGroups(assignedGroups);
+        // Derived field: how many questions are actually linked to this quiz.
+        response.setQuestionCount(quizQuestionRepository.countByQuizId(quiz.getId()));
         return response;
     }
 }
